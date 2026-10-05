@@ -48,8 +48,10 @@
 │   │   ├── database/                # Native MongoDB connection module
 │   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
 │   ├── package.json
-│   └── tsconfig.json
-├── services/                        # Decoupled Microservice Specs (Docker Compose)
+├── cassandra/                       # Apache Cassandra CQL Schemas & Compaction Config
+│   └── schema.cql
+├── neo4j/                           # Neo4j Graph Cypher Schema & Traversal Queries
+│   └── queries.cypher
 └── web/                             # Next.js 15 Full-Stack Web Application (Port 3001)
     ├── src/
     │   ├── app/

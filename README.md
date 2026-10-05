@@ -87,13 +87,6 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
 │   ├── package.json
 │   └── tsconfig.json
-├── services/                        # Decoupled Microservices Specs
-│   ├── catalog-service/             # MongoDB Product Catalog CRUD
-│   ├── cart-service/                # Redis Active Cart & Session Cache
-│   ├── order-service/               # Order Processing & State Machine
-│   ├── telemetry-service/           # Cassandra 13.8M/day Rider GPS Ingest
-│   ├── referral-service/            # Neo4j 3-Level Referral Tree & Cypher
-│   └── warehouse-service/           # Apache Hive HDFS Ingestion & ETL
 ├── web/                             # Next.js 15 Full-Stack Application (Port 3001)
 │   ├── src/
 │   │   ├── app/
@@ -105,6 +98,12 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   ├── package.json
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
+├── cassandra/                       # Apache Cassandra CQL Schemas & Compaction Config
+│   └── schema.cql
+├── neo4j/                           # Neo4j Graph Cypher Schema & Traversal Queries
+│   └── queries.cypher
+├── mongodb/                         # MongoDB Schemas & Standalone Scripts
+├── hive/                            # Apache Hive Warehouse DDL, ETL & Queries
 ├── docker-compose.yml               # Multi-container orchestration (Mongo, Redis, Cassandra, Neo4j, Web)
 ├── docs/                            # Deep-dive Architecture & Design Guides
 │   ├── architecture.md              # System Architecture & Microservices Flow
