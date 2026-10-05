@@ -1,7 +1,7 @@
 -- Order classification by revenue tier
 -- Segments orders into value tiers using CASE statements
 
-USE khmercart;
+USE ecommerce;
 
 SELECT 
     CASE 

@@ -1,7 +1,7 @@
-# CAP Theorem Analysis — KhmerCart Multi-DC Deployment
+# CAP Theorem Analysis — ecommerce Multi-DC Deployment
 
 ## Context
-KhmerCart operates out of two primary data centers (DCs): Phnom Penh and Siem Reap. This dual-DC strategy is essential for geographic redundancy and low latency for regional users. However, distributed systems spanning multiple locations are susceptible to network partitions.
+ecommerce operates out of two primary data centers (DCs): Phnom Penh and Siem Reap. This dual-DC strategy is essential for geographic redundancy and low latency for regional users. However, distributed systems spanning multiple locations are susceptible to network partitions.
 
 ## The CAP Theorem
 The CAP theorem states that a distributed data store can guarantee at most two of the following three properties simultaneously:

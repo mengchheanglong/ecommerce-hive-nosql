@@ -1,7 +1,7 @@
--- KhmerCart Data Warehouse
--- Creates the khmercart database
+-- ecommerce Data Warehouse
+-- Creates the ecommerce database
 
-CREATE DATABASE IF NOT EXISTS khmercart
-COMMENT 'KhmerCart online marketplace data warehouse';
+CREATE DATABASE IF NOT EXISTS ecommerce
+COMMENT 'ecommerce online marketplace data warehouse';
 
-USE khmercart;
+USE ecommerce;

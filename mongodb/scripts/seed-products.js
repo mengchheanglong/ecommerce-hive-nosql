@@ -1,4 +1,4 @@
-// Usage: mongosh khmercart seed-products.js
+// Usage: mongosh ecommerce seed-products.js
 
 print("=== Task B2.1: Inserting products into products collection ===");
 

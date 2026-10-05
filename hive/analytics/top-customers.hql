@@ -2,7 +2,7 @@
 -- Leverages bucketing on customer_id for optimized JOIN and GROUP BY performance
 -- Report shows customer name, city, and total spend
 
-USE khmercart;
+USE ecommerce;
 
 SELECT 
     c.name,

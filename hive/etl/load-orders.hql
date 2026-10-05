@@ -1,7 +1,7 @@
--- KhmerCart Data Warehouse
+-- ecommerce Data Warehouse
 -- ETL Flow: Load from staging CSV -> Raw Layer -> Optimized ORC Layer
 
-USE khmercart;
+USE ecommerce;
 
 -- 1. Load CSV data from HDFS staging directly into the raw text table
 LOAD DATA INPATH '/staging/orders/2026-09.csv' INTO TABLE orders_raw;

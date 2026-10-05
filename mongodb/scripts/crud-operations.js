@@ -1,7 +1,7 @@
-// Usage: mongosh khmercart crud-operations.js
+// Usage: mongosh ecommerce crud-operations.js
 
 print("\n========================================================");
-print("KhmerCart MongoDB CRUD Operations (Task B2 Demonstration)");
+print("ecommerce MongoDB CRUD Operations (Task B2 Demonstration)");
 print("========================================================\n");
 
 // Ensure baseline customer Sokha Meas exists

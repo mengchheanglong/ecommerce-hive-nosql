@@ -1,8 +1,8 @@
--- KhmerCart Data Warehouse
+-- ecommerce Data Warehouse
 -- Optimized analytics layer for order data
 -- Stored as ORC, partitioned by month for pruning, bucketed by customer for join performance
 
-USE khmercart;
+USE ecommerce;
 
 CREATE TABLE IF NOT EXISTS orders_opt (
     order_id STRING,

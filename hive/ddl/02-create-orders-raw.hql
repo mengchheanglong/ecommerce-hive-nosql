@@ -1,8 +1,8 @@
--- KhmerCart Data Warehouse
+-- ecommerce Data Warehouse
 -- Staging/Raw layer for order data
 -- Reads CSV files directly as they land in HDFS
 
-USE khmercart;
+USE ecommerce;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS orders_raw (
     order_id STRING,

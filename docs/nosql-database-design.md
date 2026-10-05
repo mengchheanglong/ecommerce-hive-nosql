@@ -1,7 +1,7 @@
 # NoSQL Database Design
 
 ## Introduction
-As KhmerCart scales to accommodate growing user traffic and diverse business requirements, a single relational database management system is no longer sufficient. To optimize performance, scalability, and developer velocity, KhmerCart has adopted a polyglot persistence architecture. This approach leverages the distinct strengths of various NoSQL databases tailored to specific domain workloads, ensuring that each microservice uses the most appropriate data store for its access patterns.
+As ecommerce scales to accommodate growing user traffic and diverse business requirements, a single relational database management system is no longer sufficient. To optimize performance, scalability, and developer velocity, ecommerce has adopted a polyglot persistence architecture. This approach leverages the distinct strengths of various NoSQL databases tailored to specific domain workloads, ensuring that each microservice uses the most appropriate data store for its access patterns.
 
 ## Database Technologies and Workload Rationale
 

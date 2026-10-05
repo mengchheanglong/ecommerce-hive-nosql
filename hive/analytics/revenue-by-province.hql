@@ -1,7 +1,7 @@
 -- Monthly revenue breakdown by province
 -- Uses partition pruning to only scan 2026-09 data
 
-USE khmercart;
+USE ecommerce;
 
 SELECT 
     province, 

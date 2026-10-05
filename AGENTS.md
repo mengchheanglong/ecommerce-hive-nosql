@@ -61,5 +61,5 @@
 
 ## Testing & Running
 - **Web App:** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
-- **MongoDB Scripts:** `mongosh khmercart mongodb/scripts/seed-products.js`
+- **MongoDB Scripts:** `mongosh Marketplace mongodb/scripts/seed-products.js`
 - **Hive Pipeline:** Run sequentially or via `./run_lab.ps1`

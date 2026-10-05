@@ -1,7 +1,7 @@
 -- Categories with more than 1000 orders
 -- High-level overview of popular product categories
 
-USE khmercart;
+USE ecommerce;
 
 SELECT 
     category, 

@@ -1,7 +1,7 @@
--- KhmerCart Data Warehouse
+-- ecommerce Data Warehouse
 -- Customer dimension table
 
-USE khmercart;
+USE ecommerce;
 
 CREATE TABLE IF NOT EXISTS customers (
     customer_id STRING,

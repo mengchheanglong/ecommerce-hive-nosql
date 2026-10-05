@@ -1,7 +1,7 @@
 # System Architecture
 
 ## Overview
-The KhmerCart data platform leverages a polyglot persistence architecture to address the diverse scaling and query requirements of a modern e-commerce marketplace. By migrating away from a monolithic relational database, we can independently scale storage and compute for different data domains, ensuring high availability and low latency for transactional workloads while maintaining robust batch processing capabilities for analytics.
+The ecommerce data platform leverages a polyglot persistence architecture to address the diverse scaling and query requirements of a modern e-commerce marketplace. By migrating away from a monolithic relational database, we can independently scale storage and compute for different data domains, ensuring high availability and low latency for transactional workloads while maintaining robust batch processing capabilities for analytics.
 
 ## Data Domains and Persistence Strategy
 

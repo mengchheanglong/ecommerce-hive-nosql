@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KhmerCart — Modern Marketplace & Big Data Platform",
-  description: "E-Commerce platform powered by MongoDB, Redis, and Apache Hive",
+  title: "Marketplace — Polyglot Data Platform & E-Commerce Engine",
+  description: "High-scale distributed e-commerce architecture powered by MongoDB, Apache Cassandra, and Apache Hive on HDFS",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+      <body className="min-h-screen bg-[#f6faf8] text-[#09211a] antialiased">
         {children}
       </body>
     </html>

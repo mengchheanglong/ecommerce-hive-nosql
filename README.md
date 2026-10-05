@@ -14,7 +14,7 @@
 
 ## 📌 Overview
 
-**`ecommerce-hive-nosql`** demonstrates how a high-volume e-commerce marketplace (modeled after **KhmerCart**, serving 200,000 customers and 800 delivery riders) transitions from a bottlenecked monolithic SQL database to a **polyglot persistence architecture** paired with a distributed big data warehouse and an interactive web portal.
+**`ecommerce-hive-nosql`** demonstrates how a high-volume e-commerce marketplace (modeled after **Marketplace**, serving 200,000 customers and 800 delivery riders) transitions from a bottlenecked monolithic SQL database to a **polyglot persistence architecture** paired with a distributed big data warehouse and an interactive web portal.
 
 Instead of forcing all workloads into a single database, each operational domain is routed to the database engine engineered specifically for its data structure and read/write characteristics.
 
@@ -141,8 +141,8 @@ Visit **[http://localhost:3001](http://localhost:3001)** in your browser.
 
 ### 2. Seed MongoDB
 ```powershell
-mongosh khmercart mongodb/scripts/seed-products.js
-mongosh khmercart mongodb/scripts/crud-operations.js
+mongosh Marketplace mongodb/scripts/seed-products.js
+mongosh Marketplace mongodb/scripts/crud-operations.js
 ```
 
 ### 3. Run the Hive Pipeline (WSL2 / Linux)

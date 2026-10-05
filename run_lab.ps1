@@ -1,12 +1,12 @@
-# KhmerCart Data Platform - End-to-End Pipeline Runner
+# ecommerce Data Platform - End-to-End Pipeline Runner
 # Executes MongoDB seed/CRUD scripts and Apache Hive DDL, ETL, and Analytics
 
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "1. EXECUTING MONGODB SEED & CRUD SCRIPTS" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-mongosh khmercart "$PSScriptRoot\mongodb\scripts\seed-products.js"
-mongosh khmercart "$PSScriptRoot\mongodb\scripts\crud-operations.js"
+mongosh ecommerce "$PSScriptRoot\mongodb\scripts\seed-products.js"
+mongosh ecommerce "$PSScriptRoot\mongodb\scripts\crud-operations.js"
 
 Write-Host "`n==========================================" -ForegroundColor Yellow
 Write-Host "2. EXECUTING HIVE DATA WAREHOUSE PIPELINE" -ForegroundColor Yellow
