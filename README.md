@@ -1,8 +1,9 @@
 # 🛍️ ecommerce-hive-nosql
 
-> A high-scale **polyglot microservices e-commerce platform** and interactive **Next.js 15 dual-portal application** pairing specialized NoSQL engines with an Apache Hive data warehouse.
+> A high-scale **polyglot microservices e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 microservices backend**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.1.7-black?style=flat-square&logo=next.js)
+![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=flat-square&logo=nestjs)
 ![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)
 ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-green?style=flat-square&logo=mongodb)
 ![Apache Cassandra](https://img.shields.io/badge/Cassandra-4.1-1287B1?style=flat-square&logo=apachecassandra)
@@ -10,45 +11,72 @@
 ![Neo4j](https://img.shields.io/badge/Neo4j-5.18-008CC1?style=flat-square&logo=neo4j)
 ![Apache Hive](https://img.shields.io/badge/Apache_Hive-3.1.3-yellow?style=flat-square&logo=apachehive)
 ![Apache Hadoop](https://img.shields.io/badge/Apache_Hadoop-3.3.6-orange?style=flat-square&logo=apachehadoop)
+![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=flat-square&logo=swagger)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?style=flat-square&logo=tailwindcss)
 
 ---
 
-## 📌 Architectural Overview
+## 📌 Microservices Architectural Overview
 
-**`ecommerce-hive-nosql`** resolves the limitations of monolithic relational databases for high-throughput marketplaces by applying **polyglot persistence** and **microservice isolation**.
+**`ecommerce-hive-nosql`** resolves the scalability, latency, and schema bottlenecks of monolithic databases by decomposing the marketplace into **autonomous microservices** backed by **polyglot persistence**.
 
-Each operational domain communicates with the optimal distributed datastore for its read/write characteristics, while batch analytics are routed to an Apache Hive columnar data warehouse on HDFS.
+Each operational domain communicates with the optimal distributed datastore for its specific read/write characteristics, while large-scale batch analytics are processed by an Apache Hive columnar data warehouse on HDFS.
 
 ```
                               ┌──────────────────────────────────────────────┐
                               │            Next.js 15 Full-Stack UI          │
                               │ 🛍️ Customer Storefront  ⇄  💼 Merchant Portal│
-                              └───────┬──────────────────────────────┬───────┘
-                                      │                              │
-         Operational OLTP Microservices                              │  Analytical OLAP Pipeline
-    ┌───────────────────┬─────────────┴─────┬──────────────────┐     │
-    ▼                   ▼                   ▼                  ▼     ▼
-┌──────────────┐ ┌──────────────┐    ┌──────────────┐   ┌──────────────┐    ┌──────────────┐
-│Catalog Svc   │ │Cart/Sess Svc │    │Telemetry Svc │   │Referral Svc  │    │HDFS & Hive   │
-├──────────────┤ ├──────────────┤    ├──────────────┤   ├──────────────┤    ├──────────────┤
-│ MongoDB      │ │ Redis        │    │ Cassandra    │   │ Neo4j        │    │ Apache Hive  │
-│ Products     │ │ In-Memory    │    │ 160 pings/s  │   │ 3-Level Graph│    │ ORC Storage  │
-│ Rich Specs   │ │ < 1ms TTL    │    │ 13.8M/day    │   │ Cypher Traver│    │ 2M orders/mo │
-└──────────────┘ └──────────────┘    └──────────────┘   └──────────────┘    └──────────────┘
+                              └──────────────────────┬───────────────────────┘
+                                                     │ (HTTP & Proxy Rewrites)
+                                                     ▼
+                              ┌──────────────────────────────────────────────┐
+                              │     NestJS Enterprise Microservices API      │
+                              │   Swagger OpenAPI Explorer (/api/docs:4000)   │
+                              └──────┬─────────────┬─────────────┬───────────┘
+                                     │             │             │
+        ┌────────────────────────────┼─────────────┴─────────────┼────────────────────────────┐
+        ▼                            ▼                           ▼                            ▼
+┌──────────────┐             ┌──────────────┐            ┌──────────────┐             ┌──────────────┐
+│Catalog &     │             │Cart & Session│            │Telemetry Svc │             │Referral Svc  │
+│Orders Svc    │             │Microservice  │            │Microservice  │             │Microservice  │
+├──────────────┤             ├──────────────┤            ├──────────────┤             ├──────────────┤
+│ MongoDB 8.0  │             │ Redis 7.x    │            │ Cassandra    │             │ Neo4j 5.x    │
+│ Products &   │             │ In-Memory    │            │ 160 pings/s  │             │ 3-Level Graph│
+│ Orders CRUD  │             │ < 1ms TTL    │            │ 13.8M/day    │             │ Cypher Traver│
+└──────────────┘             └──────────────┘            └──────────────┘             └──────────────┘
+                                     │
+                                     ▼ (Nightly Batch Extract to HDFS)
+                             ┌──────────────────────────────────────────────┐
+                             │       Apache Hive 3.1.3 Warehouse (OLAP)     │
+                             │  Partitioned by month, 8 customer buckets   │
+                             │   ORC Columnar Format • 2M orders/month      │
+                             └──────────────────────────────────────────────┘
 ```
+
+---
+
+## 🧩 Microservices Domain Boundaries
+
+The platform organizes its business logic across isolated microservice domains:
+
+1. **`Catalog Microservice` (`/api/products`):** Powered by **MongoDB** document storage to manage polymorphic product specifications across Electronics, Clothing, and Groceries without schema migration overhead.
+2. **`Cart & Session Microservice`:** Powered by **Redis** key-value caching to deliver sub-millisecond retrieval on every page load with 24-hour automatic TTL expiration.
+3. **`Orders & Fulfillment Microservice` (`/api/orders`):** Orchestrates transactional checkout, Bakong KHQR dynamic payment reconciliation, and delivery state transitions (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`).
+4. **`Telemetry Microservice` (`/api/riders`):** Backed by **Apache Cassandra** to ingest 13.8M location pings per day (160 writes/sec) from 800 riders with `TimeWindowCompactionStrategy` and automated TTL.
+5. **`Referral Microservice` (`/api/referrals`):** Backed by **Neo4j** graph database utilizing index-free adjacency to traverse 3-tier deep invitation trees and calculate referral commission payouts in $O(1)$ memory pointer operations.
+6. **`Warehouse Analytics Microservice` (`/api/analytics`):** Orchestrates the **Apache Hive on HDFS** batch analytics pipeline, querying ORC-compressed datasets using dynamic partition pruning and customer bucketing.
 
 ---
 
 ## 🏛️ Polyglot Database Selection Matrix
 
-| Microservice | Data Domain | Selected Datastore | Scale & Characteristic | Architectural Justification |
+| Microservice Domain | Data Domain | Selected Datastore | Scale & Workload | Architectural Justification |
 | :--- | :--- | :--- | :--- | :--- |
-| **`catalog-service`** | Product Catalog | **MongoDB** (Document) | High-read, varied specs | Dynamic JSON documents support polymorphic category fields (screens, fabric, expiration) without schema migrations. |
+| **`catalog-service`** | Product Catalog | **MongoDB** (Document) | High-read, polymorphic specs | Dynamic JSON documents support polymorphic category fields (screens, fabric, expiration) without schema migrations. |
 | **`cart-service`** | Active Carts & Sessions | **Redis** (Key-Value) | Sub-millisecond latency | In-memory key access guarantees < 1ms response latency on every page view with automated 24-hour TTL expiry. |
 | **`telemetry-service`** | Rider GPS Fleet | **Cassandra** (Column-Family)| 160 writes/sec (13.8M/day) | Masterless peer-to-peer ring with LSM sequential commit logs absorbs heavy time-series writes without row locks. |
-| **`referral-service`** | Invitation Programme | **Neo4j** (Graph) | Multi-tier hops (1 to 3) | Index-free adjacency traverses friend-of-a-friend relationships in O(1) memory pointer jumps instead of recursive SQL. |
+| **`referral-service`** | Referral Network | **Neo4j** (Graph) | Multi-tier hops (1 to 3) | Index-free adjacency traverses friend-of-a-friend relationships in O(1) memory pointer jumps instead of recursive SQL. |
 | **`warehouse-service`**| Monthly Reporting | **Apache Hive on HDFS** | 2,000,000 orders/month | Columnar ORC compression, partition pruning by month, and bucketing by customer ID for fast aggregations. |
 
 ---
