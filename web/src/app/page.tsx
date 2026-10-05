@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ShoppingBag,
   TrendingUp,
@@ -32,7 +32,12 @@ import {
   RefreshCw,
   SlidersHorizontal,
   Info,
-  DollarSign
+  DollarSign,
+  Eye,
+  Play,
+  Terminal,
+  Copy,
+  CheckCheck
 } from "lucide-react";
 
 interface Product {
@@ -47,11 +52,18 @@ interface Product {
   colours?: string[];
   weight?: string;
   expiry_date?: string;
+  description?: string;
 }
 
 interface CartItem {
   product: Product;
   quantity: number;
+}
+
+interface ToastMessage {
+  id: string;
+  message: string;
+  type: "success" | "info";
 }
 
 export default function MarketplaceApp() {
@@ -70,8 +82,41 @@ export default function MarketplaceApp() {
   const [showJsonSchema, setShowJsonSchema] = useState(false);
   const [selectedCityFilter, setSelectedCityFilter] = useState<string>("All");
 
+  // Quick View Product Modal State
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [quickViewQty, setQuickViewQty] = useState(1);
+
+  // Toast System
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Add Address Modal State
+  const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
+  const [newAddressLabel, setNewAddressLabel] = useState("");
+  const [newAddressStreet, setNewAddressStreet] = useState("");
+  const [newAddressCity, setNewAddressCity] = useState("Phnom Penh");
+
+  // HiveQL Console Active Query
+  const [activeHiveQuery, setActiveHiveQuery] = useState<"D1" | "D2" | "D3" | "D4">("D1");
+  const [isQueryExecuting, setIsQueryExecuting] = useState(false);
+  const [queryCopied, setQueryCopied] = useState(false);
+
+  // Cassandra Stream Simulation State
+  const [isTelemetryStreaming, setIsTelemetryStreaming] = useState(true);
+  const [telemetryLogs, setTelemetryLogs] = useState<string[]>([
+    "[Cassandra LSM] Ingest stream initialized. Cluster listening on 9042.",
+    "[Cassandra LSM] 800 node token rings active. Keyspace: telemetry_ks.",
+  ]);
+
   // KHR Exchange Rate (1 USD = 4,100 KHR)
   const KHR_RATE = 4100;
+
+  const showToast = (message: string, type: "success" | "info" = "success") => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3200);
+  };
 
   // Customer Profile State (MongoDB Document Model)
   const [customer, setCustomer] = useState({
@@ -98,7 +143,6 @@ export default function MarketplaceApp() {
         if (data.products && data.products.length > 0) {
           setProducts(data.products);
         } else {
-          // Default fallbacks with varied categories
           setProducts([
             {
               product_id: "P2210",
@@ -108,6 +152,7 @@ export default function MarketplaceApp() {
               status: "active",
               screen_size: "6.7 inch OLED",
               warranty: "1 Year Official",
+              description: "Flagship AMOLED display with high-efficiency 5G modem, 120Hz dynamic refresh, and all-day fast charge.",
             },
             {
               product_id: "P3314",
@@ -117,6 +162,7 @@ export default function MarketplaceApp() {
               status: "active",
               size: "L",
               colours: ["Navy Blue", "Sand Beige", "Olive"],
+              description: "Breathable 100% natural organic linen tailored for tropical climates with reinforced horn buttons.",
             },
             {
               product_id: "P0874",
@@ -126,6 +172,7 @@ export default function MarketplaceApp() {
               status: "active",
               weight: "5.0 kg",
               expiry_date: "2027-10-01",
+              description: "Award-winning Malys Angkor aromatic long-grain rice, harvest-milled and vacuum-sealed at source.",
             },
             {
               product_id: "P4502",
@@ -133,8 +180,9 @@ export default function MarketplaceApp() {
               category: "Electronics",
               price: 59.0,
               status: "active",
-              screen_size: "Touch Display",
+              screen_size: "Smart Touch Stem",
               warranty: "6 Months",
+              description: "Active hybrid noise cancellation with 38-hour battery case, low-latency gaming mode, and IPX5 resistance.",
             },
             {
               product_id: "P1290",
@@ -144,6 +192,7 @@ export default function MarketplaceApp() {
               status: "active",
               weight: "250g Glass Jar",
               expiry_date: "2028-01-15",
+              description: "GI-certified organic whole black peppercorns sun-dried on Kampot coastal estates with bold floral aromatics.",
             },
             {
               product_id: "P7781",
@@ -153,6 +202,7 @@ export default function MarketplaceApp() {
               status: "active",
               size: "Standard 180cm",
               colours: ["Amber Gold", "Lotus Pink"],
+              description: "Artisanal handloom Cambodian golden silk scarf crafted with natural vegetable dyes by master weavers.",
             },
           ]);
         }
@@ -169,6 +219,23 @@ export default function MarketplaceApp() {
     return () => clearInterval(timer);
   }, [isCheckoutOpen, selectedPayment, countdown, isCheckoutSuccess]);
 
+  // Simulated Live Cassandra Ingest Logs
+  useEffect(() => {
+    if (!isTelemetryStreaming || activeTab !== "riders") return;
+
+    const interval = setInterval(() => {
+      const riderIds = ["R-101", "R-102", "R-103", "R-201", "R-202", "R-301", "R-302"];
+      const randomRider = riderIds[Math.floor(Math.random() * riderIds.length)];
+      const randomSpeed = Math.floor(18 + Math.random() * 20);
+      const timeStr = new Date().toTimeString().slice(0, 8);
+      const newLog = `[Cassandra LSM] INSERT INTO rider_telemetry (rider_id, ping_time, speed) VALUES ('${randomRider}', '${timeStr}', '${randomSpeed} km/h');`;
+
+      setTelemetryLogs((prev) => [newLog, ...prev.slice(0, 7)]);
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, [isTelemetryStreaming, activeTab]);
+
   const formatPrice = (usd: number) => {
     if (currency === "USD") {
       return `$${usd.toFixed(2)}`;
@@ -177,17 +244,17 @@ export default function MarketplaceApp() {
     return `៛${khr.toLocaleString()}`;
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, qty: number = 1) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.product_id === product.product_id);
       if (existing) {
         return prev.map((item) =>
-          item.product.product_id === product.product_id ? { ...item, quantity: item.quantity + 1 } : item
+          item.product.product_id === product.product_id ? { ...item, quantity: item.quantity + qty } : item
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: qty }];
     });
-    setIsCartOpen(true);
+    showToast(`Added ${qty}x ${product.name} to cart`);
   };
 
   const updateCartQty = (productId: string, delta: number) => {
@@ -210,19 +277,21 @@ export default function MarketplaceApp() {
   const finalTotalUSD = cartTotalUSD + deliveryFeeUSD;
 
   // Filtered & Sorted Products
-  const filteredProducts = products
-    .filter((p) => (selectedCategory === "All" ? true : p.category === selectedCategory))
-    .filter((p) =>
-      searchQuery === ""
-        ? true
-        : p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === "low") return a.price - b.price;
-      if (sortBy === "high") return b.price - a.price;
-      return 0;
-    });
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((p) => (selectedCategory === "All" ? true : p.category === selectedCategory))
+      .filter((p) =>
+        searchQuery === ""
+          ? true
+          : p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortBy === "low") return a.price - b.price;
+        if (sortBy === "high") return b.price - a.price;
+        return 0;
+      });
+  }, [products, selectedCategory, searchQuery, sortBy]);
 
   // Simulated Cassandra Riders
   const ridersList = [
@@ -240,7 +309,6 @@ export default function MarketplaceApp() {
 
   const handleSimulatePayment = () => {
     setIsCheckoutSuccess(true);
-    // Add new order to customer past_orders
     const newOrder = {
       id: `100${Math.floor(100 + Math.random() * 900)}`,
       date: new Date().toISOString().slice(0, 10),
@@ -253,12 +321,89 @@ export default function MarketplaceApp() {
       loyalty_points: prev.loyalty_points + Math.floor(finalTotalUSD),
       past_orders: [newOrder, ...prev.past_orders],
     }));
+    showToast(`Order #${newOrder.id} successfully recorded!`);
+  };
+
+  const handleAddAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAddressLabel || !newAddressStreet) return;
+
+    setCustomer((prev) => ({
+      ...prev,
+      addresses: [
+        ...prev.addresses,
+        { label: newAddressLabel, street: newAddressStreet, city: newAddressCity, isDefault: false },
+      ],
+    }));
+    setNewAddressLabel("");
+    setNewAddressStreet("");
+    setIsAddAddressOpen(false);
+    showToast("New delivery address added to profile");
+  };
+
+  // Hive Queries Dictionary
+  const hiveQueries = {
+    D1: {
+      title: "Revenue by Province (September 2026)",
+      hql: `SELECT province, \n       SUM(quantity * unit_price) AS total_revenue\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY province\nORDER BY total_revenue DESC;`,
+      speedup: "Partition Pruning: skips 11 months of historical CSV splits, reducing read I/O from 24M to 2M rows.",
+      results: [
+        { col1: "Siem Reap", col2: "$5,175.00", col3: "57.3% share" },
+        { col1: "Phnom Penh", col2: "$2,989.50", col3: "33.1% share" },
+        { col1: "Battambang", col2: "$862.50", col3: "9.6% share" },
+      ],
+    },
+    D2: {
+      title: "Top 5 Customers by Spend (Bucket Join)",
+      hql: `SELECT c.customer_id, \n       c.name, \n       c.city, \n       SUM(o.quantity * o.unit_price) AS total_spend\nFROM orders_opt o\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE o.order_month = '2026-09'\nGROUP BY c.customer_id, c.name, c.city\nORDER BY total_spend DESC\nLIMIT 5;`,
+      speedup: "Bucketed Map-Side Join: 8 buckets align across orders_opt and customers, eliminating full shuffle cost.",
+      results: [
+        { col1: "Chenda Som", col2: "$2,625.00", col3: "Siem Reap • VIP Platinum" },
+        { col1: "Sokha Meas", col2: "$1,980.00", col3: "Phnom Penh • VIP Gold" },
+        { col1: "Piseth Seng", col2: "$1,800.00", col3: "Siem Reap • VIP Gold" },
+        { col1: "Dara Sam", col2: "$750.00", col3: "Siem Reap • Silver" },
+        { col1: "Sreypov Keo", col2: "$510.00", col3: "Battambang • Silver" },
+      ],
+    },
+    D3: {
+      title: "High-Volume Categories (> 1,000 Orders)",
+      hql: `SELECT category, \n       COUNT(*) AS order_count\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY category\nHAVING COUNT(*) > 1000\nORDER BY order_count DESC;`,
+      speedup: "Predicate Pushdown: Columnar ORC reader inspects Stripe statistics to filter unneeded blocks.",
+      results: [
+        { col1: "Groceries", col2: "1,245 orders", col3: "Fast Consumables" },
+        { col1: "Electronics", col2: "1,080 orders", col3: "High Revenue Margin" },
+      ],
+    },
+    D4: {
+      title: "Order Tier Segmentation (CASE WHEN)",
+      hql: `SELECT CASE \n         WHEN (quantity * unit_price) > 100 THEN 'high'\n         ELSE 'normal'\n       END AS tier,\n       COUNT(*) AS order_count\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY CASE \n           WHEN (quantity * unit_price) > 100 THEN 'high'\n           ELSE 'normal'\n         END;`,
+      speedup: "Lightweight ZLIB Compression: Compressed ORC streams scan at in-memory speeds on Hadoop datanodes.",
+      results: [
+        { col1: "Normal Tier (≤ $100)", col2: "33 orders", col3: "64.7% of volume" },
+        { col1: "High Tier (> $100)", col2: "18 orders", col3: "35.3% of volume" },
+      ],
+    },
+  };
+
+  const copyQueryToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setQueryCopied(true);
+    showToast("HiveQL query copied to clipboard", "info");
+    setTimeout(() => setQueryCopied(false), 2000);
+  };
+
+  const executeHiveQuerySimulation = () => {
+    setIsQueryExecuting(true);
+    setTimeout(() => {
+      setIsQueryExecuting(false);
+      showToast(`Query ${activeHiveQuery} completed in 142ms via Tez execution engine!`);
+    }, 600);
   };
 
   return (
     <div className="min-h-screen bg-[#f6faf8] text-[#09211a] flex flex-col font-sans selection:bg-[#15c089]/20 selection:text-[#013326]">
       {/* ============================================================ */}
-      {/* 1. TOP NAVIGATION BAR (Inspired by Angkoro & Freshhaul) */}
+      {/* 1. TOP NAVIGATION BAR */}
       {/* ============================================================ */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#e2eae5] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -285,7 +430,7 @@ export default function MarketplaceApp() {
             <nav className="hidden md:flex items-center space-x-1 bg-[#f1f6f3] p-1 rounded-xl border border-[#e2eae5]">
               <button
                 onClick={() => setActiveTab("store")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === "store"
                     ? "bg-white text-[#013326] shadow-xs font-bold"
                     : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
@@ -296,7 +441,7 @@ export default function MarketplaceApp() {
               </button>
               <button
                 onClick={() => setActiveTab("analytics")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === "analytics"
                     ? "bg-white text-[#013326] shadow-xs font-bold"
                     : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
@@ -307,7 +452,7 @@ export default function MarketplaceApp() {
               </button>
               <button
                 onClick={() => setActiveTab("riders")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === "riders"
                     ? "bg-white text-[#013326] shadow-xs font-bold"
                     : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
@@ -318,7 +463,7 @@ export default function MarketplaceApp() {
               </button>
               <button
                 onClick={() => setActiveTab("customer")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === "customer"
                     ? "bg-white text-[#013326] shadow-xs font-bold"
                     : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
@@ -334,16 +479,22 @@ export default function MarketplaceApp() {
               {/* Currency Toggle */}
               <div className="flex items-center bg-[#f1f6f3] p-1 rounded-lg border border-[#e2eae5] text-xs font-bold">
                 <button
-                  onClick={() => setCurrency("USD")}
-                  className={`px-2.5 py-1 rounded-md transition-all ${
+                  onClick={() => {
+                    setCurrency("USD");
+                    showToast("Switched currency to USD ($)", "info");
+                  }}
+                  className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                     currency === "USD" ? "bg-white text-[#013326] shadow-xs" : "text-[#5c7167] hover:text-[#013326]"
                   }`}
                 >
                   $ USD
                 </button>
                 <button
-                  onClick={() => setCurrency("KHR")}
-                  className={`px-2.5 py-1 rounded-md transition-all ${
+                  onClick={() => {
+                    setCurrency("KHR");
+                    showToast("Switched currency to Khmer Riel (៛)", "info");
+                  }}
+                  className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                     currency === "KHR" ? "bg-white text-[#013326] shadow-xs" : "text-[#5c7167] hover:text-[#013326]"
                   }`}
                 >
@@ -354,12 +505,12 @@ export default function MarketplaceApp() {
               {/* Shopping Cart Pill Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center space-x-2.5 px-3.5 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white transition-all shadow-sm group cursor-pointer"
+                className="relative flex items-center space-x-2.5 px-3.5 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white transition-all shadow-sm group cursor-pointer active:scale-95"
               >
                 <ShoppingBag className="w-4 h-4 text-[#15c089] group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold hidden sm:inline">{formatPrice(cartTotalUSD)}</span>
                 {cartItemCount > 0 && (
-                  <span className="flex items-center justify-center min-w-5 h-5 px-1 bg-[#15c089] text-[#013326] text-[11px] font-black rounded-full shadow-xs">
+                  <span className="flex items-center justify-center min-w-5 h-5 px-1 bg-[#15c089] text-[#013326] text-[11px] font-black rounded-full shadow-xs animate-pulse">
                     {cartItemCount}
                   </span>
                 )}
@@ -414,30 +565,30 @@ export default function MarketplaceApp() {
         {/* ========================================================== */}
         {activeTab === "store" && (
           <div className="space-y-8">
-            {/* Hero Banner (Inspired by Angkoro / FreshHaul) */}
+            {/* Hero Showcase Banner */}
             <div className="relative overflow-hidden rounded-3xl bg-[#013326] text-white p-6 sm:p-10 shadow-elegant border border-[#0a4636]">
               <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-[#15c089]/10 blur-3xl pointer-events-none" />
               <div className="relative z-10 max-w-2xl space-y-3">
                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#15c089]/15 border border-[#15c089]/30 text-[#15c089] text-xs font-semibold">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Polyglot Architecture • MongoDB Operational Store</span>
+                  <span>Polyglot Persistence • MongoDB Operational Layer</span>
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                  High-Performance Distributed Marketplace
+                  Distributed E-Commerce Engine
                 </h1>
                 <p className="text-sm sm:text-base text-[#cad6cf] font-medium leading-relaxed">
-                  Polymorphic JSON schemas power dynamic electronics, apparel, and grocery specifications with zero rigid SQL migrations.
+                  Polymorphic document schemas support diverse product categories without relational SQL nulls or heavy migrations.
                 </p>
 
                 {/* Live System Stats Chips */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
                   <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-[11px] text-[#cad6cf] font-medium">Monthly Orders</p>
-                    <p className="text-lg font-extrabold text-white">2.0M</p>
+                    <p className="text-[11px] text-[#cad6cf] font-medium">Monthly Ingest</p>
+                    <p className="text-lg font-extrabold text-white">2.0M Orders</p>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-xl p-3">
                     <p className="text-[11px] text-[#cad6cf] font-medium">Delivery Fleet</p>
-                    <p className="text-lg font-extrabold text-[#15c089]">800 Riders</p>
+                    <p className="text-lg font-extrabold text-[#15c089]">800 Active</p>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-xl p-3">
                     <p className="text-[11px] text-[#cad6cf] font-medium">GPS Ingest Rate</p>
@@ -455,19 +606,29 @@ export default function MarketplaceApp() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-[#e2eae5] shadow-card">
               {/* Category Pills */}
               <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
-                {["All", "Electronics", "Clothing", "Groceries"].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                      selectedCategory === cat
-                        ? "bg-[#013326] text-white shadow-xs"
-                        : "bg-[#f1f6f3] text-[#5c7167] hover:bg-[#e2eae5] hover:text-[#013326]"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+                {["All", "Electronics", "Clothing", "Groceries"].map((cat) => {
+                  const count = cat === "All" ? products.length : products.filter((p) => p.category === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center space-x-1.5 ${
+                        selectedCategory === cat
+                          ? "bg-[#013326] text-white shadow-xs"
+                          : "bg-[#f1f6f3] text-[#5c7167] hover:bg-[#e2eae5] hover:text-[#013326]"
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          selectedCategory === cat ? "bg-[#15c089] text-[#013326]" : "bg-white text-[#5c7167]"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Search & Sort Controls */}
@@ -479,8 +640,16 @@ export default function MarketplaceApp() {
                     placeholder="Search catalog..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 focus:bg-white transition-all text-[#09211a]"
+                    className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 focus:bg-white transition-all text-[#09211a]"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5c7167] hover:text-[#013326]"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
 
                 <select
@@ -488,7 +657,7 @@ export default function MarketplaceApp() {
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#09211a] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 cursor-pointer"
                 >
-                  <option value="featured">Sort: Featured</option>
+                  <option value="featured">Featured</option>
                   <option value="low">Price: Low → High</option>
                   <option value="high">Price: High → Low</option>
                 </select>
@@ -496,105 +665,134 @@ export default function MarketplaceApp() {
             </div>
 
             {/* Product Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.product_id}
-                  className="bg-white rounded-2xl border border-[#e2eae5] shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+            {filteredProducts.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-[#e2eae5] shadow-card space-y-3">
+                <ShoppingBag className="w-12 h-12 text-[#cad6cf] mx-auto" />
+                <h3 className="text-base font-bold text-[#013326]">No products found</h3>
+                <p className="text-xs text-[#5c7167]">No items match your search "{searchQuery}"</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold"
                 >
-                  {/* Card Visual Header */}
-                  <div className="p-6 pb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#f1f6f3] text-[#013326] border border-[#e2eae5]">
-                        {product.category}
-                      </span>
-                      <span className="flex items-center space-x-1 text-[11px] font-semibold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full border border-[#9cf0ce]">
-                        <Check className="w-3 h-3" />
-                        <span>In Stock</span>
-                      </span>
-                    </div>
-
-                    <h3 className="text-base font-bold text-[#013326] group-hover:text-[#0f5d49] transition-colors leading-snug">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-[#5c7167] mt-1 font-mono">SKU: {product.product_id}</p>
-
-                    {/* Polymorphic Category-Specific Attributes Badge Group */}
-                    <div className="mt-4 pt-3 border-t border-[#f1f6f3] space-y-1.5">
-                      {product.category === "Electronics" && (
-                        <div className="flex flex-wrap gap-1.5 text-[11px]">
-                          {product.screen_size && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Display: {product.screen_size}
-                            </span>
-                          )}
-                          {product.warranty && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Warranty: {product.warranty}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {product.category === "Clothing" && (
-                        <div className="flex flex-wrap gap-1.5 text-[11px]">
-                          {product.size && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Size: {product.size}
-                            </span>
-                          )}
-                          {product.colours && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Colours: {product.colours.join(", ")}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {product.category === "Groceries" && (
-                        <div className="flex flex-wrap gap-1.5 text-[11px]">
-                          {product.weight && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Net Weight: {product.weight}
-                            </span>
-                          )}
-                          {product.expiry_date && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                              Best Before: {product.expiry_date}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Action Footer */}
-                  <div className="p-6 pt-3 bg-[#fafcfb] border-t border-[#f1f6f3] flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-[#5c7167] font-medium">Unit Price</p>
-                      <div className="flex items-baseline space-x-1.5">
-                        <span className="text-xl font-extrabold text-[#013326]">
-                          {formatPrice(product.price)}
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.product_id}
+                    className="bg-white rounded-2xl border border-[#e2eae5] shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                  >
+                    {/* Card Body */}
+                    <div className="p-6 pb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#f1f6f3] text-[#013326] border border-[#e2eae5]">
+                          {product.category}
                         </span>
-                        {currency === "USD" && (
-                          <span className="text-[11px] text-[#5c7167] font-medium">
-                            (~៛{Math.round(product.price * KHR_RATE).toLocaleString()})
-                          </span>
+                        <span className="flex items-center space-x-1 text-[11px] font-semibold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full border border-[#9cf0ce]">
+                          <Check className="w-3 h-3" />
+                          <span>In Stock</span>
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-[#013326] group-hover:text-[#0f5d49] transition-colors leading-snug">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-[#5c7167] mt-1 font-mono">SKU: {product.product_id}</p>
+
+                      {/* Polymorphic Attributes */}
+                      <div className="mt-4 pt-3 border-t border-[#f1f6f3] space-y-1.5">
+                        {product.category === "Electronics" && (
+                          <div className="flex flex-wrap gap-1.5 text-[11px]">
+                            {product.screen_size && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Screen: {product.screen_size}
+                              </span>
+                            )}
+                            {product.warranty && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Warranty: {product.warranty}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {product.category === "Clothing" && (
+                          <div className="flex flex-wrap gap-1.5 text-[11px]">
+                            {product.size && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Size: {product.size}
+                              </span>
+                            )}
+                            {product.colours && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Colours: {product.colours.join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {product.category === "Groceries" && (
+                          <div className="flex flex-wrap gap-1.5 text-[11px]">
+                            {product.weight && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Net: {product.weight}
+                              </span>
+                            )}
+                            {product.expiry_date && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                Exp: {product.expiry_date}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="px-4 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-[#15c089]" />
-                      <span>Add</span>
-                    </button>
+                    {/* Card Actions Footer */}
+                    <div className="p-6 pt-3 bg-[#fafcfb] border-t border-[#f1f6f3] flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] text-[#5c7167] font-medium">Unit Price</p>
+                        <div className="flex items-baseline space-x-1.5">
+                          <span className="text-xl font-extrabold text-[#013326]">
+                            {formatPrice(product.price)}
+                          </span>
+                          {currency === "USD" && (
+                            <span className="text-[11px] text-[#5c7167] font-medium">
+                              (~៛{Math.round(product.price * KHR_RATE).toLocaleString()})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            setQuickViewProduct(product);
+                            setQuickViewQty(1);
+                          }}
+                          className="p-2 rounded-xl bg-white border border-[#e2eae5] text-[#5c7167] hover:text-[#013326] hover:bg-[#f1f6f3] transition-all cursor-pointer"
+                          title="Quick View"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => addToCart(product)}
+                          className="px-4 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-[#15c089]" />
+                          <span>Add</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -615,11 +813,11 @@ export default function MarketplaceApp() {
               </div>
               <div className="flex items-center space-x-2 text-xs font-bold text-[#0c835c] bg-[#eafaf4] px-3 py-1.5 rounded-xl border border-[#9cf0ce]">
                 <Database className="w-4 h-4 text-[#15c089]" />
-                <span>Metastore: Derby Embedded • Engine: HiveQL on Tez/MapReduce</span>
+                <span>Metastore: Derby Embedded • Engine: Tez / MapReduce</span>
               </div>
             </div>
 
-            {/* KPI Cards Row (Angkoro KpiCard Style) */}
+            {/* KPI Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card">
                 <div className="flex items-center justify-between">
@@ -640,7 +838,7 @@ export default function MarketplaceApp() {
                   </span>
                 </div>
                 <p className="text-2xl font-black text-[#013326] mt-2">200,000</p>
-                <p className="text-xs text-[#5c7167] mt-1 font-mono">Partitioned by customer_id</p>
+                <p className="text-xs text-[#5c7167] mt-1 font-mono">Clustered by customer_id</p>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card">
@@ -666,6 +864,107 @@ export default function MarketplaceApp() {
               </div>
             </div>
 
+            {/* Interactive HiveQL Console & Workbench */}
+            <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center space-x-2">
+                  <Terminal className="w-5 h-5 text-[#15c089]" />
+                  <h3 className="text-base font-bold text-[#013326]">Interactive HiveQL Console</h3>
+                </div>
+
+                {/* Query Selector Tabs */}
+                <div className="flex items-center space-x-1.5 bg-[#f1f6f3] p-1 rounded-xl">
+                  {(["D1", "D2", "D3", "D4"] as const).map((qKey) => (
+                    <button
+                      key={qKey}
+                      onClick={() => setActiveHiveQuery(qKey)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeHiveQuery === qKey
+                          ? "bg-[#013326] text-white shadow-xs"
+                          : "text-[#5c7167] hover:text-[#013326]"
+                      }`}
+                    >
+                      Query {qKey}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Query Display & Executor */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Code Block */}
+                <div className="bg-[#011c15] text-[#9cf0ce] p-5 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[#cad6cf] pb-2 border-b border-[#0a4636]">
+                      <span className="font-bold text-white">// {hiveQueries[activeHiveQuery].title}</span>
+                      <button
+                        onClick={() => copyQueryToClipboard(hiveQueries[activeHiveQuery].hql)}
+                        className="text-[#15c089] hover:text-white flex items-center space-x-1 text-[11px] cursor-pointer"
+                      >
+                        {queryCopied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{queryCopied ? "Copied" : "Copy SQL"}</span>
+                      </button>
+                    </div>
+                    <pre className="overflow-x-auto text-emerald-300 leading-relaxed">
+                      {hiveQueries[activeHiveQuery].hql}
+                    </pre>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#0a4636] flex items-center justify-between">
+                    <span className="text-[11px] text-[#cad6cf]">
+                      Engine: Hive 3.1.3 on Tez Local
+                    </span>
+                    <button
+                      onClick={executeHiveQuerySimulation}
+                      disabled={isQueryExecuting}
+                      className="px-3.5 py-1.5 rounded-lg bg-[#15c089] text-[#013326] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#10a374] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isQueryExecuting ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Running...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Execute Query</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Query Results & Execution Rationale */}
+                <div className="bg-[#fafcfb] p-5 rounded-2xl border border-[#e2eae5] flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#013326] uppercase tracking-wider">
+                        Query Execution Results
+                      </span>
+                      <span className="text-[11px] text-[#0e9f6e] font-mono font-bold bg-[#eafaf4] px-2 py-0.5 rounded-full">
+                        Status: 200 OK (142 ms)
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-[#e2eae5] text-xs">
+                      {hiveQueries[activeHiveQuery].results.map((res, i) => (
+                        <div key={i} className="py-2.5 flex items-center justify-between">
+                          <span className="font-bold text-[#013326]">{res.col1}</span>
+                          <span className="font-mono font-bold text-[#013326]">{res.col2}</span>
+                          <span className="text-[11px] text-[#5c7167]">{res.col3}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#eafaf4] rounded-xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-start space-x-2">
+                    <Zap className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{hiveQueries[activeHiveQuery].speedup}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Warehouse Architecture Flow Pipeline Card */}
             <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-4">
               <h3 className="text-sm font-bold text-[#013326] flex items-center space-x-2">
@@ -688,113 +987,6 @@ export default function MarketplaceApp() {
                     <p className="text-[11px] text-[#5c7167] mt-2 leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Detailed Analytics Grid: Provincial Breakdown & Top Spenders */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Provincial Revenue Breakdown */}
-              <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-bold text-[#013326]">Revenue by Province (September 2026)</h3>
-                    <p className="text-xs text-[#5c7167]">Hive Query D1: Aggregated group-by province</p>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-[#013326] bg-[#f1f6f3] px-2.5 py-1 rounded-lg">
-                    Total: {formatPrice(9027.0)}
-                  </span>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  {[
-                    { province: "Siem Reap", revenue: 5175.0, percentage: 57.3, color: "bg-[#013326]" },
-                    { province: "Phnom Penh", revenue: 2989.5, percentage: 33.1, color: "bg-[#15c089]" },
-                    { province: "Battambang", revenue: 862.5, percentage: 9.6, color: "bg-[#5c7167]" },
-                  ].map((p) => (
-                    <div key={p.province} className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-[#013326]">{p.province}</span>
-                        <span className="font-mono text-[#013326]">
-                          {formatPrice(p.revenue)} ({p.percentage}%)
-                        </span>
-                      </div>
-                      <div className="w-full bg-[#f1f6f3] h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${p.color} rounded-full transition-all duration-500`}
-                          style={{ width: `${p.percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Top 5 VIP Spenders Leaderboard */}
-              <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-bold text-[#013326]">Top 5 Customers by Spend</h3>
-                    <p className="text-xs text-[#5c7167]">Hive Query D2: JOIN orders_opt with customers</p>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-[#0c835c] bg-[#eafaf4] px-2.5 py-1 rounded-lg">
-                    5 Customers
-                  </span>
-                </div>
-
-                <div className="divide-y divide-[#f1f6f3]">
-                  {[
-                    { rank: 1, name: "Chenda Som", city: "Siem Reap", spend: 2625.0, tier: "VIP Platinum" },
-                    { rank: 2, name: "Sokha Meas", city: "Phnom Penh", spend: 1980.0, tier: "VIP Gold" },
-                    { rank: 3, name: "Piseth Seng", city: "Siem Reap", spend: 1800.0, tier: "VIP Gold" },
-                    { rank: 4, name: "Dara Sam", city: "Siem Reap", spend: 750.0, tier: "Silver" },
-                    { rank: 5, name: "Sreypov Keo", city: "Battambang", spend: 510.0, tier: "Silver" },
-                  ].map((c) => (
-                    <div key={c.rank} className="py-2.5 flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <span
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                            c.rank === 1
-                              ? "bg-[#013326] text-[#15c089]"
-                              : c.rank === 2
-                              ? "bg-[#eafaf4] text-[#013326]"
-                              : "bg-[#f1f6f3] text-[#5c7167]"
-                          }`}
-                        >
-                          {c.rank}
-                        </span>
-                        <div>
-                          <p className="text-xs font-bold text-[#013326]">{c.name}</p>
-                          <p className="text-[11px] text-[#5c7167]">{c.city}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold font-mono text-[#013326]">{formatPrice(c.spend)}</p>
-                        <span className="text-[10px] font-semibold text-[#0c835c] bg-[#eafaf4] px-1.5 py-0.5 rounded">
-                          {c.tier}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Order Tier Segmentation (High vs Normal) */}
-            <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-3">
-              <h3 className="text-sm font-bold text-[#013326]">
-                Order Tier Classification (Query D4: CASE WHEN revenue &gt; $100)
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="bg-[#eafaf4] p-4 rounded-xl border border-[#9cf0ce]">
-                  <span className="text-xs font-bold text-[#0c835c]">High Tier Orders (&gt; $100)</span>
-                  <p className="text-xl font-extrabold text-[#013326] mt-1">18 orders (35.3%)</p>
-                  <p className="text-[11px] text-[#5c7167] mt-1">High-ticket electronics and bulk grocery purchases</p>
-                </div>
-                <div className="bg-[#f1f6f3] p-4 rounded-xl border border-[#e2eae5]">
-                  <span className="text-xs font-bold text-[#5c7167]">Normal Tier Orders (≤ $100)</span>
-                  <p className="text-xl font-extrabold text-[#013326] mt-1">33 orders (64.7%)</p>
-                  <p className="text-[11px] text-[#5c7167] mt-1">Daily consumables and individual apparel purchases</p>
-                </div>
               </div>
             </div>
           </div>
@@ -833,25 +1025,61 @@ export default function MarketplaceApp() {
               </div>
             </div>
 
-            {/* Cassandra Engine Metrics Banner */}
-            <div className="bg-[#013326] text-white p-6 rounded-2xl border border-[#0a4636] shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-[#15c089] uppercase tracking-wider">
-                  Storage Engine Architecture
-                </span>
-                <h3 className="text-base font-bold">Apache Cassandra (Log-Structured Merge Tree)</h3>
-                <p className="text-xs text-[#cad6cf]">
-                  SSTables and append-only commit logs provide sequential write speeds capable of absorbing 800 continuous rider pings.
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="bg-white/10 px-4 py-2 rounded-xl text-center">
-                  <p className="text-[10px] text-[#cad6cf]">Active Fleet</p>
-                  <p className="text-lg font-black text-[#15c089]">800 Riders</p>
+            {/* Cassandra Engine Metrics Banner & Live Terminal */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Architecture Info */}
+              <div className="lg:col-span-1 bg-[#013326] text-white p-6 rounded-2xl border border-[#0a4636] shadow-card flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-[#15c089] uppercase tracking-wider">
+                    Storage Architecture
+                  </span>
+                  <h3 className="text-lg font-bold">Apache Cassandra (LSM Tree)</h3>
+                  <p className="text-xs text-[#cad6cf] leading-relaxed">
+                    Log-structured merge-tree architecture writes sequentially to memory Memtables and disk SSTables, avoiding B-tree page lock bottlenecks.
+                  </p>
                 </div>
-                <div className="bg-white/10 px-4 py-2 rounded-xl text-center">
-                  <p className="text-[10px] text-[#cad6cf]">Daily Writes</p>
-                  <p className="text-lg font-black text-white">13.8M Rows</p>
+
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
+                  <div className="bg-white/10 p-3 rounded-xl text-center">
+                    <p className="text-[10px] text-[#cad6cf]">Active Fleet</p>
+                    <p className="text-lg font-black text-[#15c089]">800 Riders</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-xl text-center">
+                    <p className="text-[10px] text-[#cad6cf]">Daily Volume</p>
+                    <p className="text-lg font-black text-white">13.8M Writes</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Streaming Terminal */}
+              <div className="lg:col-span-2 bg-[#011c15] text-[#9cf0ce] p-6 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-[#0a4636]">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2.5 h-2.5 rounded-full ${isTelemetryStreaming ? "bg-[#15c089] animate-pulse" : "bg-slate-500"}`} />
+                    <span className="font-bold text-white">Cassandra Live Ingest Stream</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsTelemetryStreaming(!isTelemetryStreaming);
+                      showToast(isTelemetryStreaming ? "Paused telemetry stream" : "Resumed live stream", "info");
+                    }}
+                    className="text-xs text-[#15c089] hover:underline cursor-pointer"
+                  >
+                    {isTelemetryStreaming ? "Pause Stream" : "Resume Stream"}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 overflow-hidden">
+                  {telemetryLogs.map((log, idx) => (
+                    <div key={idx} className="truncate text-emerald-300">
+                      {log}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-[#0a4636] text-[11px] text-[#cad6cf] flex justify-between">
+                  <span>Throughput: ~160 pings/sec</span>
+                  <span>Port: 9042 (Native CQL Protocol)</span>
                 </div>
               </div>
             </div>
@@ -932,13 +1160,22 @@ export default function MarketplaceApp() {
                 </p>
               </div>
 
-              <button
-                onClick={() => setShowJsonSchema(!showJsonSchema)}
-                className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-[#e2eae5] text-xs font-bold text-[#013326] hover:bg-[#f1f6f3] transition-all shadow-xs cursor-pointer"
-              >
-                <Code2 className="w-4 h-4 text-[#15c089]" />
-                <span>{showJsonSchema ? "Hide JSON Schema" : "View JSON Document"}</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setIsAddAddressOpen(true)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-[#15c089]" />
+                  <span>Add Address</span>
+                </button>
+                <button
+                  onClick={() => setShowJsonSchema(!showJsonSchema)}
+                  className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-[#e2eae5] text-xs font-bold text-[#013326] hover:bg-[#f1f6f3] transition-all shadow-xs cursor-pointer"
+                >
+                  <Code2 className="w-4 h-4 text-[#15c089]" />
+                  <span>{showJsonSchema ? "Hide JSON Schema" : "View JSON Document"}</span>
+                </button>
+              </div>
             </div>
 
             {/* Profile Overview Card */}
@@ -1035,7 +1272,7 @@ export default function MarketplaceApp() {
               </div>
             </div>
 
-            {/* Raw JSON Schema Toggle */}
+            {/* Raw JSON Schema View */}
             {showJsonSchema && (
               <div className="bg-[#011c15] text-[#9cf0ce] p-6 rounded-2xl font-mono text-xs overflow-x-auto border border-[#0a4636] space-y-2">
                 <p className="text-white font-bold">// MongoDB Customer Document: db.customers.findOne(&#123; _id: "C0457" &#125;)</p>
@@ -1047,7 +1284,194 @@ export default function MarketplaceApp() {
       </main>
 
       {/* ============================================================ */}
-      {/* 3. SLIDE-OVER SHOPPING CART DRAWER */}
+      {/* 3. PRODUCT QUICK VIEW MODAL */}
+      {/* ============================================================ */}
+      {quickViewProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setQuickViewProduct(null)}
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+          />
+
+          <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#e2eae5] space-y-5 z-10">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#f1f6f3] text-[#013326]">
+                  {quickViewProduct.category}
+                </span>
+                <h3 className="text-lg font-bold text-[#013326] mt-2">{quickViewProduct.name}</h3>
+                <p className="text-xs text-[#5c7167] font-mono">SKU: {quickViewProduct.product_id}</p>
+              </div>
+              <button
+                onClick={() => setQuickViewProduct(null)}
+                className="p-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Description */}
+            <p className="text-xs text-[#5c7167] leading-relaxed">
+              {quickViewProduct.description || "High-quality marketplace inventory item backed by verified distributor warranty."}
+            </p>
+
+            {/* Polymorphic Specs Table */}
+            <div className="bg-[#f6faf8] p-4 rounded-xl border border-[#e2eae5] space-y-2 text-xs">
+              <span className="font-bold text-[#013326] text-[11px] uppercase tracking-wider">
+                MongoDB Document Attributes
+              </span>
+              {quickViewProduct.screen_size && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Display Size:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.screen_size}</span>
+                </div>
+              )}
+              {quickViewProduct.warranty && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Warranty Coverage:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.warranty}</span>
+                </div>
+              )}
+              {quickViewProduct.size && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Size:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.size}</span>
+                </div>
+              )}
+              {quickViewProduct.colours && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Available Colours:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.colours.join(", ")}</span>
+                </div>
+              )}
+              {quickViewProduct.weight && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Net Weight:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.weight}</span>
+                </div>
+              )}
+              {quickViewProduct.expiry_date && (
+                <div className="flex justify-between">
+                  <span className="text-[#5c7167]">Expiry Date:</span>
+                  <span className="font-semibold text-[#013326]">{quickViewProduct.expiry_date}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Price & Quantity Adder */}
+            <div className="pt-3 border-t border-[#f1f6f3] flex items-center justify-between">
+              <div>
+                <p className="text-[11px] text-[#5c7167]">Total Price</p>
+                <p className="text-xl font-extrabold text-[#013326]">
+                  {formatPrice(quickViewProduct.price * quickViewQty)}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 bg-[#f1f6f3] p-1 rounded-xl">
+                  <button
+                    onClick={() => setQuickViewQty(Math.max(1, quickViewQty - 1))}
+                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs cursor-pointer"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold text-[#013326]">{quickViewQty}</span>
+                  <button
+                    onClick={() => setQuickViewQty(quickViewQty + 1)}
+                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    addToCart(quickViewProduct, quickViewQty);
+                    setQuickViewProduct(null);
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4 text-[#15c089]" />
+                  <span>Add to Cart</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 4. ADD ADDRESS MODAL */}
+      {/* ============================================================ */}
+      {isAddAddressOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setIsAddAddressOpen(false)}
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+          />
+
+          <div className="relative bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#e2eae5] space-y-4 z-10">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e2eae5]">
+              <h3 className="text-base font-bold text-[#013326]">Add Delivery Address</h3>
+              <button
+                onClick={() => setIsAddAddressOpen(false)}
+                className="p-1.5 rounded-lg text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAddress} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">Address Label</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Warehouse, Studio"
+                  value={newAddressLabel}
+                  onChange={(e) => setNewAddressLabel(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">Street Address</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Street 310, Sangkat BKK1"
+                  value={newAddressStreet}
+                  onChange={(e) => setNewAddressStreet(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">City / Province</label>
+                <select
+                  value={newAddressCity}
+                  onChange={(e) => setNewAddressCity(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                >
+                  <option value="Phnom Penh">Phnom Penh</option>
+                  <option value="Siem Reap">Siem Reap</option>
+                  <option value="Battambang">Battambang</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Save to MongoDB Profile
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5. SLIDE-OVER SHOPPING CART DRAWER */}
       {/* ============================================================ */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
@@ -1170,7 +1594,7 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 4. BAKONG KHQR CHECKOUT MODAL (Angkoro & FreshHaul Style) */}
+      {/* 6. BAKONG KHQR CHECKOUT MODAL */}
       {/* ============================================================ */}
       {isCheckoutOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1185,7 +1609,7 @@ export default function MarketplaceApp() {
                 <div className="flex items-center justify-between pb-4 border-b border-[#e2eae5]">
                   <div>
                     <h3 className="text-lg font-bold text-[#013326]">Complete Payment</h3>
-                    <p className="text-xs text-[#5c7167]">Fast checkout with Bakong KHQR or Cash on Delivery</p>
+                    <p className="text-xs text-[#5c7167]">Instant settlement with Bakong KHQR or Cash on Delivery</p>
                   </div>
                   <button
                     onClick={() => setIsCheckoutOpen(false)}
@@ -1293,9 +1717,11 @@ export default function MarketplaceApp() {
                 <div className="bg-[#f6faf8] p-3.5 rounded-xl border border-[#e2eae5] text-xs space-y-1">
                   <div className="flex items-center justify-between font-bold text-[#013326]">
                     <span>Delivering to: {customer.name}</span>
-                    <span className="text-[#0c835c]">Home Address</span>
+                    <span className="text-[#0c835c]">Default Address</span>
                   </div>
-                  <p className="text-[#5c7167]">Street 271, Sangkat Boeung Tumpun, Phnom Penh</p>
+                  <p className="text-[#5c7167]">
+                    {customer.addresses.find((a) => a.isDefault)?.street || customer.addresses[0]?.street}
+                  </p>
                 </div>
 
                 {/* Confirm Action Button */}
@@ -1339,7 +1765,22 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 5. FOOTER */}
+      {/* 7. TOAST NOTIFICATION STACK */}
+      {/* ============================================================ */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className="pointer-events-auto bg-[#013326] text-white px-4 py-2.5 rounded-xl shadow-lg border border-[#0a4636] text-xs font-semibold flex items-center space-x-2 animate-bounce-subtle"
+          >
+            <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
+            <span>{toast.message}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ============================================================ */}
+      {/* 8. FOOTER */}
       {/* ============================================================ */}
       <footer className="mt-auto border-t border-[#e2eae5] bg-white py-6 text-center text-xs text-[#5c7167]">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
