@@ -3,41 +3,42 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   ShoppingBag,
-  TrendingUp,
-  MapPin,
-  User,
-  CheckCircle2,
+  Store,
+  LayoutDashboard,
+  Package,
+  Truck,
   Database,
-  Server,
   Layers,
   ArrowRight,
   ShieldCheck,
   Zap,
   Clock,
-  QrCode,
   X,
   CreditCard,
-  Truck,
   Sparkles,
   Search,
   Filter,
   BarChart3,
   Activity,
   Code2,
-  ExternalLink,
   ChevronRight,
   Plus,
   Minus,
   Check,
   RefreshCw,
-  SlidersHorizontal,
   Info,
   DollarSign,
   Eye,
   Play,
   Terminal,
   Copy,
-  CheckCheck
+  CheckCheck,
+  User,
+  Trash2,
+  Share2,
+  SlidersHorizontal,
+  MapPin,
+  CheckCircle2
 } from "lucide-react";
 
 interface Product {
@@ -60,65 +61,90 @@ interface CartItem {
   quantity: number;
 }
 
+interface OrderRecord {
+  order_id: string;
+  customer_id: string;
+  customer_name: string;
+  items: Array<{ product_id: string; name: string; quantity: number; price: number }>;
+  total: number;
+  province: string;
+  payment_method: string;
+  status: string;
+  created_at: string;
+}
+
 interface ToastMessage {
   id: string;
   message: string;
-  type: "success" | "info";
+  type: "success" | "info" | "error";
 }
 
 export default function MarketplaceApp() {
-  const [activeTab, setActiveTab] = useState<"store" | "analytics" | "riders" | "customer">("store");
+  // Mode Switcher: "customer" (Consumer Storefront) vs "merchant" (Operations & Warehouse Portal)
+  const [portalMode, setPortalMode] = useState<"customer" | "merchant">("customer");
+
+  // Customer Navigation Subtabs
+  const [customerTab, setCustomerTab] = useState<"shop" | "orders" | "profile">("shop");
+
+  // Merchant Navigation Subtabs
+  const [merchantTab, setMerchantTab] = useState<"inventory" | "orders" | "fleet" | "referrals" | "warehouse">("inventory");
+
+  // Products State (Loaded from /api/products)
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+
+  // Orders State (Loaded from /api/orders)
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+
+  // Filter & Search Controls
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"featured" | "low" | "high">("featured");
   const [currency, setCurrency] = useState<"USD" | "KHR">("USD");
+
+  // Shopping Cart & Checkout
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<"khqr" | "cod" | "card">("khqr");
   const [isCheckoutSuccess, setIsCheckoutSuccess] = useState(false);
   const [countdown, setCountdown] = useState(180);
-  const [showJsonSchema, setShowJsonSchema] = useState(false);
-  const [selectedCityFilter, setSelectedCityFilter] = useState<string>("All");
 
-  // Quick View Product Modal State
+  // Modals State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [quickViewQty, setQuickViewQty] = useState(1);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
 
   // Toast System
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Add Address Modal State
-  const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
-  const [newAddressLabel, setNewAddressLabel] = useState("");
-  const [newAddressStreet, setNewAddressStreet] = useState("");
-  const [newAddressCity, setNewAddressCity] = useState("Phnom Penh");
+  // Telemetry Streaming State (Cassandra)
+  const [isTelemetryStreaming, setIsTelemetryStreaming] = useState(true);
+  const [selectedCityFilter, setSelectedCityFilter] = useState<string>("All");
+  const [telemetryLogs, setTelemetryLogs] = useState<string[]>([
+    "[Cassandra LSM] Cluster connected on 9042. Token partitioner active.",
+    "[Cassandra LSM] Table telemetry_ks.rider_gps_pings initialized (TTL 30 days).",
+  ]);
 
-  // HiveQL Console Active Query
+  // Hive Workbench State
   const [activeHiveQuery, setActiveHiveQuery] = useState<"D1" | "D2" | "D3" | "D4">("D1");
   const [isQueryExecuting, setIsQueryExecuting] = useState(false);
   const [queryCopied, setQueryCopied] = useState(false);
 
-  // Cassandra Stream Simulation State
-  const [isTelemetryStreaming, setIsTelemetryStreaming] = useState(true);
-  const [telemetryLogs, setTelemetryLogs] = useState<string[]>([
-    "[Cassandra LSM] Ingest stream initialized. Cluster listening on 9042.",
-    "[Cassandra LSM] 800 node token rings active. Keyspace: telemetry_ks.",
-  ]);
+  // Form State for Adding New Product (Merchant CRUD)
+  const [newProdName, setNewProdName] = useState("");
+  const [newProdCategory, setNewProdCategory] = useState("Electronics");
+  const [newProdPrice, setNewProdPrice] = useState("");
+  const [newProdScreen, setNewProdScreen] = useState("");
+  const [newProdWarranty, setNewProdWarranty] = useState("");
+  const [newProdSize, setNewProdSize] = useState("");
+  const [newProdColours, setNewProdColours] = useState("");
+  const [newProdWeight, setNewProdWeight] = useState("");
+  const [newProdExpiry, setNewProdExpiry] = useState("");
+  const [newProdDesc, setNewProdDesc] = useState("");
 
-  // KHR Exchange Rate (1 USD = 4,100 KHR)
-  const KHR_RATE = 4100;
-
-  const showToast = (message: string, type: "success" | "info" = "success") => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3200);
-  };
-
-  // Customer Profile State (MongoDB Document Model)
+  // Customer Profile State
   const [customer, setCustomer] = useState({
     _id: "C0457",
     name: "Sokha Meas",
@@ -129,85 +155,56 @@ export default function MarketplaceApp() {
       { label: "Home", street: "Street 271, Sangkat Boeung Tumpun", city: "Phnom Penh", isDefault: true },
       { label: "Office", street: "Norodom Blvd, Sangkat Tonle Bassac", city: "Phnom Penh", isDefault: false },
     ],
-    past_orders: [
-      { id: "100001", date: "2026-09-03", total: 289.0, items: "Smartphone X", status: "Delivered" },
-      { id: "99452", date: "2026-08-28", total: 45.0, items: "Cotton T-Shirt x3", status: "Delivered" },
-    ],
   });
 
-  // Load products from API
+  // New Address Form
+  const [newAddrLabel, setNewAddrLabel] = useState("");
+  const [newAddrStreet, setNewAddrStreet] = useState("");
+  const [newAddrCity, setNewAddrCity] = useState("Phnom Penh");
+
+  // Exchange rate
+  const KHR_RATE = 4100;
+
+  const showToast = (message: string, type: "success" | "info" | "error" = "success") => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3200);
+  };
+
+  // Fetch Products from MongoDB
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      if (data.products) {
+        setProducts(data.products);
+      }
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  // Fetch Orders from MongoDB
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("/api/orders");
+      const data = await res.json();
+      if (data.orders) {
+        setOrders(data.orders);
+      }
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && data.products.length > 0) {
-          setProducts(data.products);
-        } else {
-          setProducts([
-            {
-              product_id: "P2210",
-              name: "Ultra Smartphone Pro Max",
-              category: "Electronics",
-              price: 289.0,
-              status: "active",
-              screen_size: "6.7 inch OLED",
-              warranty: "1 Year Official",
-              description: "Flagship AMOLED display with high-efficiency 5G modem, 120Hz dynamic refresh, and all-day fast charge.",
-            },
-            {
-              product_id: "P3314",
-              name: "Premium Linen Casual Shirt",
-              category: "Clothing",
-              price: 18.5,
-              status: "active",
-              size: "L",
-              colours: ["Navy Blue", "Sand Beige", "Olive"],
-              description: "Breathable 100% natural organic linen tailored for tropical climates with reinforced horn buttons.",
-            },
-            {
-              product_id: "P0874",
-              name: "Battambang Jasmine Fragrant Rice 5kg",
-              category: "Groceries",
-              price: 4.8,
-              status: "active",
-              weight: "5.0 kg",
-              expiry_date: "2027-10-01",
-              description: "Award-winning Malys Angkor aromatic long-grain rice, harvest-milled and vacuum-sealed at source.",
-            },
-            {
-              product_id: "P4502",
-              name: "Smart Noise-Canceling Earbuds",
-              category: "Electronics",
-              price: 59.0,
-              status: "active",
-              screen_size: "Smart Touch Stem",
-              warranty: "6 Months",
-              description: "Active hybrid noise cancellation with 38-hour battery case, low-latency gaming mode, and IPX5 resistance.",
-            },
-            {
-              product_id: "P1290",
-              name: "Kampot Premium Organic Black Pepper",
-              category: "Groceries",
-              price: 6.5,
-              status: "active",
-              weight: "250g Glass Jar",
-              expiry_date: "2028-01-15",
-              description: "GI-certified organic whole black peppercorns sun-dried on Kampot coastal estates with bold floral aromatics.",
-            },
-            {
-              product_id: "P7781",
-              name: "Handwoven Silk Summer Scarf",
-              category: "Clothing",
-              price: 24.0,
-              status: "active",
-              size: "Standard 180cm",
-              colours: ["Amber Gold", "Lotus Pink"],
-              description: "Artisanal handloom Cambodian golden silk scarf crafted with natural vegetable dyes by master weavers.",
-            },
-          ]);
-        }
-      })
-      .catch((err) => console.error("Error loading products:", err));
+    fetchProducts();
+    fetchOrders();
   }, []);
 
   // Countdown timer for KHQR
@@ -219,22 +216,22 @@ export default function MarketplaceApp() {
     return () => clearInterval(timer);
   }, [isCheckoutOpen, selectedPayment, countdown, isCheckoutSuccess]);
 
-  // Simulated Live Cassandra Ingest Logs
+  // Telemetry stream
   useEffect(() => {
-    if (!isTelemetryStreaming || activeTab !== "riders") return;
+    if (!isTelemetryStreaming || portalMode !== "merchant" || merchantTab !== "fleet") return;
 
     const interval = setInterval(() => {
       const riderIds = ["R-101", "R-102", "R-103", "R-201", "R-202", "R-301", "R-302"];
       const randomRider = riderIds[Math.floor(Math.random() * riderIds.length)];
       const randomSpeed = Math.floor(18 + Math.random() * 20);
       const timeStr = new Date().toTimeString().slice(0, 8);
-      const newLog = `[Cassandra LSM] INSERT INTO rider_telemetry (rider_id, ping_time, speed) VALUES ('${randomRider}', '${timeStr}', '${randomSpeed} km/h');`;
+      const newLog = `[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, speed) VALUES ('${randomRider}', '${timeStr}', '${randomSpeed} km/h');`;
 
       setTelemetryLogs((prev) => [newLog, ...prev.slice(0, 7)]);
     }, 2800);
 
     return () => clearInterval(interval);
-  }, [isTelemetryStreaming, activeTab]);
+  }, [isTelemetryStreaming, portalMode, merchantTab]);
 
   const formatPrice = (usd: number) => {
     if (currency === "USD") {
@@ -276,7 +273,7 @@ export default function MarketplaceApp() {
   const deliveryFeeUSD = cartTotalUSD > 40 || cartTotalUSD === 0 ? 0 : 1.5;
   const finalTotalUSD = cartTotalUSD + deliveryFeeUSD;
 
-  // Filtered & Sorted Products
+  // Filtered products
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => (selectedCategory === "All" ? true : p.category === selectedCategory))
@@ -293,52 +290,152 @@ export default function MarketplaceApp() {
       });
   }, [products, selectedCategory, searchQuery, sortBy]);
 
-  // Simulated Cassandra Riders
-  const ridersList = [
-    { id: "R-101", name: "Chan Vuthy", city: "Phnom Penh", lat: "11.5564° N", lng: "104.9282° E", status: "Delivering", battery: 88, speed: "28 km/h" },
-    { id: "R-102", name: "Sok Rith", city: "Phnom Penh", lat: "11.5721° N", lng: "104.9150° E", status: "Picked Up", battery: 74, speed: "34 km/h" },
-    { id: "R-103", name: "Meng Kiri", city: "Phnom Penh", lat: "11.5430° N", lng: "104.9390° E", status: "Idle", battery: 96, speed: "0 km/h" },
-    { id: "R-201", name: "Thy Dara", city: "Siem Reap", lat: "13.3633° N", lng: "103.8564° E", status: "Delivering", battery: 62, speed: "22 km/h" },
-    { id: "R-202", name: "Chea Bora", city: "Siem Reap", lat: "13.3510° N", lng: "103.8670° E", status: "Delivering", battery: 81, speed: "26 km/h" },
-    { id: "R-301", name: "Heng Samnang", city: "Battambang", lat: "13.0957° N", lng: "103.2022° E", status: "Delivering", battery: 54, speed: "30 km/h" },
-    { id: "R-302", name: "Keo Visal", city: "Battambang", lat: "13.1020° N", lng: "103.1940° E", status: "Idle", battery: 91, speed: "0 km/h" },
-  ];
-
-  const filteredRiders =
-    selectedCityFilter === "All" ? ridersList : ridersList.filter((r) => r.city === selectedCityFilter);
-
-  const handleSimulatePayment = () => {
-    setIsCheckoutSuccess(true);
-    const newOrder = {
-      id: `100${Math.floor(100 + Math.random() * 900)}`,
-      date: new Date().toISOString().slice(0, 10),
+  // Handle Checkout Submission (writes to MongoDB /api/orders)
+  const handleSimulatePayment = async () => {
+    const newOrderPayload = {
+      order_id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      customer_id: customer._id,
+      customer_name: customer.name,
+      items: cart.map((i) => ({
+        product_id: i.product.product_id,
+        name: i.product.name,
+        quantity: i.quantity,
+        price: i.product.price,
+      })),
       total: finalTotalUSD,
-      items: cart.map((i) => `${i.product.name} (x${i.quantity})`).join(", "),
-      status: "Processing",
+      province: customer.addresses[0]?.city || "Phnom Penh",
+      payment_method: selectedPayment === "khqr" ? "Bakong KHQR" : selectedPayment === "cod" ? "Cash (COD)" : "Card",
+      status: "Preparing",
+      delivery_address: customer.addresses[0]?.street || "Street 271, Phnom Penh",
     };
-    setCustomer((prev) => ({
-      ...prev,
-      loyalty_points: prev.loyalty_points + Math.floor(finalTotalUSD),
-      past_orders: [newOrder, ...prev.past_orders],
-    }));
-    showToast(`Order #${newOrder.id} successfully recorded!`);
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newOrderPayload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsCheckoutSuccess(true);
+        setCustomer((prev) => ({
+          ...prev,
+          loyalty_points: prev.loyalty_points + Math.floor(finalTotalUSD),
+        }));
+        fetchOrders();
+        showToast(`Order #${newOrderPayload.order_id} recorded in MongoDB!`);
+      }
+    } catch (err) {
+      console.error("Order placement failed:", err);
+      setIsCheckoutSuccess(true);
+    }
   };
 
+  // Handle Create Product (Merchant POST to MongoDB)
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProdName || !newProdPrice) return;
+
+    const payload: any = {
+      name: newProdName,
+      category: newProdCategory,
+      price: parseFloat(newProdPrice),
+      description: newProdDesc || undefined,
+      status: "active",
+    };
+
+    if (newProdCategory === "Electronics") {
+      if (newProdScreen) payload.screen_size = newProdScreen;
+      if (newProdWarranty) payload.warranty = newProdWarranty;
+    } else if (newProdCategory === "Clothing") {
+      if (newProdSize) payload.size = newProdSize;
+      if (newProdColours) payload.colours = newProdColours.split(",").map((c) => c.trim());
+    } else if (newProdCategory === "Groceries") {
+      if (newProdWeight) payload.weight = newProdWeight;
+      if (newProdExpiry) payload.expiry_date = newProdExpiry;
+    }
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Product "${newProdName}" created in MongoDB!`);
+        setIsAddProductOpen(false);
+        // Reset form
+        setNewProdName("");
+        setNewProdPrice("");
+        setNewProdScreen("");
+        setNewProdWarranty("");
+        setNewProdSize("");
+        setNewProdColours("");
+        setNewProdWeight("");
+        setNewProdExpiry("");
+        setNewProdDesc("");
+        fetchProducts();
+      }
+    } catch (err) {
+      console.error("Product creation failed:", err);
+      showToast("Failed to create product in MongoDB", "error");
+    }
+  };
+
+  // Handle Delete Product (Merchant DELETE from MongoDB)
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (!confirm(`Are you sure you want to delete "${productName}" from the catalog?`)) return;
+
+    try {
+      const res = await fetch(`/api/products?id=${productId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Product "${productName}" deleted from MongoDB`);
+        fetchProducts();
+      }
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+      showToast("Error deleting product", "error");
+    }
+  };
+
+  // Handle Order Status Update (Merchant PUT to MongoDB)
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const res = await fetch("/api/orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Order ${orderId} updated to "${newStatus}"`);
+        fetchOrders();
+      }
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+    }
+  };
+
+  // Handle Add Address
   const handleAddAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAddressLabel || !newAddressStreet) return;
+    if (!newAddrLabel || !newAddrStreet) return;
 
     setCustomer((prev) => ({
       ...prev,
       addresses: [
         ...prev.addresses,
-        { label: newAddressLabel, street: newAddressStreet, city: newAddressCity, isDefault: false },
+        { label: newAddrLabel, street: newAddrStreet, city: newAddrCity, isDefault: false },
       ],
     }));
-    setNewAddressLabel("");
-    setNewAddressStreet("");
+    setNewAddrLabel("");
+    setNewAddrStreet("");
     setIsAddAddressOpen(false);
-    showToast("New delivery address added to profile");
+    showToast("Address added to customer profile");
   };
 
   // Hive Queries Dictionary
@@ -346,7 +443,7 @@ export default function MarketplaceApp() {
     D1: {
       title: "Revenue by Province (September 2026)",
       hql: `SELECT province, \n       SUM(quantity * unit_price) AS total_revenue\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY province\nORDER BY total_revenue DESC;`,
-      speedup: "Partition Pruning: skips 11 months of historical CSV splits, reducing read I/O from 24M to 2M rows.",
+      speedup: "Partition Pruning: skips non-target HDFS folders, reducing scanned data by over 90%.",
       results: [
         { col1: "Siem Reap", col2: "$5,175.00", col3: "57.3% share" },
         { col1: "Phnom Penh", col2: "$2,989.50", col3: "33.1% share" },
@@ -354,9 +451,9 @@ export default function MarketplaceApp() {
       ],
     },
     D2: {
-      title: "Top 5 Customers by Spend (Bucket Join)",
+      title: "Top 5 Customers by Spend (Bucket Map-Join)",
       hql: `SELECT c.customer_id, \n       c.name, \n       c.city, \n       SUM(o.quantity * o.unit_price) AS total_spend\nFROM orders_opt o\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE o.order_month = '2026-09'\nGROUP BY c.customer_id, c.name, c.city\nORDER BY total_spend DESC\nLIMIT 5;`,
-      speedup: "Bucketed Map-Side Join: 8 buckets align across orders_opt and customers, eliminating full shuffle cost.",
+      speedup: "Bucket Map-Side Join: 8 aligned hash buckets eliminate shuffle overhead across worker datanodes.",
       results: [
         { col1: "Chenda Som", col2: "$2,625.00", col3: "Siem Reap • VIP Platinum" },
         { col1: "Sokha Meas", col2: "$1,980.00", col3: "Phnom Penh • VIP Gold" },
@@ -368,7 +465,7 @@ export default function MarketplaceApp() {
     D3: {
       title: "High-Volume Categories (> 1,000 Orders)",
       hql: `SELECT category, \n       COUNT(*) AS order_count\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY category\nHAVING COUNT(*) > 1000\nORDER BY order_count DESC;`,
-      speedup: "Predicate Pushdown: Columnar ORC reader inspects Stripe statistics to filter unneeded blocks.",
+      speedup: "Predicate Pushdown: Columnar ORC reader inspects Stripe statistics to skip unneeded blocks.",
       results: [
         { col1: "Groceries", col2: "1,245 orders", col3: "Fast Consumables" },
         { col1: "Electronics", col2: "1,080 orders", col3: "High Revenue Margin" },
@@ -377,10 +474,10 @@ export default function MarketplaceApp() {
     D4: {
       title: "Order Tier Segmentation (CASE WHEN)",
       hql: `SELECT CASE \n         WHEN (quantity * unit_price) > 100 THEN 'high'\n         ELSE 'normal'\n       END AS tier,\n       COUNT(*) AS order_count\nFROM orders_opt\nWHERE order_month = '2026-09'\nGROUP BY CASE \n           WHEN (quantity * unit_price) > 100 THEN 'high'\n           ELSE 'normal'\n         END;`,
-      speedup: "Lightweight ZLIB Compression: Compressed ORC streams scan at in-memory speeds on Hadoop datanodes.",
+      speedup: "Lightweight ZLIB Compression: High-compression ORC reads bypass disk I/O bottlenecks.",
       results: [
-        { col1: "Normal Tier (≤ $100)", col2: "33 orders", col3: "64.7% of volume" },
-        { col1: "High Tier (> $100)", col2: "18 orders", col3: "35.3% of volume" },
+        { col1: "Normal Tier (≤ $100)", col2: "33 orders", col3: "64.7% volume" },
+        { col1: "High Tier (> $100)", col2: "18 orders", col3: "35.3% volume" },
       ],
     },
   };
@@ -396,14 +493,28 @@ export default function MarketplaceApp() {
     setIsQueryExecuting(true);
     setTimeout(() => {
       setIsQueryExecuting(false);
-      showToast(`Query ${activeHiveQuery} completed in 142ms via Tez execution engine!`);
+      showToast(`Query ${activeHiveQuery} executed in 142ms via Tez local engine!`);
     }, 600);
   };
+
+  // Simulated Cassandra Riders
+  const ridersList = [
+    { id: "R-101", name: "Chan Vuthy", city: "Phnom Penh", lat: "11.5564° N", lng: "104.9282° E", status: "Delivering", battery: 88, speed: "28 km/h" },
+    { id: "R-102", name: "Sok Rith", city: "Phnom Penh", lat: "11.5721° N", lng: "104.9150° E", status: "Picked Up", battery: 74, speed: "34 km/h" },
+    { id: "R-103", name: "Meng Kiri", city: "Phnom Penh", lat: "11.5430° N", lng: "104.9390° E", status: "Idle", battery: 96, speed: "0 km/h" },
+    { id: "R-201", name: "Thy Dara", city: "Siem Reap", lat: "13.3633° N", lng: "103.8564° E", status: "Delivering", battery: 62, speed: "22 km/h" },
+    { id: "R-202", name: "Chea Bora", city: "Siem Reap", lat: "13.3510° N", lng: "103.8670° E", status: "Delivering", battery: 81, speed: "26 km/h" },
+    { id: "R-301", name: "Heng Samnang", city: "Battambang", lat: "13.0957° N", lng: "103.2022° E", status: "Delivering", battery: 54, speed: "30 km/h" },
+    { id: "R-302", name: "Keo Visal", city: "Battambang", lat: "13.1020° N", lng: "103.1940° E", status: "Idle", battery: 91, speed: "0 km/h" },
+  ];
+
+  const filteredRiders =
+    selectedCityFilter === "All" ? ridersList : ridersList.filter((r) => r.city === selectedCityFilter);
 
   return (
     <div className="min-h-screen bg-[#f6faf8] text-[#09211a] flex flex-col font-sans selection:bg-[#15c089]/20 selection:text-[#013326]">
       {/* ============================================================ */}
-      {/* 1. TOP NAVIGATION BAR */}
+      {/* TOP HEADER: BRAND + PORTAL MODE SWITCHER */}
       {/* ============================================================ */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#e2eae5] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -417,71 +528,56 @@ export default function MarketplaceApp() {
                 <div className="flex items-center space-x-2">
                   <span className="font-extrabold text-lg tracking-tight text-[#013326]">Marketplace</span>
                   <span className="px-2 py-0.5 text-[11px] font-semibold bg-[#eafaf4] text-[#0c835c] rounded-full border border-[#9cf0ce]">
-                    Polyglot Engine
+                    Microservices
                   </span>
                 </div>
                 <p className="text-[12px] text-[#5c7167] font-medium hidden sm:block">
-                  MongoDB • Cassandra • Apache Hive
+                  Polyglot NoSQL • Apache Hive Warehouse
                 </p>
               </div>
             </div>
 
-            {/* Center: Navigation Tabs */}
-            <nav className="hidden md:flex items-center space-x-1 bg-[#f1f6f3] p-1 rounded-xl border border-[#e2eae5]">
+            {/* Center: DOMAIN PORTAL SWITCHER (Separates Customer from Merchant) */}
+            <div className="flex items-center bg-[#f1f6f3] p-1 rounded-2xl border border-[#e2eae5] shadow-inner">
               <button
-                onClick={() => setActiveTab("store")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === "store"
-                    ? "bg-white text-[#013326] shadow-xs font-bold"
-                    : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
+                onClick={() => {
+                  setPortalMode("customer");
+                  showToast("Switched to Customer Storefront", "info");
+                }}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  portalMode === "customer"
+                    ? "bg-[#013326] text-white shadow-sm"
+                    : "text-[#5c7167] hover:text-[#013326]"
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 text-[#15c089]" />
+                <Store className="w-3.5 h-3.5 text-[#15c089]" />
                 <span>Storefront</span>
               </button>
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === "analytics"
-                    ? "bg-white text-[#013326] shadow-xs font-bold"
-                    : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
-                }`}
-              >
-                <BarChart3 className="w-4 h-4 text-[#15c089]" />
-                <span>Hive Analytics</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("riders")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === "riders"
-                    ? "bg-white text-[#013326] shadow-xs font-bold"
-                    : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
-                }`}
-              >
-                <Truck className="w-4 h-4 text-[#15c089]" />
-                <span>Fleet Telemetry</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("customer")}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === "customer"
-                    ? "bg-white text-[#013326] shadow-xs font-bold"
-                    : "text-[#5c7167] hover:text-[#013326] hover:bg-white/60"
-                }`}
-              >
-                <User className="w-4 h-4 text-[#15c089]" />
-                <span>Customer CRM</span>
-              </button>
-            </nav>
 
-            {/* Right: Controls & Cart */}
+              <button
+                onClick={() => {
+                  setPortalMode("merchant");
+                  showToast("Switched to Merchant Operations Portal", "info");
+                }}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  portalMode === "merchant"
+                    ? "bg-[#013326] text-white shadow-sm"
+                    : "text-[#5c7167] hover:text-[#013326]"
+                }`}
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-[#15c089]" />
+                <span>Merchant Portal</span>
+              </button>
+            </div>
+
+            {/* Right: Currency & Cart / Account */}
             <div className="flex items-center space-x-3">
               {/* Currency Toggle */}
               <div className="flex items-center bg-[#f1f6f3] p-1 rounded-lg border border-[#e2eae5] text-xs font-bold">
                 <button
                   onClick={() => {
                     setCurrency("USD");
-                    showToast("Switched currency to USD ($)", "info");
+                    showToast("Currency set to USD ($)", "info");
                   }}
                   className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                     currency === "USD" ? "bg-white text-[#013326] shadow-xs" : "text-[#5c7167] hover:text-[#013326]"
@@ -492,7 +588,7 @@ export default function MarketplaceApp() {
                 <button
                   onClick={() => {
                     setCurrency("KHR");
-                    showToast("Switched currency to Khmer Riel (៛)", "info");
+                    showToast("Currency set to Khmer Riel (៛)", "info");
                   }}
                   className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                     currency === "KHR" ? "bg-white text-[#013326] shadow-xs" : "text-[#5c7167] hover:text-[#013326]"
@@ -502,7 +598,7 @@ export default function MarketplaceApp() {
                 </button>
               </div>
 
-              {/* Shopping Cart Pill Button */}
+              {/* Cart Button (Always visible for quick checkout) */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative flex items-center space-x-2.5 px-3.5 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white transition-all shadow-sm group cursor-pointer active:scale-95"
@@ -518,765 +614,777 @@ export default function MarketplaceApp() {
             </div>
           </div>
 
-          {/* Mobile Navigation Sub-bar */}
-          <div className="flex md:hidden border-t border-[#e2eae5] py-2 overflow-x-auto space-x-2">
-            <button
-              onClick={() => setActiveTab("store")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg whitespace-nowrap ${
-                activeTab === "store" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167]"
-              }`}
-            >
-              Storefront
-            </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg whitespace-nowrap ${
-                activeTab === "analytics" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167]"
-              }`}
-            >
-              Hive Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab("riders")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg whitespace-nowrap ${
-                activeTab === "riders" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167]"
-              }`}
-            >
-              Rider Telemetry
-            </button>
-            <button
-              onClick={() => setActiveTab("customer")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg whitespace-nowrap ${
-                activeTab === "customer" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167]"
-              }`}
-            >
-              Customer CRM
-            </button>
+          {/* Sub-Navigation Ribbon (Adapts strictly to selected Portal Mode) */}
+          <div className="border-t border-[#e2eae5] py-2 flex items-center justify-between overflow-x-auto text-xs">
+            {portalMode === "customer" ? (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCustomerTab("shop")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    customerTab === "shop" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  🛍️ Catalog & Shop
+                </button>
+                <button
+                  onClick={() => setCustomerTab("orders")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    customerTab === "orders" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  📦 My Orders & Tracking
+                </button>
+                <button
+                  onClick={() => setCustomerTab("profile")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    customerTab === "profile" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  👤 Account & Addresses
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setMerchantTab("inventory")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    merchantTab === "inventory" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  📦 Inventory (MongoDB CRUD)
+                </button>
+                <button
+                  onClick={() => setMerchantTab("orders")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    merchantTab === "orders" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  📋 Orders & Fulfillment
+                </button>
+                <button
+                  onClick={() => setMerchantTab("fleet")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    merchantTab === "fleet" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  🛵 Fleet Telemetry (Cassandra)
+                </button>
+                <button
+                  onClick={() => setMerchantTab("referrals")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    merchantTab === "referrals" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  🤝 Referral Network (Neo4j)
+                </button>
+                <button
+                  onClick={() => setMerchantTab("warehouse")}
+                  className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    merchantTab === "warehouse" ? "bg-[#013326] text-white" : "bg-[#f1f6f3] text-[#5c7167] hover:text-[#013326]"
+                  }`}
+                >
+                  📊 Hive Warehouse (OLAP)
+                </button>
+              </div>
+            )}
+
+            <div className="hidden lg:flex items-center space-x-2 text-[11px] font-semibold text-[#0c835c]">
+              <span className="w-2 h-2 rounded-full bg-[#15c089] animate-ping" />
+              <span>Services Healthy • MongoDB Connected</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* ============================================================ */}
-      {/* 2. MAIN CONTENT BODY */}
+      {/* MAIN CONTAINER */}
       {/* ============================================================ */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* ========================================================== */}
-        {/* TAB 1: STOREFRONT & CATALOG (MongoDB) */}
+        {/* DOMAIN 1: CUSTOMER FACING STOREFRONT */}
         {/* ========================================================== */}
-        {activeTab === "store" && (
+        {portalMode === "customer" && (
           <div className="space-y-8">
-            {/* Hero Showcase Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-[#013326] text-white p-6 sm:p-10 shadow-elegant border border-[#0a4636]">
-              <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-[#15c089]/10 blur-3xl pointer-events-none" />
-              <div className="relative z-10 max-w-2xl space-y-3">
-                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#15c089]/15 border border-[#15c089]/30 text-[#15c089] text-xs font-semibold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Polyglot Persistence • MongoDB Operational Layer</span>
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                  Distributed E-Commerce Engine
-                </h1>
-                <p className="text-sm sm:text-base text-[#cad6cf] font-medium leading-relaxed">
-                  Polymorphic document schemas support diverse product categories without relational SQL nulls or heavy migrations.
-                </p>
-
-                {/* Live System Stats Chips */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-[11px] text-[#cad6cf] font-medium">Monthly Ingest</p>
-                    <p className="text-lg font-extrabold text-white">2.0M Orders</p>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-[11px] text-[#cad6cf] font-medium">Delivery Fleet</p>
-                    <p className="text-lg font-extrabold text-[#15c089]">800 Active</p>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-[11px] text-[#cad6cf] font-medium">GPS Ingest Rate</p>
-                    <p className="text-lg font-extrabold text-white">160 /sec</p>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-[11px] text-[#cad6cf] font-medium">Warehouse Storage</p>
-                    <p className="text-lg font-extrabold text-[#15c089]">Hive ORC</p>
+            {/* 1.1 Customer Shop View */}
+            {customerTab === "shop" && (
+              <div className="space-y-8">
+                {/* Hero Showcase Banner */}
+                <div className="relative overflow-hidden rounded-3xl bg-[#013326] text-white p-6 sm:p-10 shadow-elegant border border-[#0a4636]">
+                  <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-[#15c089]/10 blur-3xl pointer-events-none" />
+                  <div className="relative z-10 max-w-2xl space-y-3">
+                    <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#15c089]/15 border border-[#15c089]/30 text-[#15c089] text-xs font-semibold">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Polyglot E-Commerce Marketplace</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                      Modern Consumer Storefront
+                    </h1>
+                    <p className="text-sm sm:text-base text-[#cad6cf] font-medium leading-relaxed">
+                      Instant delivery across Phnom Penh, Siem Reap, and Battambang with seamless Bakong KHQR checkout.
+                    </p>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Filter & Search Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-[#e2eae5] shadow-card">
-              {/* Category Pills */}
-              <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
-                {["All", "Electronics", "Clothing", "Groceries"].map((cat) => {
-                  const count = cat === "All" ? products.length : products.filter((p) => p.category === cat).length;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center space-x-1.5 ${
-                        selectedCategory === cat
-                          ? "bg-[#013326] text-white shadow-xs"
-                          : "bg-[#f1f6f3] text-[#5c7167] hover:bg-[#e2eae5] hover:text-[#013326]"
-                      }`}
-                    >
-                      <span>{cat}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                          selectedCategory === cat ? "bg-[#15c089] text-[#013326]" : "bg-white text-[#5c7167]"
-                        }`}
-                      >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+                {/* Filter & Search Bar */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-[#e2eae5] shadow-card">
+                  {/* Category Pills */}
+                  <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {["All", "Electronics", "Clothing", "Groceries"].map((cat) => {
+                      const count = cat === "All" ? products.length : products.filter((p) => p.category === cat).length;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center space-x-1.5 ${
+                            selectedCategory === cat
+                              ? "bg-[#013326] text-white shadow-xs"
+                              : "bg-[#f1f6f3] text-[#5c7167] hover:bg-[#e2eae5] hover:text-[#013326]"
+                          }`}
+                        >
+                          <span>{cat}</span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              selectedCategory === cat ? "bg-[#15c089] text-[#013326]" : "bg-white text-[#5c7167]"
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-              {/* Search & Sort Controls */}
-              <div className="flex items-center space-x-3">
-                <div className="relative flex-1 sm:w-64">
-                  <Search className="w-4 h-4 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Search catalog..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 focus:bg-white transition-all text-[#09211a]"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5c7167] hover:text-[#013326]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#09211a] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 cursor-pointer"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="low">Price: Low → High</option>
-                  <option value="high">Price: High → Low</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Product Cards Grid */}
-            {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-3xl p-12 text-center border border-[#e2eae5] shadow-card space-y-3">
-                <ShoppingBag className="w-12 h-12 text-[#cad6cf] mx-auto" />
-                <h3 className="text-base font-bold text-[#013326]">No products found</h3>
-                <p className="text-xs text-[#5c7167]">No items match your search "{searchQuery}"</p>
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("All");
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <div
-                    key={product.product_id}
-                    className="bg-white rounded-2xl border border-[#e2eae5] shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
-                  >
-                    {/* Card Body */}
-                    <div className="p-6 pb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#f1f6f3] text-[#013326] border border-[#e2eae5]">
-                          {product.category}
-                        </span>
-                        <span className="flex items-center space-x-1 text-[11px] font-semibold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full border border-[#9cf0ce]">
-                          <Check className="w-3 h-3" />
-                          <span>In Stock</span>
-                        </span>
-                      </div>
-
-                      <h3 className="text-base font-bold text-[#013326] group-hover:text-[#0f5d49] transition-colors leading-snug">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-[#5c7167] mt-1 font-mono">SKU: {product.product_id}</p>
-
-                      {/* Polymorphic Attributes */}
-                      <div className="mt-4 pt-3 border-t border-[#f1f6f3] space-y-1.5">
-                        {product.category === "Electronics" && (
-                          <div className="flex flex-wrap gap-1.5 text-[11px]">
-                            {product.screen_size && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Screen: {product.screen_size}
-                              </span>
-                            )}
-                            {product.warranty && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Warranty: {product.warranty}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {product.category === "Clothing" && (
-                          <div className="flex flex-wrap gap-1.5 text-[11px]">
-                            {product.size && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Size: {product.size}
-                              </span>
-                            )}
-                            {product.colours && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Colours: {product.colours.join(", ")}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {product.category === "Groceries" && (
-                          <div className="flex flex-wrap gap-1.5 text-[11px]">
-                            {product.weight && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Net: {product.weight}
-                              </span>
-                            )}
-                            {product.expiry_date && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
-                                Exp: {product.expiry_date}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                  {/* Search & Sort */}
+                  <div className="flex items-center space-x-3">
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="w-4 h-4 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 focus:bg-white transition-all text-[#09211a]"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5c7167] hover:text-[#013326]"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
 
-                    {/* Card Actions Footer */}
-                    <div className="p-6 pt-3 bg-[#fafcfb] border-t border-[#f1f6f3] flex items-center justify-between">
-                      <div>
-                        <p className="text-[11px] text-[#5c7167] font-medium">Unit Price</p>
-                        <div className="flex items-baseline space-x-1.5">
-                          <span className="text-xl font-extrabold text-[#013326]">
-                            {formatPrice(product.price)}
-                          </span>
-                          {currency === "USD" && (
-                            <span className="text-[11px] text-[#5c7167] font-medium">
-                              (~៛{Math.round(product.price * KHR_RATE).toLocaleString()})
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#09211a] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40 cursor-pointer"
+                    >
+                      <option value="featured">Featured</option>
+                      <option value="low">Price: Low → High</option>
+                      <option value="high">Price: High → Low</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Product Grid */}
+                {filteredProducts.length === 0 ? (
+                  <div className="bg-white rounded-3xl p-12 text-center border border-[#e2eae5] shadow-card space-y-3">
+                    <ShoppingBag className="w-12 h-12 text-[#cad6cf] mx-auto" />
+                    <h3 className="text-base font-bold text-[#013326]">No products found</h3>
+                    <p className="text-xs text-[#5c7167]">No catalog items match your search criteria.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map((product) => (
+                      <div
+                        key={product.product_id}
+                        className="bg-white rounded-2xl border border-[#e2eae5] shadow-card hover:shadow-hover hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                      >
+                        <div className="p-6 pb-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-[#f1f6f3] text-[#013326] border border-[#e2eae5]">
+                              {product.category}
                             </span>
-                          )}
+                            <span className="flex items-center space-x-1 text-[11px] font-semibold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full border border-[#9cf0ce]">
+                              <Check className="w-3 h-3" />
+                              <span>In Stock</span>
+                            </span>
+                          </div>
+
+                          <h3 className="text-base font-bold text-[#013326] group-hover:text-[#0f5d49] transition-colors leading-snug">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-[#5c7167] mt-1 font-mono">SKU: {product.product_id}</p>
+
+                          {/* Category-Specific Specs */}
+                          <div className="mt-4 pt-3 border-t border-[#f1f6f3] space-y-1.5">
+                            {product.category === "Electronics" && (
+                              <div className="flex flex-wrap gap-1.5 text-[11px]">
+                                {product.screen_size && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Display: {product.screen_size}
+                                  </span>
+                                )}
+                                {product.warranty && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Warranty: {product.warranty}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {product.category === "Clothing" && (
+                              <div className="flex flex-wrap gap-1.5 text-[11px]">
+                                {product.size && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Size: {product.size}
+                                  </span>
+                                )}
+                                {product.colours && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Colours: {product.colours.join(", ")}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {product.category === "Groceries" && (
+                              <div className="flex flex-wrap gap-1.5 text-[11px]">
+                                {product.weight && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Net: {product.weight}
+                                  </span>
+                                )}
+                                {product.expiry_date && (
+                                  <span className="px-2 py-0.5 rounded-md bg-[#f1f6f3] text-[#013326] font-medium">
+                                    Exp: {product.expiry_date}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-6 pt-3 bg-[#fafcfb] border-t border-[#f1f6f3] flex items-center justify-between">
+                          <div>
+                            <p className="text-[11px] text-[#5c7167] font-medium">Price</p>
+                            <span className="text-xl font-extrabold text-[#013326]">
+                              {formatPrice(product.price)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => {
+                                setQuickViewProduct(product);
+                                setQuickViewQty(1);
+                              }}
+                              className="p-2 rounded-xl bg-white border border-[#e2eae5] text-[#5c7167] hover:text-[#013326] hover:bg-[#f1f6f3] transition-all cursor-pointer"
+                              title="Quick View"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => addToCart(product)}
+                              className="px-4 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5 text-[#15c089]" />
+                              <span>Add</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 1.2 Customer Orders View */}
+            {customerTab === "orders" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-[#013326]">My Orders & Delivery Tracking</h2>
+                    <p className="text-xs text-[#5c7167]">Live tracking for orders placed across Cambodia</p>
+                  </div>
+                  <span className="px-3 py-1 bg-[#eafaf4] text-[#0c835c] text-xs font-bold rounded-xl border border-[#9cf0ce]">
+                    {orders.length} Total Orders
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {orders.map((ord) => (
+                    <div
+                      key={ord.order_id}
+                      className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#f1f6f3] pb-4">
+                        <div className="flex items-center space-x-3">
+                          <Package className="w-5 h-5 text-[#15c089]" />
+                          <div>
+                            <span className="text-sm font-bold text-[#013326]">{ord.order_id}</span>
+                            <p className="text-[11px] text-[#5c7167]">Placed on {new Date(ord.created_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              ord.status === "Delivered"
+                                ? "bg-[#eafaf4] text-[#0c835c] border border-[#9cf0ce]"
+                                : ord.status === "Out for Delivery"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-amber-50 text-amber-700 border border-amber-200"
+                            }`}
+                          >
+                            {ord.status}
+                          </span>
+                          <span className="text-base font-black text-[#013326] font-mono">
+                            {formatPrice(ord.total)}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setQuickViewProduct(product);
-                            setQuickViewQty(1);
-                          }}
-                          className="p-2 rounded-xl bg-white border border-[#e2eae5] text-[#5c7167] hover:text-[#013326] hover:bg-[#f1f6f3] transition-all cursor-pointer"
-                          title="Quick View"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => addToCart(product)}
-                          className="px-4 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5 text-[#15c089]" />
-                          <span>Add</span>
-                        </button>
+                      {/* Items */}
+                      <div className="space-y-1.5 text-xs">
+                        <p className="font-semibold text-[#5c7167]">Ordered Items:</p>
+                        <div className="bg-[#f6faf8] p-3 rounded-xl border border-[#e2eae5] space-y-1">
+                          {ord.items.map((it, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span className="text-[#013326]">{it.name} (x{it.quantity})</span>
+                              <span className="font-mono text-[#5c7167]">{formatPrice(it.price * it.quantity)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-[#5c7167] pt-2">
+                        <span>Payment: <strong>{ord.payment_method}</strong></span>
+                        <span>Delivery Zone: <strong>{ord.province}</strong></span>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 1.3 Customer Account View */}
+            {customerTab === "profile" && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-14 h-14 rounded-2xl bg-[#013326] text-white flex items-center justify-center text-xl font-bold">
+                      SM
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#013326]">{customer.name}</h3>
+                      <p className="text-xs text-[#5c7167]">Customer ID: {customer._id} • {customer.phone}</p>
+                      <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#eafaf4] text-[#0c835c]">
+                        {customer.tier} ({customer.loyalty_points} Points)
+                      </span>
+                    </div>
                   </div>
-                ))}
+
+                  <div className="space-y-3 pt-4 border-t border-[#f1f6f3]">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-[#013326]">Saved Delivery Addresses</h4>
+                      <button
+                        onClick={() => setIsAddAddressOpen(true)}
+                        className="px-3 py-1.5 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] flex items-center space-x-1 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-[#15c089]" />
+                        <span>Add Address</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {customer.addresses.map((addr, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-[#e2eae5] bg-[#fafcfb] space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-[#013326] flex items-center space-x-1">
+                              <MapPin className="w-3.5 h-3.5 text-[#15c089]" />
+                              <span>{addr.label}</span>
+                            </span>
+                            {addr.isDefault && (
+                              <span className="text-[10px] font-bold text-[#0c835c] bg-[#eafaf4] px-2 py-0.5 rounded">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#5c7167]">{addr.street}</p>
+                          <p className="text-xs font-semibold text-[#013326]">{addr.city}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         )}
 
         {/* ========================================================== */}
-        {/* TAB 2: HIVE ANALYTICS DASHBOARD (Warehouse & Power BI) */}
+        {/* DOMAIN 2: MERCHANT & OPERATIONS DASHBOARD */}
         {/* ========================================================== */}
-        {activeTab === "analytics" && (
+        {portalMode === "merchant" && (
           <div className="space-y-8">
-            {/* Header / Context */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-extrabold text-[#013326] tracking-tight">
-                  Apache Hive Analytics & Warehouse Insights
-                </h2>
-                <p className="text-sm text-[#5c7167]">
-                  Columnar ORC batch queries executed over 2,000,000 monthly orders landed in HDFS /staging/orders/
-                </p>
-              </div>
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#0c835c] bg-[#eafaf4] px-3 py-1.5 rounded-xl border border-[#9cf0ce]">
-                <Database className="w-4 h-4 text-[#15c089]" />
-                <span>Metastore: Derby Embedded • Engine: Tez / MapReduce</span>
-              </div>
-            </div>
-
-            {/* KPI Cards Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5c7167]">Monthly Ingested Orders</span>
-                  <span className="text-[11px] font-bold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full">
-                    +14.2% MoM
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-[#013326] mt-2">2,000,000</p>
-                <p className="text-xs text-[#5c7167] mt-1 font-mono">HDFS /staging/orders/*.csv</p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5c7167]">Active Customers</span>
-                  <span className="text-[11px] font-bold text-[#15c089] bg-[#eafaf4] px-2 py-0.5 rounded-full">
-                    8 Buckets
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-[#013326] mt-2">200,000</p>
-                <p className="text-xs text-[#5c7167] mt-1 font-mono">Clustered by customer_id</p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5c7167]">September Revenue</span>
-                  <span className="text-[11px] font-bold text-[#013326] bg-[#f1f6f3] px-2 py-0.5 rounded-full">
-                    Sample Partition
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-[#013326] mt-2">{formatPrice(9027.0)}</p>
-                <p className="text-xs text-[#5c7167] mt-1 font-mono">WHERE order_month = '2026-09'</p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card border-l-4 border-l-[#15c089]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5c7167]">Query Latency Speedup</span>
-                  <span className="text-[11px] font-bold text-[#0e9f6e] bg-[#eafaf4] px-2 py-0.5 rounded-full">
-                    ORC Pruned
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-[#013326] mt-2">10x – 100x</p>
-                <p className="text-xs text-[#5c7167] mt-1 font-mono">Bypasses non-target months</p>
-              </div>
-            </div>
-
-            {/* Interactive HiveQL Console & Workbench */}
-            <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="flex items-center space-x-2">
-                  <Terminal className="w-5 h-5 text-[#15c089]" />
-                  <h3 className="text-base font-bold text-[#013326]">Interactive HiveQL Console</h3>
+            {/* 2.1 Merchant Inventory CRUD */}
+            {merchantTab === "inventory" && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-[#013326]">Product Catalog Management (MongoDB CRUD)</h2>
+                    <p className="text-xs text-[#5c7167]">Direct operational document read, insert, and delete operations</p>
+                  </div>
+                  <button
+                    onClick={() => setIsAddProductOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold flex items-center space-x-2 shadow-sm cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-[#15c089]" />
+                    <span>Create New Product</span>
+                  </button>
                 </div>
 
-                {/* Query Selector Tabs */}
-                <div className="flex items-center space-x-1.5 bg-[#f1f6f3] p-1 rounded-xl">
-                  {(["D1", "D2", "D3", "D4"] as const).map((qKey) => (
+                {/* Inventory Table */}
+                <div className="bg-white rounded-2xl border border-[#e2eae5] shadow-card overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#f6faf8] text-[#5c7167] border-b border-[#e2eae5] font-bold">
+                      <tr>
+                        <th className="p-4">SKU / ID</th>
+                        <th className="p-4">Product Name</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Price</th>
+                        <th className="p-4">Polymorphic Specs</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#f1f6f3]">
+                      {products.map((p) => (
+                        <tr key={p.product_id} className="hover:bg-[#fafcfb] transition-colors">
+                          <td className="p-4 font-mono font-bold text-[#013326]">{p.product_id}</td>
+                          <td className="p-4 font-bold text-[#013326]">{p.name}</td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-0.5 rounded-full bg-[#f1f6f3] text-[#013326] font-semibold text-[11px]">
+                              {p.category}
+                            </span>
+                          </td>
+                          <td className="p-4 font-mono font-bold text-[#013326]">{formatPrice(p.price)}</td>
+                          <td className="p-4 text-[11px] text-[#5c7167]">
+                            {p.category === "Electronics" && `Display: ${p.screen_size || "-"} | Warranty: ${p.warranty || "-"}`}
+                            {p.category === "Clothing" && `Size: ${p.size || "-"} | Colors: ${p.colours?.join(", ") || "-"}`}
+                            {p.category === "Groceries" && `Weight: ${p.weight || "-"} | Exp: ${p.expiry_date || "-"}`}
+                          </td>
+                          <td className="p-4 text-right space-x-2">
+                            <button
+                              onClick={() => handleDeleteProduct(p.product_id, p.name)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* 2.2 Merchant Orders Fulfillment */}
+            {merchantTab === "orders" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#013326]">Fulfillment & Order State Machine</h2>
+                  <p className="text-xs text-[#5c7167]">Live queue of customer orders with stage progression</p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-[#e2eae5] shadow-card overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#f6faf8] text-[#5c7167] border-b border-[#e2eae5] font-bold">
+                      <tr>
+                        <th className="p-4">Order Code</th>
+                        <th className="p-4">Customer</th>
+                        <th className="p-4">Items</th>
+                        <th className="p-4">Total</th>
+                        <th className="p-4">Payment</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 text-right">Update State</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#f1f6f3]">
+                      {orders.map((ord) => (
+                        <tr key={ord.order_id} className="hover:bg-[#fafcfb] transition-colors">
+                          <td className="p-4 font-mono font-bold text-[#013326]">{ord.order_id}</td>
+                          <td className="p-4 font-semibold text-[#013326]">{ord.customer_name}</td>
+                          <td className="p-4 text-[11px] text-[#5c7167]">
+                            {ord.items.map((i) => `${i.name} (x${i.quantity})`).join(", ")}
+                          </td>
+                          <td className="p-4 font-mono font-bold text-[#013326]">{formatPrice(ord.total)}</td>
+                          <td className="p-4">{ord.payment_method}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                ord.status === "Delivered"
+                                  ? "bg-[#eafaf4] text-[#0c835c]"
+                                  : ord.status === "Out for Delivery"
+                                  ? "bg-blue-50 text-blue-700"
+                                  : "bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              {ord.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <select
+                              value={ord.status}
+                              onChange={(e) => handleUpdateOrderStatus(ord.order_id, e.target.value)}
+                              className="px-2 py-1 text-xs rounded-lg border border-[#e2eae5] bg-[#f1f6f3] font-semibold text-[#013326]"
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Preparing">Preparing</option>
+                              <option value="Out for Delivery">Out for Delivery</option>
+                              <option value="Delivered">Delivered</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* 2.3 Fleet Telemetry (Cassandra) */}
+            {merchantTab === "fleet" && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-[#013326]">Cassandra Telemetry Fleet Command</h2>
+                    <p className="text-xs text-[#5c7167]">Ingesting 160 writes / second across 800 riders (13.8M rows / day)</p>
+                  </div>
+
+                  <div className="flex items-center space-x-2 bg-white p-1 rounded-xl border border-[#e2eae5]">
+                    {["All", "Phnom Penh", "Siem Reap", "Battambang"].map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => setSelectedCityFilter(city)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                          selectedCityFilter === city ? "bg-[#013326] text-white" : "text-[#5c7167]"
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live CQL Terminal */}
+                <div className="bg-[#011c15] text-[#9cf0ce] p-5 rounded-2xl border border-[#0a4636] font-mono text-xs space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#0a4636]">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#15c089] animate-pulse" />
+                      <span className="font-bold text-white">Live Cassandra Ingest Stream</span>
+                    </div>
                     <button
-                      key={qKey}
-                      onClick={() => setActiveHiveQuery(qKey)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        activeHiveQuery === qKey
-                          ? "bg-[#013326] text-white shadow-xs"
-                          : "text-[#5c7167] hover:text-[#013326]"
-                      }`}
+                      onClick={() => setIsTelemetryStreaming(!isTelemetryStreaming)}
+                      className="text-xs text-[#15c089] hover:underline"
                     >
-                      Query {qKey}
+                      {isTelemetryStreaming ? "Pause Stream" : "Resume Stream"}
                     </button>
+                  </div>
+                  <div className="space-y-1">
+                    {telemetryLogs.map((log, idx) => (
+                      <div key={idx} className="truncate text-emerald-300">{log}</div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rider Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredRiders.map((rider) => (
+                    <div key={rider.id} className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-sm font-bold text-[#013326]">{rider.name}</h4>
+                          <p className="text-[11px] text-[#5c7167] font-mono">{rider.id} • {rider.city}</p>
+                        </div>
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#eafaf4] text-[#0c835c]">
+                          {rider.status}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-[#5c7167]">Speed: <strong className="text-[#013326]">{rider.speed}</strong></span>
+                        <span className="text-[#5c7167]">Battery: <strong className="text-[#013326]">{rider.battery}%</strong></span>
+                      </div>
+
+                      <div className="bg-[#f6faf8] p-2.5 rounded-xl border border-[#e2eae5] text-[11px] font-mono text-[#5c7167] flex justify-between">
+                        <span>{rider.lat}</span>
+                        <span>{rider.lng}</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Active Query Display & Executor */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* Code Block */}
-                <div className="bg-[#011c15] text-[#9cf0ce] p-5 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[#cad6cf] pb-2 border-b border-[#0a4636]">
-                      <span className="font-bold text-white">// {hiveQueries[activeHiveQuery].title}</span>
-                      <button
-                        onClick={() => copyQueryToClipboard(hiveQueries[activeHiveQuery].hql)}
-                        className="text-[#15c089] hover:text-white flex items-center space-x-1 text-[11px] cursor-pointer"
-                      >
-                        {queryCopied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{queryCopied ? "Copied" : "Copy SQL"}</span>
-                      </button>
-                    </div>
-                    <pre className="overflow-x-auto text-emerald-300 leading-relaxed">
-                      {hiveQueries[activeHiveQuery].hql}
-                    </pre>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#0a4636] flex items-center justify-between">
-                    <span className="text-[11px] text-[#cad6cf]">
-                      Engine: Hive 3.1.3 on Tez Local
-                    </span>
-                    <button
-                      onClick={executeHiveQuerySimulation}
-                      disabled={isQueryExecuting}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#15c089] text-[#013326] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#10a374] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      {isQueryExecuting ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Running...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>Execute Query</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+            {/* 2.4 Referral Network (Neo4j) */}
+            {merchantTab === "referrals" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#013326]">Neo4j 3-Level Referral Reward Network</h2>
+                  <p className="text-xs text-[#5c7167]">Index-free adjacency traversing social graphs up to 3 hops deep</p>
                 </div>
 
-                {/* Query Results & Execution Rationale */}
-                <div className="bg-[#fafcfb] p-5 rounded-2xl border border-[#e2eae5] flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#013326] uppercase tracking-wider">
-                        Query Execution Results
-                      </span>
-                      <span className="text-[11px] text-[#0e9f6e] font-mono font-bold bg-[#eafaf4] px-2 py-0.5 rounded-full">
-                        Status: 200 OK (142 ms)
-                      </span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Tier 1 */}
+                  <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-[#013326]">Level 1: Direct Invites</h3>
+                      <span className="px-2 py-0.5 bg-[#eafaf4] text-[#0c835c] rounded text-xs font-bold">5% Reward</span>
+                    </div>
+                    <p className="text-xs text-[#5c7167]">Directly referred by Sokha Meas (C0457)</p>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Vireak Chan (C1001)</p>
+                        <p className="text-[#5c7167]">Phnom Penh • Spend: $420.00 • Earned: $21.00</p>
+                      </div>
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Sophea Kim (C1002)</p>
+                        <p className="text-[#5c7167]">Siem Reap • Spend: $650.00 • Earned: $32.50</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tier 2 */}
+                  <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-[#013326]">Level 2: 2nd-Degree Friends</h3>
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-bold">3% Reward</span>
+                    </div>
+                    <p className="text-xs text-[#5c7167]">Referred by Level 1 contacts</p>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Rithy Pen (C1003)</p>
+                        <p className="text-[#5c7167]">Battambang • Spend: $810.00 • Earned: $24.30</p>
+                      </div>
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Kolab Heng (C1005)</p>
+                        <p className="text-[#5c7167]">Phnom Penh • Spend: $390.00 • Earned: $11.70</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tier 3 */}
+                  <div className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-[#013326]">Level 3: 3rd-Degree Friends</h3>
+                      <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs font-bold">1% Reward</span>
+                    </div>
+                    <p className="text-xs text-[#5c7167]">Referred by Level 2 contacts</p>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Bopha Nou (C1004)</p>
+                        <p className="text-[#5c7167]">Phnom Penh • Spend: $1,120.00 • Earned: $11.20</p>
+                      </div>
+                      <div className="p-3 bg-[#fafcfb] rounded-xl border border-[#e2eae5]">
+                        <p className="font-bold text-[#013326]">Dara Kong (C1007)</p>
+                        <p className="text-[#5c7167]">Siem Reap • Spend: $780.00 • Earned: $7.80</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2.5 Warehouse Analytics (Hive) */}
+            {merchantTab === "warehouse" && (
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#013326]">Apache Hive Analytics & Warehouse</h2>
+                  <p className="text-xs text-[#5c7167]">Monthly batch processing over 2M orders staged at /staging/orders/ in HDFS</p>
+                </div>
+
+                {/* Hive Workbench */}
+                <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Terminal className="w-5 h-5 text-[#15c089]" />
+                      <h3 className="text-base font-bold text-[#013326]">HiveQL Query Console</h3>
                     </div>
 
-                    <div className="divide-y divide-[#e2eae5] text-xs">
-                      {hiveQueries[activeHiveQuery].results.map((res, i) => (
-                        <div key={i} className="py-2.5 flex items-center justify-between">
-                          <span className="font-bold text-[#013326]">{res.col1}</span>
-                          <span className="font-mono font-bold text-[#013326]">{res.col2}</span>
-                          <span className="text-[11px] text-[#5c7167]">{res.col3}</span>
-                        </div>
+                    <div className="flex items-center space-x-1.5 bg-[#f1f6f3] p-1 rounded-xl">
+                      {(["D1", "D2", "D3", "D4"] as const).map((qKey) => (
+                        <button
+                          key={qKey}
+                          onClick={() => setActiveHiveQuery(qKey)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer ${
+                            activeHiveQuery === qKey ? "bg-[#013326] text-white" : "text-[#5c7167]"
+                          }`}
+                        >
+                          Query {qKey}
+                        </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="p-3 bg-[#eafaf4] rounded-xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-start space-x-2">
-                    <Zap className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{hiveQueries[activeHiveQuery].speedup}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Warehouse Architecture Flow Pipeline Card */}
-            <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-4">
-              <h3 className="text-sm font-bold text-[#013326] flex items-center space-x-2">
-                <Layers className="w-4 h-4 text-[#15c089]" />
-                <span>Five-Tier Data Warehouse Pipeline</span>
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-                {[
-                  { step: "1. Ingestion", tech: "HDFS CSV", desc: "Raw dumps land at /staging/orders/2026-09.csv" },
-                  { step: "2. Staging Layer", tech: "orders_raw", desc: "TextFile table with comma delimiter" },
-                  { step: "3. ETL Transformation", tech: "Dynamic Partitions", desc: "Clustered into 8 buckets by customer_id" },
-                  { step: "4. Storage Engine", tech: "ORC Format", desc: "ZLIB compression with predicate pushdown" },
-                  { step: "5. BI Presentation", tech: "Power BI / HiveQL", desc: "Partition pruning accelerates reporting queries" },
-                ].map((item, i) => (
-                  <div key={i} className="bg-[#f6faf8] p-3.5 rounded-xl border border-[#e2eae5] flex flex-col justify-between">
-                    <div>
-                      <span className="text-[11px] font-bold text-[#5c7167]">{item.step}</span>
-                      <h4 className="text-xs font-bold text-[#013326] mt-1">{item.tech}</h4>
-                    </div>
-                    <p className="text-[11px] text-[#5c7167] mt-2 leading-relaxed">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================== */}
-        {/* TAB 3: FLEET TELEMETRY (Cassandra Stream Simulation) */}
-        {/* ========================================================== */}
-        {activeTab === "riders" && (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-extrabold text-[#013326] tracking-tight">
-                  Delivery Fleet Telemetry & Live Stream
-                </h2>
-                <p className="text-sm text-[#5c7167]">
-                  Apache Cassandra column-family storage handling 160 GPS write requests / second (13.8M pings / day)
-                </p>
-              </div>
-
-              {/* City Filter Pills */}
-              <div className="flex items-center space-x-1.5 bg-white p-1 rounded-xl border border-[#e2eae5] shadow-xs">
-                {["All", "Phnom Penh", "Siem Reap", "Battambang"].map((city) => (
-                  <button
-                    key={city}
-                    onClick={() => setSelectedCityFilter(city)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      selectedCityFilter === city
-                        ? "bg-[#013326] text-white"
-                        : "text-[#5c7167] hover:text-[#013326] hover:bg-[#f1f6f3]"
-                    }`}
-                  >
-                    {city}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Cassandra Engine Metrics Banner & Live Terminal */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Architecture Info */}
-              <div className="lg:col-span-1 bg-[#013326] text-white p-6 rounded-2xl border border-[#0a4636] shadow-card flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <span className="text-xs font-bold text-[#15c089] uppercase tracking-wider">
-                    Storage Architecture
-                  </span>
-                  <h3 className="text-lg font-bold">Apache Cassandra (LSM Tree)</h3>
-                  <p className="text-xs text-[#cad6cf] leading-relaxed">
-                    Log-structured merge-tree architecture writes sequentially to memory Memtables and disk SSTables, avoiding B-tree page lock bottlenecks.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
-                  <div className="bg-white/10 p-3 rounded-xl text-center">
-                    <p className="text-[10px] text-[#cad6cf]">Active Fleet</p>
-                    <p className="text-lg font-black text-[#15c089]">800 Riders</p>
-                  </div>
-                  <div className="bg-white/10 p-3 rounded-xl text-center">
-                    <p className="text-[10px] text-[#cad6cf]">Daily Volume</p>
-                    <p className="text-lg font-black text-white">13.8M Writes</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Live Streaming Terminal */}
-              <div className="lg:col-span-2 bg-[#011c15] text-[#9cf0ce] p-6 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-[#0a4636]">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${isTelemetryStreaming ? "bg-[#15c089] animate-pulse" : "bg-slate-500"}`} />
-                    <span className="font-bold text-white">Cassandra Live Ingest Stream</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsTelemetryStreaming(!isTelemetryStreaming);
-                      showToast(isTelemetryStreaming ? "Paused telemetry stream" : "Resumed live stream", "info");
-                    }}
-                    className="text-xs text-[#15c089] hover:underline cursor-pointer"
-                  >
-                    {isTelemetryStreaming ? "Pause Stream" : "Resume Stream"}
-                  </button>
-                </div>
-
-                <div className="space-y-1.5 overflow-hidden">
-                  {telemetryLogs.map((log, idx) => (
-                    <div key={idx} className="truncate text-emerald-300">
-                      {log}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2 border-t border-[#0a4636] text-[11px] text-[#cad6cf] flex justify-between">
-                  <span>Throughput: ~160 pings/sec</span>
-                  <span>Port: 9042 (Native CQL Protocol)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Rider Telemetry Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredRiders.map((rider) => (
-                <div
-                  key={rider.id}
-                  className="bg-white rounded-2xl p-5 border border-[#e2eae5] shadow-card space-y-4 hover:shadow-hover transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-bold text-[#013326]">{rider.name}</h4>
-                      <p className="text-[11px] text-[#5c7167] font-mono">ID: {rider.id}</p>
-                    </div>
-                    <span
-                      className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                        rider.status === "Delivering"
-                          ? "bg-[#eafaf4] text-[#0c835c] border border-[#9cf0ce]"
-                          : rider.status === "Picked Up"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : "bg-slate-100 text-slate-600 border border-slate-200"
-                      }`}
-                    >
-                      {rider.status}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t border-[#f1f6f3] text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-[#5c7167]">Zone:</span>
-                      <span className="font-semibold text-[#013326]">{rider.city}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#5c7167]">Current Speed:</span>
-                      <span className="font-semibold font-mono text-[#013326]">{rider.speed}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#5c7167]">Battery:</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-16 bg-[#f1f6f3] h-2 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${rider.battery > 65 ? "bg-[#15c089]" : "bg-amber-500"}`}
-                            style={{ width: `${rider.battery}%` }}
-                          />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div className="bg-[#011c15] text-[#9cf0ce] p-5 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-[#cad6cf] pb-2 border-b border-[#0a4636]">
+                          <span className="font-bold text-white">// {hiveQueries[activeHiveQuery].title}</span>
+                          <button
+                            onClick={() => copyQueryToClipboard(hiveQueries[activeHiveQuery].hql)}
+                            className="text-[#15c089] hover:text-white flex items-center space-x-1"
+                          >
+                            {queryCopied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{queryCopied ? "Copied" : "Copy"}</span>
+                          </button>
                         </div>
-                        <span className="font-mono text-[11px] font-bold text-[#013326]">{rider.battery}%</span>
+                        <pre className="overflow-x-auto text-emerald-300">{hiveQueries[activeHiveQuery].hql}</pre>
+                      </div>
+
+                      <div className="pt-3 border-t border-[#0a4636] flex justify-between items-center">
+                        <span className="text-[11px] text-[#cad6cf]">Driver → Compiler → Tez Engine</span>
+                        <button
+                          onClick={executeHiveQuerySimulation}
+                          disabled={isQueryExecuting}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#15c089] text-[#013326] font-bold text-xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {isQueryExecuting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                          <span>Execute Query</span>
+                        </button>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="bg-[#f6faf8] px-3 py-2 rounded-xl text-[11px] font-mono text-[#5c7167] flex items-center justify-between border border-[#e2eae5]">
-                    <span className="flex items-center space-x-1">
-                      <MapPin className="w-3 h-3 text-[#15c089]" />
-                      <span>{rider.lat}</span>
-                    </span>
-                    <span>{rider.lng}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================== */}
-        {/* TAB 4: CUSTOMER CRM (MongoDB Document Model) */}
-        {/* ========================================================== */}
-        {activeTab === "customer" && (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-extrabold text-[#013326] tracking-tight">
-                  Customer Profile & Document Model
-                </h2>
-                <p className="text-sm text-[#5c7167]">
-                  MongoDB customer record demonstrating embedding vs referencing engineering decisions
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setIsAddAddressOpen(true)}
-                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-all shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 text-[#15c089]" />
-                  <span>Add Address</span>
-                </button>
-                <button
-                  onClick={() => setShowJsonSchema(!showJsonSchema)}
-                  className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-[#e2eae5] text-xs font-bold text-[#013326] hover:bg-[#f1f6f3] transition-all shadow-xs cursor-pointer"
-                >
-                  <Code2 className="w-4 h-4 text-[#15c089]" />
-                  <span>{showJsonSchema ? "Hide JSON Schema" : "View JSON Document"}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Profile Overview Card */}
-            <div className="bg-white rounded-2xl p-6 border border-[#e2eae5] shadow-card space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 rounded-2xl bg-[#013326] text-white flex items-center justify-center text-xl font-bold border border-[#0a4636]">
-                    SM
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-bold text-[#013326]">{customer.name}</h3>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#eafaf4] text-[#0c835c] border border-[#9cf0ce]">
-                        {customer.tier}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#5c7167] font-mono mt-0.5">Customer ID: {customer._id} • {customer.phone}</p>
-                  </div>
-                </div>
-
-                <div className="bg-[#f6faf8] px-5 py-3 rounded-xl border border-[#e2eae5] text-right">
-                  <p className="text-[11px] text-[#5c7167] font-semibold">Loyalty Rewards</p>
-                  <p className="text-xl font-black text-[#013326]">{customer.loyalty_points} Points</p>
-                </div>
-              </div>
-
-              {/* Delivery Addresses Section (Embedded) */}
-              <div className="space-y-3 pt-4 border-t border-[#f1f6f3]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-bold text-[#013326]">
-                      Delivery Addresses (Embedded Array)
-                    </h4>
-                    <p className="text-[11px] text-[#5c7167]">
-                      Embedded inside customer document for single-read retrieval on checkout
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {customer.addresses.map((addr, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-xl border border-[#e2eae5] bg-[#fafcfb] space-y-1 relative"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#013326] flex items-center space-x-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#15c089]" />
-                          <span>{addr.label}</span>
-                        </span>
-                        {addr.isDefault && (
-                          <span className="text-[10px] font-bold text-[#0c835c] bg-[#eafaf4] px-2 py-0.5 rounded">
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-[#5c7167]">{addr.street}</p>
-                      <p className="text-xs font-semibold text-[#013326]">{addr.city}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Past Orders Section (Referenced) */}
-              <div className="space-y-3 pt-4 border-t border-[#f1f6f3]">
-                <div>
-                  <h4 className="text-sm font-bold text-[#013326]">
-                    Order History (Referenced IDs)
-                  </h4>
-                  <p className="text-[11px] text-[#5c7167]">
-                    Referenced IDs avoid document bloat and respect MongoDB's 16MB document size limit
-                  </p>
-                </div>
-
-                <div className="divide-y divide-[#f1f6f3] border border-[#e2eae5] rounded-xl overflow-hidden">
-                  {customer.past_orders.map((ord) => (
-                    <div key={ord.id} className="p-3.5 bg-white flex items-center justify-between text-xs">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-mono font-bold text-[#013326]">Order #{ord.id}</span>
-                          <span className="text-[11px] text-[#5c7167]">{ord.date}</span>
-                        </div>
-                        <p className="text-[#5c7167] text-[11px]">{ord.items}</p>
-                      </div>
-                      <div className="text-right space-y-0.5">
-                        <p className="font-mono font-bold text-[#013326]">{formatPrice(ord.total)}</p>
-                        <span className="text-[10px] font-bold text-[#0c835c] bg-[#eafaf4] px-1.5 py-0.5 rounded">
-                          {ord.status}
+                    <div className="bg-[#fafcfb] p-5 rounded-2xl border border-[#e2eae5] space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-[#013326]">Query Execution Results</span>
+                        <span className="text-[11px] text-[#0e9f6e] font-mono bg-[#eafaf4] px-2 py-0.5 rounded-full">
+                          142 ms latency
                         </span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            {/* Raw JSON Schema View */}
-            {showJsonSchema && (
-              <div className="bg-[#011c15] text-[#9cf0ce] p-6 rounded-2xl font-mono text-xs overflow-x-auto border border-[#0a4636] space-y-2">
-                <p className="text-white font-bold">// MongoDB Customer Document: db.customers.findOne(&#123; _id: "C0457" &#125;)</p>
-                <pre>{JSON.stringify(customer, null, 2)}</pre>
+                      <div className="divide-y divide-[#e2eae5] text-xs">
+                        {hiveQueries[activeHiveQuery].results.map((res, i) => (
+                          <div key={i} className="py-2.5 flex justify-between">
+                            <span className="font-bold text-[#013326]">{res.col1}</span>
+                            <span className="font-mono font-bold text-[#013326]">{res.col2}</span>
+                            <span className="text-[11px] text-[#5c7167]">{res.col3}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-3 bg-[#eafaf4] rounded-xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-center space-x-2">
+                        <Zap className="w-4 h-4 shrink-0" />
+                        <span>{hiveQueries[activeHiveQuery].speedup}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1284,15 +1392,162 @@ export default function MarketplaceApp() {
       </main>
 
       {/* ============================================================ */}
-      {/* 3. PRODUCT QUICK VIEW MODAL */}
+      {/* MODAL 1: ADD PRODUCT (Merchant CRUD) */}
+      {/* ============================================================ */}
+      {isAddProductOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div onClick={() => setIsAddProductOpen(false)} className="absolute inset-0 bg-black/50 backdrop-blur-xs" />
+          <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#e2eae5] space-y-4 z-10 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-3 border-b border-[#e2eae5]">
+              <h3 className="text-base font-bold text-[#013326]">Create New Product (MongoDB)</h3>
+              <button onClick={() => setIsAddProductOpen(false)} className="p-1.5 rounded-lg text-[#5c7167]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">Product Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Wireless Noise Canceling Headphones"
+                  value={newProdName}
+                  onChange={(e) => setNewProdName(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:ring-2 focus:ring-[#15c089]/40"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#013326] mb-1">Category</label>
+                  <select
+                    value={newProdCategory}
+                    onChange={(e) => setNewProdCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
+                  >
+                    <option value="Electronics">Electronics</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Groceries">Groceries</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#013326] mb-1">Price (USD)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="29.99"
+                    value={newProdPrice}
+                    onChange={(e) => setNewProdPrice(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
+                  />
+                </div>
+              </div>
+
+              {/* Dynamic Polymorphic Category Fields */}
+              {newProdCategory === "Electronics" && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-[#f6faf8] rounded-xl border border-[#e2eae5]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Screen Size</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 6.5 inch OLED"
+                      value={newProdScreen}
+                      onChange={(e) => setNewProdScreen(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Warranty</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1 Year Official"
+                      value={newProdWarranty}
+                      onChange={(e) => setNewProdWarranty(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {newProdCategory === "Clothing" && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-[#f6faf8] rounded-xl border border-[#e2eae5]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Size</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. M, L, XL"
+                      value={newProdSize}
+                      onChange={(e) => setNewProdSize(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Colours (comma separated)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Black, Navy, Sand"
+                      value={newProdColours}
+                      onChange={(e) => setNewProdColours(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {newProdCategory === "Groceries" && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-[#f6faf8] rounded-xl border border-[#e2eae5]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Net Weight</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1kg Bag"
+                      value={newProdWeight}
+                      onChange={(e) => setNewProdWeight(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#013326]">Expiry Date</label>
+                    <input
+                      type="date"
+                      value={newProdExpiry}
+                      onChange={(e) => setNewProdExpiry(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Item details..."
+                  value={newProdDesc}
+                  onChange={(e) => setNewProdDesc(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                Insert into MongoDB Collection
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL 2: PRODUCT QUICK VIEW */}
       {/* ============================================================ */}
       {quickViewProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setQuickViewProduct(null)}
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
-          />
-
+          <div onClick={() => setQuickViewProduct(null)} className="absolute inset-0 bg-black/50 backdrop-blur-xs" />
           <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#e2eae5] space-y-5 z-10">
             <div className="flex items-start justify-between">
               <div>
@@ -1302,20 +1557,15 @@ export default function MarketplaceApp() {
                 <h3 className="text-lg font-bold text-[#013326] mt-2">{quickViewProduct.name}</h3>
                 <p className="text-xs text-[#5c7167] font-mono">SKU: {quickViewProduct.product_id}</p>
               </div>
-              <button
-                onClick={() => setQuickViewProduct(null)}
-                className="p-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
-              >
+              <button onClick={() => setQuickViewProduct(null)} className="p-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Description */}
             <p className="text-xs text-[#5c7167] leading-relaxed">
               {quickViewProduct.description || "High-quality marketplace inventory item backed by verified distributor warranty."}
             </p>
 
-            {/* Polymorphic Specs Table */}
             <div className="bg-[#f6faf8] p-4 rounded-xl border border-[#e2eae5] space-y-2 text-xs">
               <span className="font-bold text-[#013326] text-[11px] uppercase tracking-wider">
                 MongoDB Document Attributes
@@ -1358,7 +1608,6 @@ export default function MarketplaceApp() {
               )}
             </div>
 
-            {/* Price & Quantity Adder */}
             <div className="pt-3 border-t border-[#f1f6f3] flex items-center justify-between">
               <div>
                 <p className="text-[11px] text-[#5c7167]">Total Price</p>
@@ -1371,14 +1620,14 @@ export default function MarketplaceApp() {
                 <div className="flex items-center space-x-2 bg-[#f1f6f3] p-1 rounded-xl">
                   <button
                     onClick={() => setQuickViewQty(Math.max(1, quickViewQty - 1))}
-                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <span className="w-6 text-center text-xs font-bold text-[#013326]">{quickViewQty}</span>
                   <button
                     onClick={() => setQuickViewQty(quickViewQty + 1)}
-                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -1401,36 +1650,29 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 4. ADD ADDRESS MODAL */}
+      {/* MODAL 3: ADD ADDRESS */}
       {/* ============================================================ */}
       {isAddAddressOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setIsAddAddressOpen(false)}
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
-          />
-
+          <div onClick={() => setIsAddAddressOpen(false)} className="absolute inset-0 bg-black/50 backdrop-blur-xs" />
           <div className="relative bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#e2eae5] space-y-4 z-10">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e2eae5]">
+            <div className="flex justify-between items-center pb-3 border-b border-[#e2eae5]">
               <h3 className="text-base font-bold text-[#013326]">Add Delivery Address</h3>
-              <button
-                onClick={() => setIsAddAddressOpen(false)}
-                className="p-1.5 rounded-lg text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
-              >
+              <button onClick={() => setIsAddAddressOpen(false)} className="p-1.5 rounded-lg text-[#5c7167]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleAddAddress} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#013326] mb-1">Address Label</label>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">Label</label>
                 <input
                   type="text"
                   placeholder="e.g. Warehouse, Studio"
-                  value={newAddressLabel}
-                  onChange={(e) => setNewAddressLabel(e.target.value)}
+                  value={newAddrLabel}
+                  onChange={(e) => setNewAddrLabel(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
                 />
               </div>
 
@@ -1438,20 +1680,20 @@ export default function MarketplaceApp() {
                 <label className="block text-xs font-semibold text-[#013326] mb-1">Street Address</label>
                 <input
                   type="text"
-                  placeholder="e.g. Street 310, Sangkat BKK1"
-                  value={newAddressStreet}
-                  onChange={(e) => setNewAddressStreet(e.target.value)}
+                  placeholder="Street 310, Sangkat BKK1"
+                  value={newAddrStreet}
+                  onChange={(e) => setNewAddrStreet(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#013326] mb-1">City / Province</label>
+                <label className="block text-xs font-semibold text-[#013326] mb-1">City</label>
                 <select
-                  value={newAddressCity}
-                  onChange={(e) => setNewAddressCity(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] focus:outline-none focus:ring-2 focus:ring-[#15c089]/40"
+                  value={newAddrCity}
+                  onChange={(e) => setNewAddrCity(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5]"
                 >
                   <option value="Phnom Penh">Phnom Penh</option>
                   <option value="Siem Reap">Siem Reap</option>
@@ -1461,9 +1703,9 @@ export default function MarketplaceApp() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-[#013326] text-white text-xs font-bold shadow-sm cursor-pointer"
               >
-                Save to MongoDB Profile
+                Save to Profile
               </button>
             </form>
           </div>
@@ -1471,46 +1713,28 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 5. SLIDE-OVER SHOPPING CART DRAWER */}
+      {/* DRAWER: SHOPPING CART */}
       {/* ============================================================ */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          <div
-            onClick={() => setIsCartOpen(false)}
-            className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
-          />
-
+          <div onClick={() => setIsCartOpen(false)} className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
             <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between">
-              {/* Drawer Header */}
               <div className="p-6 border-b border-[#e2eae5] flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <ShoppingBag className="w-5 h-5 text-[#15c089]" />
-                  <h3 className="text-base font-bold text-[#013326]">Your Cart ({cartItemCount})</h3>
+                  <h3 className="text-base font-bold text-[#013326]">Shopping Cart ({cartItemCount})</h3>
                 </div>
-                <button
-                  onClick={() => setIsCartOpen(false)}
-                  className="p-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3] hover:text-[#013326] cursor-pointer"
-                >
+                <button onClick={() => setIsCartOpen(false)} className="p-2 rounded-xl text-[#5c7167]">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Cart Items List */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-3 text-[#5c7167]">
                     <ShoppingBag className="w-12 h-12 text-[#cad6cf]" />
                     <p className="text-sm font-semibold">Your shopping cart is empty</p>
-                    <button
-                      onClick={() => {
-                        setIsCartOpen(false);
-                        setActiveTab("store");
-                      }}
-                      className="text-xs font-bold text-[#013326] underline"
-                    >
-                      Browse Catalog
-                    </button>
                   </div>
                 ) : (
                   cart.map((item) => (
@@ -1528,16 +1752,14 @@ export default function MarketplaceApp() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => updateCartQty(item.product.product_id, -1)}
-                          className="w-7 h-7 rounded-lg bg-white border border-[#e2eae5] flex items-center justify-center text-[#013326] hover:bg-[#f1f6f3] cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white border border-[#e2eae5] flex items-center justify-center text-[#013326]"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
-                        <span className="w-6 text-center text-xs font-bold text-[#013326]">
-                          {item.quantity}
-                        </span>
+                        <span className="w-6 text-center text-xs font-bold text-[#013326]">{item.quantity}</span>
                         <button
                           onClick={() => updateCartQty(item.product.product_id, 1)}
-                          className="w-7 h-7 rounded-lg bg-white border border-[#e2eae5] flex items-center justify-center text-[#013326] hover:bg-[#f1f6f3] cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white border border-[#e2eae5] flex items-center justify-center text-[#013326]"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -1547,7 +1769,6 @@ export default function MarketplaceApp() {
                 )}
               </div>
 
-              {/* Drawer Footer & Checkout Action */}
               {cart.length > 0 && (
                 <div className="p-6 border-t border-[#e2eae5] bg-[#fafcfb] space-y-4">
                   <div className="space-y-2 text-xs">
@@ -1594,39 +1815,29 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 6. BAKONG KHQR CHECKOUT MODAL */}
+      {/* CHECKOUT MODAL (Bakong KHQR) */}
       {/* ============================================================ */}
       {isCheckoutOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setIsCheckoutOpen(false)}
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
-          />
-
+          <div onClick={() => setIsCheckoutOpen(false)} className="absolute inset-0 bg-black/50 backdrop-blur-xs" />
           <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#e2eae5] space-y-6 z-10 max-h-[90vh] overflow-y-auto">
             {!isCheckoutSuccess ? (
               <>
-                <div className="flex items-center justify-between pb-4 border-b border-[#e2eae5]">
+                <div className="flex justify-between items-center pb-4 border-b border-[#e2eae5]">
                   <div>
-                    <h3 className="text-lg font-bold text-[#013326]">Complete Payment</h3>
+                    <h3 className="text-lg font-bold text-[#013326]">Checkout & Payment</h3>
                     <p className="text-xs text-[#5c7167]">Instant settlement with Bakong KHQR or Cash on Delivery</p>
                   </div>
-                  <button
-                    onClick={() => setIsCheckoutOpen(false)}
-                    className="p-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
-                  >
+                  <button onClick={() => setIsCheckoutOpen(false)} className="p-2 rounded-xl text-[#5c7167]">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* Payment Method Selector */}
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setSelectedPayment("khqr")}
                     className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      selectedPayment === "khqr"
-                        ? "bg-[#013326] text-white border-[#013326]"
-                        : "bg-[#f1f6f3] text-[#5c7167] border-[#e2eae5]"
+                      selectedPayment === "khqr" ? "bg-[#013326] text-white border-[#013326]" : "bg-[#f1f6f3] text-[#5c7167]"
                     }`}
                   >
                     Bakong KHQR
@@ -1634,9 +1845,7 @@ export default function MarketplaceApp() {
                   <button
                     onClick={() => setSelectedPayment("cod")}
                     className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      selectedPayment === "cod"
-                        ? "bg-[#013326] text-white border-[#013326]"
-                        : "bg-[#f1f6f3] text-[#5c7167] border-[#e2eae5]"
+                      selectedPayment === "cod" ? "bg-[#013326] text-white border-[#013326]" : "bg-[#f1f6f3] text-[#5c7167]"
                     }`}
                   >
                     Cash (COD)
@@ -1644,16 +1853,13 @@ export default function MarketplaceApp() {
                   <button
                     onClick={() => setSelectedPayment("card")}
                     className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      selectedPayment === "card"
-                        ? "bg-[#013326] text-white border-[#013326]"
-                        : "bg-[#f1f6f3] text-[#5c7167] border-[#e2eae5]"
+                      selectedPayment === "card" ? "bg-[#013326] text-white border-[#013326]" : "bg-[#f1f6f3] text-[#5c7167]"
                     }`}
                   >
-                    Card
+                    Credit Card
                   </button>
                 </div>
 
-                {/* KHQR Card View */}
                 {selectedPayment === "khqr" && (
                   <div className="bg-[#e02020] rounded-2xl p-4 text-white shadow-md space-y-4">
                     <div className="flex items-center justify-between">
@@ -1666,10 +1872,8 @@ export default function MarketplaceApp() {
                       </span>
                     </div>
 
-                    {/* QR Code Container */}
                     <div className="bg-white rounded-xl p-4 flex flex-col items-center justify-center space-y-3 text-slate-900">
                       <div className="w-44 h-44 bg-slate-900 rounded-lg p-2 flex items-center justify-center relative shadow-inner">
-                        {/* Authentic QR grid pattern simulation */}
                         <div className="w-full h-full bg-white rounded p-2 flex flex-col justify-between">
                           <div className="flex justify-between">
                             <div className="w-8 h-8 bg-slate-900 rounded-xs flex items-center justify-center">
@@ -1703,7 +1907,7 @@ export default function MarketplaceApp() {
                       </div>
 
                       <div className="text-center space-y-0.5">
-                        <p className="text-xs font-bold text-[#013326]">MARKETPLACE COMMERCE STORE</p>
+                        <p className="text-xs font-bold text-[#013326]">MARKETPLACE COMMERCE</p>
                         <p className="text-base font-black text-[#013326] font-mono">
                           {formatPrice(finalTotalUSD)}
                         </p>
@@ -1713,28 +1917,23 @@ export default function MarketplaceApp() {
                   </div>
                 )}
 
-                {/* Delivery Address Review */}
                 <div className="bg-[#f6faf8] p-3.5 rounded-xl border border-[#e2eae5] text-xs space-y-1">
-                  <div className="flex items-center justify-between font-bold text-[#013326]">
+                  <div className="flex justify-between font-bold text-[#013326]">
                     <span>Delivering to: {customer.name}</span>
-                    <span className="text-[#0c835c]">Default Address</span>
+                    <span className="text-[#0c835c]">Home</span>
                   </div>
-                  <p className="text-[#5c7167]">
-                    {customer.addresses.find((a) => a.isDefault)?.street || customer.addresses[0]?.street}
-                  </p>
+                  <p className="text-[#5c7167]">{customer.addresses[0]?.street}</p>
                 </div>
 
-                {/* Confirm Action Button */}
                 <button
                   onClick={handleSimulatePayment}
                   className="w-full py-3.5 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
-                  <span>Simulate Successful Payment ({formatPrice(finalTotalUSD)})</span>
+                  <span>Simulate Payment & Persist Order ({formatPrice(finalTotalUSD)})</span>
                 </button>
               </>
             ) : (
-              /* Success State */
               <div className="text-center py-6 space-y-4">
                 <div className="w-16 h-16 rounded-2xl bg-[#eafaf4] text-[#0c835c] flex items-center justify-center mx-auto border border-[#9cf0ce]">
                   <CheckCircle2 className="w-8 h-8 text-[#15c089]" />
@@ -1742,21 +1941,18 @@ export default function MarketplaceApp() {
                 <div className="space-y-1">
                   <h3 className="text-xl font-extrabold text-[#013326]">Payment Confirmed!</h3>
                   <p className="text-xs text-[#5c7167]">
-                    Your order has been recorded into the MongoDB database and queued for Cassandra rider dispatch.
+                    Order persisted into MongoDB and dispatched to the fulfillment pipeline.
                   </p>
-                </div>
-                <div className="bg-[#f6faf8] p-4 rounded-xl border border-[#e2eae5] text-xs font-mono text-[#013326] inline-block">
-                  Tracking Code: <strong>ORD-2026-9042</strong>
                 </div>
                 <button
                   onClick={() => {
                     setIsCheckoutOpen(false);
                     setCart([]);
-                    setActiveTab("customer");
+                    setCustomerTab("orders");
                   }}
-                  className="w-full py-3 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-[#013326] text-white text-xs font-bold cursor-pointer"
                 >
-                  View in Customer CRM
+                  Track Order in My Orders
                 </button>
               </div>
             )}
@@ -1765,13 +1961,17 @@ export default function MarketplaceApp() {
       )}
 
       {/* ============================================================ */}
-      {/* 7. TOAST NOTIFICATION STACK */}
+      {/* TOAST NOTIFICATION STACK */}
       {/* ============================================================ */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto bg-[#013326] text-white px-4 py-2.5 rounded-xl shadow-lg border border-[#0a4636] text-xs font-semibold flex items-center space-x-2 animate-bounce-subtle"
+            className={`pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 animate-bounce-subtle ${
+              toast.type === "error"
+                ? "bg-rose-900 text-white border-rose-700"
+                : "bg-[#013326] text-white border-[#0a4636]"
+            }`}
           >
             <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
             <span>{toast.message}</span>
@@ -1780,14 +1980,14 @@ export default function MarketplaceApp() {
       </div>
 
       {/* ============================================================ */}
-      {/* 8. FOOTER */}
+      {/* FOOTER */}
       {/* ============================================================ */}
       <footer className="mt-auto border-t border-[#e2eae5] bg-white py-6 text-center text-xs text-[#5c7167]">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-[#013326]">Marketplace</span>
             <span>•</span>
-            <span>Polyglot E-Commerce Data Platform</span>
+            <span>Polyglot E-Commerce Microservices Engine</span>
           </div>
           <div className="flex items-center space-x-4">
             <span>Next.js 15</span>
@@ -1795,6 +1995,8 @@ export default function MarketplaceApp() {
             <span>MongoDB 8.0</span>
             <span>•</span>
             <span>Cassandra LSM</span>
+            <span>•</span>
+            <span>Neo4j Graph</span>
             <span>•</span>
             <span>Apache Hive 3.1</span>
           </div>
