@@ -688,9 +688,21 @@ export default function MarketplaceApp() {
               </div>
             )}
 
-            <div className="hidden lg:flex items-center space-x-2 text-[11px] font-semibold text-[#0c835c]">
-              <span className="w-2 h-2 rounded-full bg-[#15c089] animate-ping" />
-              <span>Services Healthy • MongoDB Connected</span>
+            <div className="hidden lg:flex items-center space-x-3 text-[11px] font-semibold">
+              <div className="flex items-center space-x-1.5 text-[#0c835c]">
+                <span className="w-2 h-2 rounded-full bg-[#15c089] animate-ping" />
+                <span>Services Active • Polyglot Ready</span>
+              </div>
+              <a
+                href="http://localhost:4000/api/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100/90 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 font-mono text-[11px] font-semibold transition-colors shadow-xs"
+                title="View NestJS Swagger OpenAPI Documentation"
+              >
+                <span>NestJS API Docs</span>
+                <span className="text-[9px]">↗</span>
+              </a>
             </div>
           </div>
         </div>

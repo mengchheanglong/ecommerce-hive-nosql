@@ -38,7 +38,19 @@
 │   └── scripts/
 │       ├── seed-products.js         # Insert sample products
 │       └── crud-operations.js       # Full CRUD demo script
-└── web/                             # Next.js 15 Full-Stack Web Application
+├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
+│   ├── src/
+│   │   ├── catalog/                 # MongoDB Catalog microservice
+│   │   ├── orders/                  # MongoDB Orders & state machine
+│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service
+│   │   ├── referral/                # Neo4j Graph referral service
+│   │   ├── warehouse/               # Apache Hive reporting service
+│   │   ├── database/                # Native MongoDB connection module
+│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
+│   ├── package.json
+│   └── tsconfig.json
+├── services/                        # Decoupled Microservice Specs (Docker Compose)
+└── web/                             # Next.js 15 Full-Stack Web Application (Port 3001)
     ├── src/
     │   ├── app/
     │   │   ├── api/                 # API routes (products, analytics, riders)
@@ -57,9 +69,12 @@
 - **MongoDB:** MongoDB scripts use the `.js` extension, meant to be run via `mongosh`.
 - **Schemas:** Defined in JSON Schema (draft-07) format.
 - **DDL ordering:** Hive DDL files are prefixed with numbers (`01-`, `02-`, ...) to indicate execution order.
+- **Backend:** NestJS 10 with Swagger OpenAPI documentation on `http://localhost:4000/api/docs`.
 - **Web App:** Next.js 15 with App Router, TypeScript, and Tailwind CSS. Runs on port 3001.
 
 ## Testing & Running
+- **NestJS Backend:** `cd backend && pnpm start` (accessible on `http://localhost:4000`, Swagger docs at `/api/docs`)
 - **Web App:** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
-- **MongoDB Scripts:** `mongosh Marketplace mongodb/scripts/seed-products.js`
+- **MongoDB Scripts:** `mongosh ecommerce mongodb/scripts/seed-products.js`
 - **Hive Pipeline:** Run sequentially or via `./run_lab.ps1`
+

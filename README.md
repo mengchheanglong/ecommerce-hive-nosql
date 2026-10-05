@@ -76,14 +76,25 @@ The platform provides a dedicated portal switch in the top navigation, completel
 
 ```
 .
-├── services/                        # Decoupled Microservices
+├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
+│   ├── src/
+│   │   ├── catalog/                 # MongoDB Catalog controller & service
+│   │   ├── orders/                  # MongoDB Orders & state machine
+│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service
+│   │   ├── referral/                # Neo4j Graph referral service
+│   │   ├── warehouse/               # Apache Hive reporting service
+│   │   ├── database/                # Native MongoDB connection module
+│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
+│   ├── package.json
+│   └── tsconfig.json
+├── services/                        # Decoupled Microservices Specs
 │   ├── catalog-service/             # MongoDB Product Catalog CRUD
 │   ├── cart-service/                # Redis Active Cart & Session Cache
 │   ├── order-service/               # Order Processing & State Machine
 │   ├── telemetry-service/           # Cassandra 13.8M/day Rider GPS Ingest
 │   ├── referral-service/            # Neo4j 3-Level Referral Tree & Cypher
 │   └── warehouse-service/           # Apache Hive HDFS Ingestion & ETL
-├── web/                             # Next.js 15 Full-Stack Application
+├── web/                             # Next.js 15 Full-Stack Application (Port 3001)
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── api/                 # Endpoints (products, orders, riders, referrals, analytics)
@@ -111,21 +122,31 @@ The platform provides a dedicated portal switch in the top navigation, completel
 
 ## 🚀 Quick Start
 
-### 1. Run the Web Application
+### 1. Run the NestJS Microservices Backend
+```powershell
+cd backend
+pnpm install
+pnpm build
+pnpm start
+```
+- API Base: **[http://localhost:4000](http://localhost:4000)**
+- Interactive Swagger OpenAPI Docs: **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)**
+
+### 2. Run the Next.js Storefront & Merchant Web App
 ```powershell
 cd web
 pnpm install
 pnpm dev
 ```
-Open **[http://localhost:3001](http://localhost:3001)** in your browser.
+Open **[http://localhost:3001](http://localhost:3001)** in your browser. (All `/nest-api/*` paths automatically proxy to the NestJS backend).
 
-### 2. Multi-Container Orchestration (Docker)
+### 3. Multi-Container Orchestration (Docker)
 ```bash
 docker compose up -d
 ```
 Spins up MongoDB, Redis, Apache Cassandra, and Neo4j.
 
-### 3. Run the Hive Warehouse Pipeline (WSL2 / Linux)
+### 4. Run the Hive Warehouse Pipeline (WSL2 / Linux)
 ```powershell
 ./run_lab.ps1
 ```
