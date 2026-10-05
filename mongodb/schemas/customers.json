@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Customer",
+  "description": "Schema for KhmerCart customers collection",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "Unique customer ID"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "loyalty_points": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "addresses": {
+      "type": "array",
+      "description": "Embedded addresses for the customer",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "enum": ["home", "work", "other"]
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          }
+        },
+        "required": ["label", "street", "city"]
+      }
+    },
+    "past_orders": {
+      "type": "array",
+      "description": "References to order IDs",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["_id", "name", "phone", "loyalty_points", "addresses", "past_orders"],
+  "additionalProperties": false
+}

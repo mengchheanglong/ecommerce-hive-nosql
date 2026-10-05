@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production / Next.js builds
+.next/
+out/
+build/
+dist/
+
+# Hive & DB logs
+*.log
+derby.log
+metastore_db/
+
+# Environment files
+.env*.local
+.env
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/

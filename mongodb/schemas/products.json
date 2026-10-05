@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product",
+  "description": "Schema for KhmerCart products collection supporting polymorphic categories",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["Electronics", "Clothing", "Groceries"]
+    },
+    "price": {
+      "type": "number",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "discontinued", "out_of_stock"]
+    }
+  },
+  "required": ["product_id", "name", "category", "price", "status"],
+  "oneOf": [
+    {
+      "properties": {
+        "category": { "const": "Electronics" },
+        "screen_size": { "type": "number" },
+        "warranty": { "type": "string" }
+      },
+      "required": ["screen_size", "warranty"]
+    },
+    {
+      "properties": {
+        "category": { "const": "Clothing" },
+        "size": { "type": "string" },
+        "colours": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["size", "colours"]
+    },
+    {
+      "properties": {
+        "category": { "const": "Groceries" },
+        "weight": { "type": "number" },
+        "expiry_date": { "type": "string", "format": "date" }
+      },
+      "required": ["weight", "expiry_date"]
+    }
+  ]
+}

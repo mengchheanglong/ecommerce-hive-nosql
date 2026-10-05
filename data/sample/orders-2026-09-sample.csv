@@ -1,0 +1,18 @@
+order_id,customer_id,product_id,category,province,quantity,unit_price,order_date,payment_method
+ORD-001,CUST-901,PROD-10,Electronics,Phnom Penh,1,450.00,2026-09-01,ABA Pay
+ORD-002,CUST-213,PROD-23,Clothing,Siem Reap,2,25.00,2026-09-02,Cash
+ORD-003,CUST-844,PROD-05,Groceries,Battambang,5,15.50,2026-09-02,ACLEDA Pay
+ORD-004,CUST-102,PROD-88,Home & Kitchen,Phnom Penh,1,120.00,2026-09-03,Wing
+ORD-005,CUST-901,PROD-45,Clothing,Phnom Penh,3,30.00,2026-09-04,ABA Pay
+ORD-006,CUST-555,PROD-12,Electronics,Siem Reap,1,850.00,2026-09-05,ACLEDA Pay
+ORD-007,CUST-777,PROD-02,Groceries,Phnom Penh,10,5.00,2026-09-05,Cash
+ORD-008,CUST-403,PROD-33,Home & Kitchen,Battambang,2,45.00,2026-09-06,Wing
+ORD-009,CUST-213,PROD-71,Electronics,Siem Reap,1,200.00,2026-09-07,Cash
+ORD-010,CUST-604,PROD-05,Groceries,Phnom Penh,3,15.50,2026-09-08,ABA Pay
+ORD-011,CUST-844,PROD-19,Clothing,Battambang,1,40.00,2026-09-09,ACLEDA Pay
+ORD-012,CUST-102,PROD-50,Groceries,Phnom Penh,15,3.00,2026-09-10,Wing
+ORD-013,CUST-333,PROD-11,Electronics,Siem Reap,2,300.00,2026-09-12,ABA Pay
+ORD-014,CUST-901,PROD-88,Home & Kitchen,Phnom Penh,1,120.00,2026-09-15,ABA Pay
+ORD-015,CUST-403,PROD-24,Clothing,Battambang,4,20.00,2026-09-18,Cash
+ORD-016,CUST-555,PROD-02,Groceries,Siem Reap,5,5.00,2026-09-20,ACLEDA Pay
+ORD-017,CUST-604,PROD-99,Home & Kitchen,Phnom Penh,1,75.00,2026-09-25,Wing
