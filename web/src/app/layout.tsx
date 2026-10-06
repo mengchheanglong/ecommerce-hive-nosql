@@ -7,6 +7,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { AppShell } from "@/components/shared/AppShell";
 
 import { LocationProvider } from "@/context/LocationContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "Rentify Marketplace — High-Scale Polyglot E-Commerce Platform",
@@ -21,17 +22,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-blue-500/20 selection:text-blue-950">
         <ToastProvider>
-          <CurrencyProvider>
-            <LocationProvider>
-              <CartProvider>
-                <WishlistProvider>
-                  <AppShell>{children}</AppShell>
-                </WishlistProvider>
-              </CartProvider>
-            </LocationProvider>
-          </CurrencyProvider>
+          <AuthProvider>
+            <CurrencyProvider>
+              <LocationProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <AppShell>{children}</AppShell>
+                  </WishlistProvider>
+                </CartProvider>
+              </LocationProvider>
+            </CurrencyProvider>
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>
