@@ -68,4 +68,9 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ example: ["P2211", "P2215"] })
+  @IsOptional()
+  @IsArray()
+  frequently_bought_with?: string[];
 }

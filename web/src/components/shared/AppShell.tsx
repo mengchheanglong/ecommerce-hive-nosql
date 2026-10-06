@@ -12,7 +12,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isMerchant = pathname?.startsWith("/merchant");
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-[#15c089]/20 selection:text-[#013326]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-950">
       {!isMerchant && <Header />}
       <div className="flex-1 flex flex-col">{children}</div>
       {!isMerchant && <Footer />}

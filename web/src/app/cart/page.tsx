@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useCurrency } from "@/context/CurrencyContext";
-import { ShoppingBag, Plus, Minus, Trash2, Tag, ArrowRight, ArrowLeft, ShieldCheck, X } from "lucide-react";
+import { ShoppingBag, Plus, Minus, Trash2, Tag, ArrowRight, ArrowLeft, ShieldCheck, X, Truck, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function FullCartPage() {
   const {
@@ -25,6 +25,10 @@ export default function FullCartPage() {
   const { formatPrice, currency, exchangeRate } = useCurrency();
   const [inputCode, setInputCode] = useState("");
 
+  const FREE_SHIPPING_THRESHOLD = 30;
+  const shippingProgress = Math.min(100, Math.round((cartTotalUSD / FREE_SHIPPING_THRESHOLD) * 100));
+  const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotalUSD);
+
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim()) return;
@@ -38,17 +42,17 @@ export default function FullCartPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-7xl w-full mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-20 h-20 rounded-full bg-[#f1f6f3] flex items-center justify-center mx-auto text-[#cad6cf]">
+        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-300">
           <ShoppingBag className="w-10 h-10" />
         </div>
-        <h2 className="text-2xl font-black text-[#013326]">Your shopping bag is empty</h2>
-        <p className="text-xs text-[#5c7167]">You haven't added any products to your cart yet.</p>
+        <h2 className="text-2xl font-black text-slate-900">Your shopping bag is empty</h2>
+        <p className="text-xs text-slate-500">You haven't added any products to your cart yet.</p>
         <Link
           href="/shop"
-          className="inline-flex items-center space-x-2 px-6 py-3 rounded-2xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-all"
+          className="inline-flex items-center space-x-2 px-6 py-3 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-xs"
         >
           <span>Browse Products</span>
-          <ArrowRight className="w-4 h-4 text-[#15c089]" />
+          <ArrowRight className="w-4 h-4 text-emerald-400" />
         </Link>
       </div>
     );
@@ -57,10 +61,10 @@ export default function FullCartPage() {
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-[#e2eae5] pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
         <div>
-          <h1 className="text-2xl font-black text-[#013326]">Shopping Cart</h1>
-          <p className="text-xs text-[#5c7167]">Review your selected items ({cartCount} total units)</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Shopping Cart</h1>
+          <p className="text-xs text-slate-500">Review your selected items ({cartCount} total units)</p>
         </div>
         <button
           onClick={clearCart}
@@ -70,62 +74,102 @@ export default function FullCartPage() {
         </button>
       </div>
 
+      {/* Free Delivery Progress Bar */}
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-2 font-bold text-slate-800">
+            <Truck className="w-4 h-4 text-emerald-600" />
+            {amountToFreeShipping > 0 ? (
+              <span>
+                Add <strong className="text-emerald-700 font-mono">{formatPrice(amountToFreeShipping)}</strong> more to unlock <strong className="text-slate-900">FREE Express Delivery</strong>!
+              </span>
+            ) : (
+              <span className="text-emerald-700 flex items-center space-x-1">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Congratulations! You qualified for FREE Express Courier Delivery!</span>
+              </span>
+            )}
+          </div>
+          <span className="font-mono font-bold text-xs text-slate-500">{shippingProgress}%</span>
+        </div>
+
+        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 rounded-full ${
+              amountToFreeShipping === 0 ? "bg-emerald-500" : "bg-gradient-to-r from-amber-400 to-emerald-500"
+            }`}
+            style={{ width: `${shippingProgress}%` }}
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Cart Items Table */}
-        <div className="lg:col-span-8 bg-white rounded-3xl border border-[#e2eae5] shadow-card overflow-hidden">
-          <div className="divide-y divide-[#f1f6f3]">
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="divide-y divide-slate-100">
             {cart.map((item) => (
               <div
                 key={item.product.product_id}
-                className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 rounded-2xl bg-[#f1f6f3] flex items-center justify-center shrink-0 text-[#013326]">
-                    <ShoppingBag className="w-6 h-6 text-[#15c089]" />
+                  {/* Thumbnail Image */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 shrink-0 relative">
+                    {item.product.image ? (
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <ShoppingBag className="w-6 h-6" />
+                      </div>
+                    )}
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-[#5c7167] uppercase tracking-wider">
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                       {item.product.category}
                     </span>
                     <Link
                       href={`/shop/${item.product.product_id}`}
-                      className="text-sm font-extrabold text-[#013326] hover:text-[#0c835c] transition-colors block"
+                      className="text-sm font-bold text-slate-900 hover:text-emerald-700 transition-colors block"
                     >
                       {item.product.name}
                     </Link>
-                    <p className="text-xs font-mono font-bold text-[#0c835c] mt-0.5">
+                    <p className="text-xs font-mono font-bold text-emerald-700 mt-0.5">
                       {formatPrice(item.product.price)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-6">
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-5">
                   {/* Quantity Stepper */}
-                  <div className="flex items-center space-x-2 bg-[#f1f6f3] p-1.5 rounded-2xl border border-[#e2eae5]">
+                  <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
                     <button
                       onClick={() => updateQuantity(item.product.product_id, item.quantity - 1)}
-                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5] cursor-pointer"
+                      className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 cursor-pointer"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-6 text-center text-xs font-bold text-[#013326]">
+                    <span className="w-6 text-center text-xs font-bold text-slate-900">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.product.product_id, item.quantity + 1)}
-                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5] cursor-pointer"
+                      className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <span className="text-sm font-mono font-black text-[#013326] w-20 text-right">
+                  <span className="text-sm font-mono font-bold text-slate-900 w-20 text-right">
                     {formatPrice(item.product.price * item.quantity)}
                   </span>
 
                   <button
                     onClick={() => removeFromCart(item.product.product_id)}
-                    className="p-2 text-[#5c7167] hover:text-rose-600 transition-colors cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -137,14 +181,14 @@ export default function FullCartPage() {
         </div>
 
         {/* Order Summary Column */}
-        <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-6">
-          <h3 className="text-base font-extrabold text-[#013326]">Order Summary</h3>
+        <div className="lg:col-span-4 bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-5">
+          <h3 className="text-base font-bold text-slate-900">Order Summary</h3>
 
           {/* Promo code */}
           {promoCode ? (
-            <div className="p-3 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-center justify-between font-semibold">
+            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/80 text-xs text-emerald-800 flex items-center justify-between font-semibold">
               <div className="flex items-center space-x-2">
-                <Tag className="w-3.5 h-3.5 text-[#15c089]" />
+                <Tag className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Code <strong>{promoCode}</strong> applied ({discountPercent > 0 ? `${discountPercent}% off` : "Free Shipping"})</span>
               </div>
               <button
@@ -158,18 +202,18 @@ export default function FullCartPage() {
           ) : (
             <form onSubmit={handleApplyPromo} className="flex gap-2">
               <div className="relative flex-1">
-                <Tag className="w-3.5 h-3.5 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Promo code (VIP10 / KHMER2026)"
                   value={inputCode}
                   onChange={(e) => setInputCode(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] font-mono uppercase focus:bg-white focus:outline-none"
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200/80 text-slate-900 font-mono uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Apply
               </button>
@@ -178,29 +222,29 @@ export default function FullCartPage() {
 
           {/* Price Breakdown */}
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between text-[#5c7167]">
+            <div className="flex justify-between text-slate-600">
               <span>Cart Subtotal</span>
-              <span className="font-mono font-bold text-[#013326]">{formatPrice(cartTotalUSD)}</span>
+              <span className="font-mono font-bold text-slate-900">{formatPrice(cartTotalUSD)}</span>
             </div>
-            <div className="flex justify-between text-[#5c7167]">
+            <div className="flex justify-between text-slate-600">
               <span>Courier Delivery</span>
-              <span className="font-mono font-bold text-[#013326]">
+              <span className="font-mono font-bold text-slate-900">
                 {deliveryFeeUSD === 0 ? "FREE" : formatPrice(deliveryFeeUSD)}
               </span>
             </div>
             {discountUSD > 0 && (
-              <div className="flex justify-between text-[#0c835c]">
+              <div className="flex justify-between text-emerald-700">
                 <span>Discount ({promoCode})</span>
                 <span className="font-mono font-bold">-{formatPrice(discountUSD)}</span>
               </div>
             )}
-            <div className="pt-3 border-t border-[#e2eae5] flex justify-between items-baseline">
-              <span className="text-sm font-black text-[#013326]">Total Amount</span>
+            <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
+              <span className="text-sm font-bold text-slate-900">Total Amount</span>
               <div className="text-right">
-                <span className="text-xl font-black text-[#013326] font-mono block">
+                <span className="text-xl font-extrabold text-slate-900 font-mono block">
                   {formatPrice(finalTotalUSD)}
                 </span>
-                <span className="text-[11px] text-[#5c7167]">
+                <span className="text-[11px] text-slate-500 font-mono">
                   (~៛{netTotalKHR.toLocaleString()} KHR)
                 </span>
               </div>
@@ -209,15 +253,15 @@ export default function FullCartPage() {
 
           <Link
             href="/checkout"
-            className="w-full py-4 rounded-2xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+            className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
           >
             <span>Proceed to Checkout</span>
-            <ArrowRight className="w-4 h-4 text-[#15c089]" />
+            <ArrowRight className="w-4 h-4" />
           </Link>
 
           <Link
             href="/shop"
-            className="w-full py-2.5 rounded-xl text-center text-xs text-[#5c7167] hover:text-[#013326] font-semibold flex items-center justify-center space-x-1"
+            className="w-full py-2 rounded-xl text-center text-xs text-slate-500 hover:text-slate-800 font-semibold flex items-center justify-center space-x-1"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Continue Shopping</span>

@@ -7,7 +7,7 @@ import { Terminal, Copy, CheckCheck, Play, RefreshCw, Zap, Cpu, CheckCircle2 } f
 import { useToast } from "@/context/ToastContext";
 
 export function HiveWorkbench() {
-  const [activeQuery, setActiveQuery] = useState<"D1" | "D2" | "D3" | "D4">("D1");
+  const [activeQuery, setActiveQuery] = useState<"D1" | "D2" | "D3" | "D4" | "D5">("D1");
   const [isExecuting, setIsExecuting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [execStats, setExecStats] = useState<{
@@ -60,29 +60,29 @@ export function HiveWorkbench() {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#011c15] text-[#15c089] flex items-center justify-center">
-            <Terminal className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-slate-950 text-white flex items-center justify-center">
+            <Terminal className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-[#013326]">Apache Hive 3.1 Analytics Console</h3>
-            <p className="text-xs text-[#5c7167]">Interactive OLAP batch processing on HDFS ORC tables</p>
+            <h3 className="text-base font-extrabold text-slate-900">Apache Hive 3.1 Analytics Console</h3>
+            <p className="text-xs text-slate-500">Interactive OLAP batch processing on HDFS ORC tables</p>
           </div>
         </div>
 
         {/* Query selection buttons */}
-        <div className="flex items-center space-x-1.5 bg-[#f1f6f3] p-1.5 rounded-2xl border border-[#e2eae5]">
-          {(["D1", "D2", "D3", "D4"] as const).map((qId) => (
+        <div className="flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80 overflow-x-auto">
+          {(["D1", "D2", "D3", "D4", "D5"] as const).map((qId) => (
             <button
               key={qId}
               onClick={() => setActiveQuery(qId)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                 activeQuery === qId
-                  ? "bg-[#013326] text-white shadow-xs"
-                  : "text-[#5c7167] hover:text-[#013326]"
+                  ? "bg-slate-900 text-white shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Query {qId}
@@ -94,13 +94,13 @@ export function HiveWorkbench() {
       {/* Editor & Results Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Code Editor */}
-        <div className="bg-[#011c15] text-[#9cf0ce] p-5 sm:p-6 rounded-2xl border border-[#0a4636] font-mono text-xs flex flex-col justify-between space-y-5 shadow-inner">
+        <div className="bg-slate-950 text-emerald-400 p-5 sm:p-6 rounded-2xl border border-slate-800 font-mono text-xs flex flex-col justify-between space-y-5 shadow-inner">
           <div className="space-y-3">
-            <div className="flex justify-between items-center text-[#cad6cf] pb-3 border-b border-[#0a4636]">
+            <div className="flex justify-between items-center text-slate-400 pb-3 border-b border-slate-800">
               <span className="font-bold text-white">// {current.title}</span>
               <button
                 onClick={handleCopy}
-                className="text-[#15c089] hover:text-white flex items-center space-x-1 px-2 py-1 rounded bg-[#0a4636]/40 cursor-pointer"
+                className="text-emerald-400 hover:text-white flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 cursor-pointer transition-colors"
               >
                 {copied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? "Copied" : "Copy"}</span>
@@ -111,16 +111,16 @@ export function HiveWorkbench() {
             </pre>
           </div>
 
-          <div className="pt-3 border-t border-[#0a4636] flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center space-x-2 text-[11px] text-[#cad6cf]">
-              <Cpu className="w-3.5 h-3.5 text-[#15c089]" />
+          <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 text-[11px] text-slate-400">
+              <Cpu className="w-3.5 h-3.5 text-emerald-400" />
               <span>Tez Engine • 8 Buckets Hash-Partitioned</span>
             </div>
 
             <button
               onClick={handleExecute}
               disabled={isExecuting}
-              className="px-4 py-2 rounded-xl bg-[#15c089] hover:bg-[#10a374] text-[#011c15] font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
             >
               {isExecuting ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -133,33 +133,33 @@ export function HiveWorkbench() {
         </div>
 
         {/* Right: Results Display */}
-        <div className="bg-[#fafcfb] p-5 sm:p-6 rounded-2xl border border-[#e2eae5] flex flex-col justify-between space-y-4 shadow-card">
+        <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-xs">
           <div className="space-y-3">
-            <div className="flex justify-between items-center pb-2 border-b border-[#e2eae5]">
-              <span className="text-xs font-bold text-[#013326] uppercase tracking-wider">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 Execution Results Output
               </span>
-              <span className="text-[11px] text-[#0c835c] font-mono font-bold bg-[#eafaf4] px-2.5 py-0.5 rounded-full border border-[#9cf0ce]">
+              <span className="text-[11px] text-emerald-700 font-mono font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 {execStats.latencyMs} ms • {execStats.partitionsPruned}/12 pruned
               </span>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[11px] font-mono text-[#5c7167]">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 text-[11px] font-mono text-slate-600">
               <span className="flex items-center space-x-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0c835c]" />
-                <span className="font-bold text-[#013326]">Tez DAG {execStats.status}</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="font-bold text-slate-900">Tez DAG {execStats.status}</span>
               </span>
               <span>{execStats.recordsScanned} records scanned</span>
               <span>Vectorized: ENABLED</span>
             </div>
 
-            <div className="divide-y divide-[#e2eae5] text-xs">
+            <div className="divide-y divide-slate-200 text-xs">
               {current.results.map((r, i) => (
                 <div key={i} className="py-2.5 flex items-center justify-between">
-                  <span className="font-bold text-[#013326]">{r.col1}</span>
+                  <span className="font-bold text-slate-900">{r.col1}</span>
                   <div className="text-right">
-                    <span className="font-mono font-bold text-[#013326] block">{r.col2}</span>
-                    <span className="text-[11px] text-[#5c7167] block">{r.col3}</span>
+                    <span className="font-mono font-bold text-slate-900 block">{r.col2}</span>
+                    <span className="text-[11px] text-slate-500 block">{r.col3}</span>
                   </div>
                 </div>
               ))}
@@ -167,11 +167,11 @@ export function HiveWorkbench() {
           </div>
 
           {/* Speedup banner */}
-          <div className="p-3.5 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-start space-x-2.5">
-            <Zap className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 text-xs text-emerald-800 flex items-start space-x-2.5">
+            <Zap className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
             <div>
-              <strong className="block text-[#013326]">Optimization Mechanics:</strong>
-              <p className="mt-0.5">{current.speedup}</p>
+              <strong className="block text-slate-900">Optimization Mechanics:</strong>
+              <p className="mt-0.5 text-slate-600">{current.speedup}</p>
             </div>
           </div>
         </div>

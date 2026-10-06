@@ -100,27 +100,27 @@ export function KhqrPaymentModal({
             </div>
 
             <div className="text-center space-y-0.5">
-              <p className="text-[11px] font-extrabold text-[#013326] uppercase tracking-wider">
-                COMMERCE MARKETPLACE
+              <p className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider">
+                KHMERCART MARKETPLACE
               </p>
-              <p className="text-xl font-black text-[#013326] font-mono">
+              <p className="text-xl font-black text-slate-900 font-mono">
                 {formatPrice(amountUSD)}
               </p>
-              <p className="text-[11px] text-[#5c7167]">
+              <p className="text-[11px] text-slate-500">
                 ៛{amountKHR.toLocaleString()} KHR
               </p>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-xs text-[#5c7167]">
+        <p className="text-center text-xs text-slate-500">
           Scan with ABA Mobile, Wing Bank, ACLEDA, or any Bakong-enabled banking app.
         </p>
 
         <button
           onClick={handleSimulatePayment}
           disabled={isProcessing}
-          className="w-full py-3.5 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+          className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
         >
           {isProcessing ? (
             <span className="flex items-center space-x-2">
@@ -129,7 +129,7 @@ export function KhqrPaymentModal({
             </span>
           ) : (
             <>
-              <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>Simulate Bank App Scan & Payment</span>
             </>
           )}

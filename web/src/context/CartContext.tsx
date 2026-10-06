@@ -122,6 +122,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsFreeShipping(false);
       showToast("Coupon VIP10 applied! 10% discount added.", "success");
       return true;
+    } else if (clean === "BUNDLE10") {
+      setPromoCode("BUNDLE10");
+      setDiscountPercent(10);
+      setIsFreeShipping(false);
+      showToast("Bundle deal BUNDLE10 applied! 10% savings added.", "success");
+      return true;
     } else if (clean === "KHMER2026") {
       setPromoCode("KHMER2026");
       setDiscountPercent(15);
@@ -135,7 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       showToast("Coupon FREESHIP applied! Free nationwide shipping.", "success");
       return true;
     } else {
-      showToast("Invalid promo code. Try VIP10, KHMER2026, or FREESHIP.", "warning");
+      showToast("Invalid promo code. Try VIP10, BUNDLE10, KHMER2026, or FREESHIP.", "warning");
       return false;
     }
   };
@@ -150,7 +156,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartTotalUSD = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const baseDeliveryFee = cartTotalUSD >= 40 || cartTotalUSD === 0 ? 0 : 1.5;
+  // Free delivery on orders over $30 across Cambodia (synchronous with banners and PDP)
+  const baseDeliveryFee = cartTotalUSD >= 30 || cartTotalUSD === 0 ? 0 : 1.5;
   const deliveryFeeUSD = isFreeShipping ? 0 : baseDeliveryFee;
 
   const discountUSD = Number(((cartTotalUSD * discountPercent) / 100).toFixed(2));

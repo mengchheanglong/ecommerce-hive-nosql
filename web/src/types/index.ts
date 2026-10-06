@@ -7,6 +7,16 @@ export interface ProductReview {
   verified: boolean;
 }
 
+export interface SellerInfo {
+  name: string;
+  rating: number;
+  reviews_count: number;
+  positive_feedback: number;
+  response_time: string;
+  verified: boolean;
+  store_id: string;
+}
+
 export interface Product {
   product_id: string;
   name: string;
@@ -22,6 +32,9 @@ export interface Product {
   weight?: string;
   expiry_date?: string;
   image?: string;
+  images?: string[];
+  seller?: SellerInfo;
+  frequently_bought_with?: string[];
   rating?: number;
   reviews_count?: number;
   reviews?: ProductReview[];
@@ -55,6 +68,9 @@ export interface OrderRecord {
   delivery_address?: string;
   promo_code?: string;
   discountUSD?: number;
+  assigned_courier_id?: string;
+  assigned_courier_name?: string;
+  courier_phone?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -102,7 +118,7 @@ export interface ReferralNode {
 }
 
 export interface HiveQueryMeta {
-  id: "D1" | "D2" | "D3" | "D4";
+  id: "D1" | "D2" | "D3" | "D4" | "D5" | string;
   title: string;
   hql: string;
   speedup: string;

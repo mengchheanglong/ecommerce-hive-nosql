@@ -43,9 +43,9 @@ export class WarehouseService {
   }
 
   executeSampleQuery(queryId: string) {
-    const validQueries = ["D1", "D2", "D3", "D4"];
+    const validQueries = ["D1", "D2", "D3", "D4", "D5"];
     if (!validQueries.includes(queryId.toUpperCase())) {
-      return { success: false, error: "Invalid Query ID. Use D1, D2, D3, or D4." };
+      return { success: false, error: "Invalid Query ID. Use D1, D2, D3, D4, or D5." };
     }
     return {
       success: true,

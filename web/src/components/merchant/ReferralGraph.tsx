@@ -27,7 +27,6 @@ export function ReferralGraph() {
     traversalAlgorithm: "Index-Free Adjacency (O(1) memory pointer jumps)",
   });
   const [loading, setLoading] = useState(false);
-  const [filterTier, setFilterTier] = useState<number | "All">("All");
 
   const loadReferralData = async () => {
     setLoading(true);
@@ -57,42 +56,42 @@ export function ReferralGraph() {
     <div className="space-y-6">
       {/* Overview Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-[#e2eae5] shadow-card">
-          <span className="text-[11px] font-bold text-[#5c7167] uppercase tracking-wider block">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
             Referral Network Depth
           </span>
-          <p className="text-2xl font-black text-[#013326] mt-1">3 Hops (Index-Free)</p>
-          <p className="text-xs text-[#0c835c] mt-1 font-semibold">Traversed in &lt;1.8ms</p>
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">3 Hops (Index-Free)</p>
+          <p className="text-xs text-emerald-600 mt-1 font-semibold">Traversed in &lt;1.8ms</p>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-[#e2eae5] shadow-card">
-          <span className="text-[11px] font-bold text-[#5c7167] uppercase tracking-wider block">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
             Referred Gross Spend
           </span>
-          <p className="text-2xl font-black text-[#013326] mt-1">{formatPrice(totalVolumeUSD)}</p>
-          <p className="text-xs text-[#5c7167] mt-1">{network.length} active customer nodes</p>
+          <p className="text-2xl font-extrabold text-slate-900 font-mono mt-1">{formatPrice(totalVolumeUSD)}</p>
+          <p className="text-xs text-slate-500 mt-1">{network.length} active customer nodes</p>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-[#e2eae5] shadow-card">
-          <span className="text-[11px] font-bold text-[#5c7167] uppercase tracking-wider block">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
             Total Commission Paid
           </span>
-          <p className="text-2xl font-black text-[#0c835c] mt-1">{formatPrice(totalRewardsUSD)}</p>
-          <p className="text-xs text-[#5c7167] mt-1">Multi-tier commission distributed</p>
+          <p className="text-2xl font-extrabold text-emerald-600 font-mono mt-1">{formatPrice(totalRewardsUSD)}</p>
+          <p className="text-xs text-slate-500 mt-1">Multi-tier commission distributed</p>
         </div>
       </div>
 
       {/* Live Cypher Query Engine Card */}
-      <div className="bg-[#011c15] text-[#9cf0ce] p-5 sm:p-6 rounded-3xl border border-[#0a4636] font-mono text-xs space-y-3 shadow-inner">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-[#0a4636]">
+      <div className="bg-slate-950 text-emerald-400 p-5 sm:p-6 rounded-2xl border border-slate-800 font-mono text-xs space-y-3 shadow-inner">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
           <div className="flex items-center space-x-2">
-            <Terminal className="w-4 h-4 text-[#15c089]" />
+            <Terminal className="w-4 h-4 text-emerald-400" />
             <span className="font-bold text-white">Neo4j Bolt Cypher Traversal Engine</span>
           </div>
 
           <button
             onClick={handleTestCypher}
-            className="px-3 py-1 bg-[#0a4636] hover:bg-[#15c089] hover:text-[#011c15] text-[#9cf0ce] rounded-xl text-[11px] font-bold transition-colors cursor-pointer"
+            className="px-3 py-1 bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-slate-800 rounded-xl text-[11px] font-bold transition-colors cursor-pointer"
           >
             Run Graph Traversal Test
           </button>
@@ -103,35 +102,35 @@ export function ReferralGraph() {
             "MATCH (origin:Customer {id: 'C0457'})-[:REFERRED*1..3]->(ref:Customer) RETURN origin, ref, length(path)"}
         </pre>
 
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-[#cad6cf] pt-2 border-t border-[#0a4636]">
-          <span>Engine: <strong>{graphStats.engine}</strong></span>
-          <span>Algorithm: <strong>Index-Free Adjacency (No index lookup overhead)</strong></span>
+        <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+          <span>Engine: <strong className="text-white">{graphStats.engine}</strong></span>
+          <span>Algorithm: <strong className="text-white">Index-Free Adjacency (No index lookup overhead)</strong></span>
         </div>
       </div>
 
       {/* Tier Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Level 1 */}
-        <div className="bg-white rounded-3xl p-6 border border-[#e2eae5] shadow-card space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#e2eae5]">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#15c089]" />
-              <h4 className="text-sm font-extrabold text-[#013326]">Tier 1: Direct Invites</h4>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <h4 className="text-sm font-bold text-slate-900">Tier 1: Direct Invites</h4>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-[#eafaf4] text-[#0c835c] font-bold text-xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200">
               5% Reward
             </span>
           </div>
-          <p className="text-xs text-[#5c7167]">Directly referred by anchor customer {rootCustomer.name} ({rootCustomer.id})</p>
+          <p className="text-xs text-slate-500">Directly referred by anchor customer {rootCustomer.name} ({rootCustomer.id})</p>
 
           <div className="space-y-3">
             {tier1.map((node) => (
-              <div key={node.id} className="p-4 rounded-2xl bg-[#fafcfb] border border-[#e2eae5] space-y-1">
+              <div key={node.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-[#013326]">{node.name}</span>
-                  <span className="text-[11px] font-mono font-bold text-[#0c835c]">+{formatPrice(node.earned)}</span>
+                  <span className="text-xs font-bold text-slate-900">{node.name}</span>
+                  <span className="text-[11px] font-mono font-bold text-emerald-600">+{formatPrice(node.earned)}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-[#5c7167]">
+                <div className="flex justify-between text-[11px] text-slate-400">
                   <span>ID: {node.id} • {node.city}</span>
                   <span>Spend: {formatPrice(node.spend)}</span>
                 </div>
@@ -141,26 +140,26 @@ export function ReferralGraph() {
         </div>
 
         {/* Level 2 */}
-        <div className="bg-white rounded-3xl p-6 border border-[#e2eae5] shadow-card space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#e2eae5]">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-              <h4 className="text-sm font-extrabold text-[#013326]">Tier 2: 2nd-Degree Friends</h4>
+              <h4 className="text-sm font-bold text-slate-900">Tier 2: 2nd-Degree Friends</h4>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200">
               3% Reward
             </span>
           </div>
-          <p className="text-xs text-[#5c7167]">Invited by Tier 1 nodes via social referral links</p>
+          <p className="text-xs text-slate-500">Invited by Tier 1 nodes via social referral links</p>
 
           <div className="space-y-3">
             {tier2.map((node) => (
-              <div key={node.id} className="p-4 rounded-2xl bg-[#fafcfb] border border-[#e2eae5] space-y-1">
+              <div key={node.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-[#013326]">{node.name}</span>
+                  <span className="text-xs font-bold text-slate-900">{node.name}</span>
                   <span className="text-[11px] font-mono font-bold text-blue-700">+{formatPrice(node.earned)}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-[#5c7167]">
+                <div className="flex justify-between text-[11px] text-slate-400">
                   <span>ID: {node.id} • {node.city}</span>
                   <span>Spend: {formatPrice(node.spend)}</span>
                 </div>
@@ -170,26 +169,26 @@ export function ReferralGraph() {
         </div>
 
         {/* Level 3 */}
-        <div className="bg-white rounded-3xl p-6 border border-[#e2eae5] shadow-card space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#e2eae5]">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <h4 className="text-sm font-extrabold text-[#013326]">Tier 3: 3rd-Degree Friends</h4>
+              <h4 className="text-sm font-bold text-slate-900">Tier 3: 3rd-Degree Friends</h4>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold text-xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold text-xs border border-amber-200">
               1% Reward
             </span>
           </div>
-          <p className="text-xs text-[#5c7167]">Extended social graph connections (Hop 3 in Cypher traversal)</p>
+          <p className="text-xs text-slate-500">Extended social graph connections (Hop 3 in Cypher traversal)</p>
 
           <div className="space-y-3">
             {tier3.map((node) => (
-              <div key={node.id} className="p-4 rounded-2xl bg-[#fafcfb] border border-[#e2eae5] space-y-1">
+              <div key={node.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-[#013326]">{node.name}</span>
+                  <span className="text-xs font-bold text-slate-900">{node.name}</span>
                   <span className="text-[11px] font-mono font-bold text-amber-700">+{formatPrice(node.earned)}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-[#5c7167]">
+                <div className="flex justify-between text-[11px] text-slate-400">
                   <span>ID: {node.id} • {node.city}</span>
                   <span>Spend: {formatPrice(node.spend)}</span>
                 </div>

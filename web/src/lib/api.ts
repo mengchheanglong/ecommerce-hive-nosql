@@ -355,17 +355,18 @@ export async function createOrder(
 export async function updateOrderStatus(
   orderId: string,
   status: string,
-  force: boolean = false
+  force: boolean = false,
+  courierId?: string
 ): Promise<{ success: boolean; order?: OrderRecord; error?: string }> {
   // 1. Primary: NestJS Orders Microservice
   try {
     const res = await fetch(`${BACKEND_BASE}/orders/${orderId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_id: orderId, status }),
+      body: JSON.stringify({ order_id: orderId, status, courier_id: courierId }),
     });
     if (res.ok) {
-      updateOrderStatusInStore(orderId, status, true);
+      updateOrderStatusInStore(orderId, status, true, courierId);
       const data = await res.json();
       return { success: true, order: data.order };
     } else {
@@ -383,7 +384,7 @@ export async function updateOrderStatus(
     const res = await fetch(`${LOCAL_API_BASE}/orders/${orderId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, force }),
+      body: JSON.stringify({ status, force, courier_id: courierId }),
     });
     if (res.ok) {
       const data = await res.json();
@@ -397,7 +398,7 @@ export async function updateOrderStatus(
   }
 
   // 3. Fallback: Local synchronized store
-  return updateOrderStatusInStore(orderId, status, force);
+  return updateOrderStatusInStore(orderId, status, force, courierId);
 }
 
 export async function fetchRiders(city?: string): Promise<RiderTelemetry[]> {

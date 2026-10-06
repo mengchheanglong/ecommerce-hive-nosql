@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useToast } from "@/context/ToastContext";
+import { useLocation, DeliveryProvince } from "@/context/LocationContext";
 import { createOrder } from "@/lib/api";
 import { INITIAL_CUSTOMER } from "@/lib/data";
 import { KhqrPaymentModal } from "@/components/customer/KhqrPaymentModal";
@@ -21,6 +22,7 @@ import {
   Clock,
   Tag,
   X,
+  Truck,
 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -39,9 +41,13 @@ export default function CheckoutPage() {
   } = useCart();
   const { formatPrice, currency } = useCurrency();
   const { showToast } = useToast();
+  const { selectedProvince, setSelectedProvince } = useLocation();
 
   const [customer, setCustomer] = useState(INITIAL_CUSTOMER);
-  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState(() => {
+    const idx = INITIAL_CUSTOMER.addresses.findIndex((a) => a.city === selectedProvince);
+    return idx >= 0 ? idx : 0;
+  });
   const [paymentMethod, setPaymentMethod] = useState<"khqr" | "cod" | "card">("khqr");
   const [isKhqrOpen, setIsKhqrOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +58,7 @@ export default function CheckoutPage() {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newStreet, setNewStreet] = useState("");
-  const [newCity, setNewCity] = useState("Phnom Penh");
+  const [newCity, setNewCity] = useState<DeliveryProvince>(selectedProvince);
 
   const currentAddress = customer.addresses[selectedAddressIndex] || customer.addresses[0];
 
@@ -70,6 +76,7 @@ export default function CheckoutPage() {
       addresses: [...prev.addresses, newAddr],
     }));
     setSelectedAddressIndex(customer.addresses.length);
+    setSelectedProvince(newCity);
     setIsAddingAddress(false);
     setNewLabel("");
     setNewStreet("");
@@ -134,45 +141,45 @@ export default function CheckoutPage() {
   if (orderSuccessId) {
     return (
       <div className="max-w-2xl w-full mx-auto px-4 py-16 text-center space-y-6">
-        <div className="w-20 h-20 rounded-3xl bg-[#eafaf4] text-[#0c835c] flex items-center justify-center mx-auto border border-[#9cf0ce] shadow-sm">
-          <CheckCircle2 className="w-10 h-10 text-[#15c089]" />
+        <div className="w-20 h-20 rounded-3xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-200 shadow-sm">
+          <CheckCircle2 className="w-10 h-10 text-emerald-500" />
         </div>
 
         <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#0c835c]">
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-700">
             Order Confirmation
           </span>
-          <h2 className="text-3xl font-black text-[#013326] tracking-tight">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
             Thank You for Your Order!
           </h2>
-          <p className="text-sm font-mono font-bold text-[#013326]">Order Code: {orderSuccessId}</p>
-          <p className="text-xs text-[#5c7167] max-w-md mx-auto">
+          <p className="text-sm font-mono font-bold text-slate-900">Order Code: {orderSuccessId}</p>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
             Your order has been recorded into the MongoDB operational store and queued for courier fulfillment.
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-[#e2eae5] shadow-card text-left text-xs space-y-2">
-          <div className="flex justify-between text-[#5c7167]">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs text-left text-xs space-y-2">
+          <div className="flex justify-between text-slate-500">
             <span>Recipient:</span>
-            <span className="font-bold text-[#013326]">{customer.name}</span>
+            <span className="font-bold text-slate-900">{customer.name}</span>
           </div>
-          <div className="flex justify-between text-[#5c7167]">
+          <div className="flex justify-between text-slate-500">
             <span>Delivery Zone:</span>
-            <span className="font-bold text-[#013326]">{currentAddress?.city}</span>
+            <span className="font-bold text-slate-900">{currentAddress?.city}</span>
           </div>
-          <div className="flex justify-between text-[#5c7167]">
+          <div className="flex justify-between text-slate-500">
             <span>Payment Method:</span>
-            <span className="font-bold text-[#013326]">
+            <span className="font-bold text-slate-900">
               {paymentMethod === "khqr" ? "NBC Bakong KHQR" : "Cash on Delivery"}
             </span>
           </div>
           {promoCode && (
-            <div className="flex justify-between text-[#0c835c]">
+            <div className="flex justify-between text-emerald-700">
               <span>Coupon Applied:</span>
               <span className="font-bold">{promoCode} (-{formatPrice(discountUSD)})</span>
             </div>
           )}
-          <div className="flex justify-between text-sm font-black text-[#013326] pt-2 border-t border-[#e2eae5]">
+          <div className="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-100">
             <span>Settled Total:</span>
             <span className="font-mono">{formatPrice(finalTotalUSD)}</span>
           </div>
@@ -181,14 +188,14 @@ export default function CheckoutPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href={`/orders/${orderSuccessId}`}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
           >
             <span>Track Order Timeline</span>
-            <ArrowRight className="w-4 h-4 text-[#15c089]" />
+            <ArrowRight className="w-4 h-4 text-emerald-400" />
           </Link>
           <Link
             href="/shop"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl border border-[#e2eae5] text-xs font-bold text-[#5c7167] hover:bg-[#f1f6f3] transition-colors"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Continue Shopping
           </Link>
@@ -200,11 +207,11 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-[#013326]">No items in cart</h2>
-        <p className="text-xs text-[#5c7167]">Add items to your cart before proceeding to checkout.</p>
+        <h2 className="text-xl font-bold text-slate-900">No items in cart</h2>
+        <p className="text-xs text-slate-500">Add items to your cart before proceeding to checkout.</p>
         <Link
           href="/shop"
-          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#013326] text-white text-xs font-bold"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Catalog</span>
@@ -216,33 +223,33 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
       {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-xs text-[#5c7167]">
-        <Link href="/" className="hover:text-[#013326]">Home</Link>
+      <div className="flex items-center space-x-2 text-xs text-slate-500">
+        <Link href="/" className="hover:text-slate-900">Home</Link>
         <span>/</span>
-        <Link href="/cart" className="hover:text-[#013326]">Cart</Link>
+        <Link href="/cart" className="hover:text-slate-900">Cart</Link>
         <span>/</span>
-        <span className="text-[#013326] font-bold">Checkout</span>
+        <span className="text-slate-900 font-bold">Checkout</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Multi-Step Fulfillment Options */}
         <div className="lg:col-span-8 space-y-6">
           {/* Step 1: Delivery Address */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#013326] text-white flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-[#15c089]" />
+                <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-[#013326]">1. Delivery Destination</h3>
-                  <p className="text-xs text-[#5c7167]">Select preferred shipping address</p>
+                  <h3 className="text-base font-extrabold text-slate-900">1. Delivery Destination</h3>
+                  <p className="text-xs text-slate-500">Select preferred shipping address</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsAddingAddress(!isAddingAddress)}
-                className="text-xs font-bold text-[#0c835c] hover:underline flex items-center space-x-1 cursor-pointer"
+                className="text-xs font-bold text-emerald-700 hover:underline flex items-center space-x-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add New Address</span>
@@ -254,29 +261,34 @@ export default function CheckoutPage() {
               {customer.addresses.map((addr, idx) => (
                 <div
                   key={addr.id}
-                  onClick={() => setSelectedAddressIndex(idx)}
+                  onClick={() => {
+                    setSelectedAddressIndex(idx);
+                    if (addr.city === "Phnom Penh" || addr.city === "Siem Reap" || addr.city === "Battambang") {
+                      setSelectedProvince(addr.city as DeliveryProvince);
+                    }
+                  }}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer text-xs space-y-1.5 ${
                     selectedAddressIndex === idx
-                      ? "border-[#013326] bg-[#eafaf4]/30 ring-2 ring-[#15c089]/30"
-                      : "border-[#e2eae5] bg-[#fafcfb] hover:bg-white"
+                      ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                      : "border-slate-200/80 bg-slate-50 hover:bg-white"
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-extrabold text-[#013326]">{addr.label}</span>
+                    <span className="font-extrabold text-slate-900">{addr.label}</span>
                     {selectedAddressIndex === idx && (
-                      <span className="w-2 h-2 rounded-full bg-[#15c089]" />
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     )}
                   </div>
-                  <p className="text-[#5c7167] leading-relaxed line-clamp-2">{addr.street}</p>
-                  <p className="font-bold text-[#013326] text-[11px]">{addr.city}</p>
+                  <p className="text-slate-500 leading-relaxed line-clamp-2">{addr.street}</p>
+                  <p className="font-bold text-slate-900 text-[11px]">{addr.city}</p>
                 </div>
               ))}
             </div>
 
             {/* Add Address Form */}
             {isAddingAddress && (
-              <form onSubmit={handleAddAddress} className="p-4 rounded-2xl bg-[#f6faf8] border border-[#e2eae5] space-y-3">
-                <h4 className="text-xs font-bold text-[#013326]">Add Destination Address</h4>
+              <form onSubmit={handleAddAddress} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <h4 className="text-xs font-bold text-slate-900">Add Destination Address</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
@@ -284,12 +296,12 @@ export default function CheckoutPage() {
                     value={newLabel}
                     onChange={(e) => setNewLabel(e.target.value)}
                     required
-                    className="px-3.5 py-2 text-xs rounded-xl bg-white border border-[#e2eae5]"
+                    className="px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-200"
                   />
                   <select
                     value={newCity}
-                    onChange={(e) => setNewCity(e.target.value)}
-                    className="px-3.5 py-2 text-xs rounded-xl bg-white border border-[#e2eae5]"
+                    onChange={(e) => setNewCity(e.target.value as DeliveryProvince)}
+                    className="px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-200"
                   >
                     <option value="Phnom Penh">Phnom Penh</option>
                     <option value="Siem Reap">Siem Reap</option>
@@ -302,19 +314,19 @@ export default function CheckoutPage() {
                   value={newStreet}
                   onChange={(e) => setNewStreet(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-[#e2eae5]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-200"
                 />
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
                     onClick={() => setIsAddingAddress(false)}
-                    className="px-3 py-1.5 text-xs text-[#5c7167]"
+                    className="px-3 py-1.5 text-xs text-slate-500"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-1.5 rounded-xl bg-[#013326] text-white text-xs font-bold"
+                    className="px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
                   >
                     Save Address
                   </button>
@@ -324,12 +336,12 @@ export default function CheckoutPage() {
           </div>
 
           {/* Step 2: Payment Method */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#013326] text-white flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-[#15c089]" />
+              <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+                <CreditCard className="w-4 h-4 text-emerald-400" />
               </div>
-              <h3 className="text-base font-extrabold text-[#013326]">2. Payment Method</h3>
+              <h3 className="text-base font-extrabold text-slate-900">2. Payment Method</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -337,58 +349,58 @@ export default function CheckoutPage() {
                 onClick={() => setPaymentMethod("khqr")}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   paymentMethod === "khqr"
-                    ? "border-[#e02020] bg-rose-50/40 ring-2 ring-rose-500/20"
-                    : "border-[#e2eae5] bg-[#fafcfb] hover:bg-white"
+                    ? "border-rose-500 bg-rose-50/40 ring-2 ring-rose-500/20"
+                    : "border-slate-200/80 bg-slate-50 hover:bg-white"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-[#e02020]">Bakong KHQR</span>
+                  <span className="text-xs font-black text-rose-600">Bakong KHQR</span>
                   <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded">
                     Instant
                   </span>
                 </div>
-                <p className="text-[11px] text-[#5c7167]">ABA, Wing, ACLEDA, Sathapana instant scan</p>
+                <p className="text-[11px] text-slate-500">ABA, Wing, ACLEDA, Sathapana instant scan</p>
               </div>
 
               <div
                 onClick={() => setPaymentMethod("cod")}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   paymentMethod === "cod"
-                    ? "border-[#013326] bg-[#eafaf4]/30 ring-2 ring-[#15c089]/30"
-                    : "border-[#e2eae5] bg-[#fafcfb] hover:bg-white"
+                    ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                    : "border-slate-200/80 bg-slate-50 hover:bg-white"
                 }`}
               >
-                <span className="text-xs font-bold text-[#013326] block mb-1">Cash on Delivery (COD)</span>
-                <p className="text-[11px] text-[#5c7167]">Pay upon courier arrival at doorstep</p>
+                <span className="text-xs font-bold text-slate-900 block mb-1">Cash on Delivery (COD)</span>
+                <p className="text-[11px] text-slate-500">Pay upon courier arrival at doorstep</p>
               </div>
 
               <div
                 onClick={() => setPaymentMethod("card")}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   paymentMethod === "card"
-                    ? "border-[#013326] bg-[#eafaf4]/30 ring-2 ring-[#15c089]/30"
-                    : "border-[#e2eae5] bg-[#fafcfb] hover:bg-white"
+                    ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                    : "border-slate-200/80 bg-slate-50 hover:bg-white"
                 }`}
               >
-                <span className="text-xs font-bold text-[#013326] block mb-1">Credit / Debit Card</span>
-                <p className="text-[11px] text-[#5c7167]">Visa, Mastercard, UnionPay gateway</p>
+                <span className="text-xs font-bold text-slate-900 block mb-1">Credit / Debit Card</span>
+                <p className="text-[11px] text-slate-500">Visa, Mastercard, UnionPay gateway</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: Order Summary & Place Order Button */}
-        <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-6">
-          <h3 className="text-base font-extrabold text-[#013326]">Order Review</h3>
+        <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-6">
+          <h3 className="text-base font-extrabold text-slate-900">Order Review</h3>
 
-          <div className="max-h-56 overflow-y-auto space-y-2 divide-y divide-[#f1f6f3]">
+          <div className="max-h-56 overflow-y-auto space-y-2 divide-y divide-slate-100">
             {cart.map((item) => (
               <div key={item.product.product_id} className="pt-2 flex justify-between text-xs">
                 <div>
-                  <p className="font-bold text-[#013326]">{item.product.name}</p>
-                  <p className="text-[11px] text-[#5c7167]">Qty: {item.quantity}</p>
+                  <p className="font-bold text-slate-900">{item.product.name}</p>
+                  <p className="text-[11px] text-slate-500">Qty: {item.quantity}</p>
                 </div>
-                <span className="font-mono font-bold text-[#013326]">
+                <span className="font-mono font-bold text-slate-900">
                   {formatPrice(item.product.price * item.quantity)}
                 </span>
               </div>
@@ -397,12 +409,12 @@ export default function CheckoutPage() {
 
           {/* Promo code bar on checkout */}
           {promoCode ? (
-            <div className="p-3 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-center justify-between font-semibold">
+            <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between font-semibold">
               <div className="flex items-center space-x-1.5">
-                <Tag className="w-3.5 h-3.5 text-[#15c089]" />
+                <Tag className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Coupon: <strong>{promoCode}</strong> (-{formatPrice(discountUSD)})</span>
               </div>
-              <button onClick={removePromoCode} className="p-1 hover:text-rose-600 transition-colors">
+              <button onClick={removePromoCode} className="p-1 hover:text-rose-600 transition-colors cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -413,35 +425,35 @@ export default function CheckoutPage() {
                 placeholder="Promo Code (VIP10)"
                 value={promoInput}
                 onChange={(e) => setPromoInput(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] font-mono uppercase focus:outline-none"
+                className="flex-1 px-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200/80 font-mono uppercase focus:outline-none focus:bg-white"
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-[#013326] text-white text-xs font-bold rounded-xl hover:bg-[#0a4636]"
+                className="px-3.5 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 cursor-pointer"
               >
                 Apply
               </button>
             </form>
           )}
 
-          <div className="space-y-2 text-xs pt-3 border-t border-[#e2eae5]">
-            <div className="flex justify-between text-[#5c7167]">
+          <div className="space-y-2 text-xs pt-3 border-t border-slate-100">
+            <div className="flex justify-between text-slate-500">
               <span>Subtotal</span>
-              <span className="font-mono font-bold text-[#013326]">{formatPrice(cartTotalUSD)}</span>
+              <span className="font-mono font-bold text-slate-900">{formatPrice(cartTotalUSD)}</span>
             </div>
-            <div className="flex justify-between text-[#5c7167]">
+            <div className="flex justify-between text-slate-500">
               <span>Express Courier Delivery</span>
-              <span className="font-mono font-bold text-[#013326]">
+              <span className="font-mono font-bold text-slate-900">
                 {deliveryFeeUSD === 0 ? "FREE" : formatPrice(deliveryFeeUSD)}
               </span>
             </div>
             {discountUSD > 0 && (
-              <div className="flex justify-between text-[#0c835c]">
+              <div className="flex justify-between text-emerald-700">
                 <span>Discount ({promoCode})</span>
                 <span className="font-mono font-bold">-{formatPrice(discountUSD)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm font-black text-[#013326] pt-2 border-t border-[#e2eae5]">
+            <div className="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-100">
               <span>Total Payable</span>
               <span className="font-mono">{formatPrice(finalTotalUSD)}</span>
             </div>
@@ -450,13 +462,13 @@ export default function CheckoutPage() {
           <button
             onClick={handlePlaceOrder}
             disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50"
+            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
             ) : (
               <>
-                <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
+                <CheckCircle2 className="w-4 h-4 text-slate-950" />
                 <span>
                   {paymentMethod === "khqr"
                     ? `Open Bakong KHQR (${formatPrice(finalTotalUSD)})`

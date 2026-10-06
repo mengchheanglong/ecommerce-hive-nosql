@@ -3,10 +3,13 @@ import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import { AppShell } from "@/components/shared/AppShell";
 
+import { LocationProvider } from "@/context/LocationContext";
+
 export const metadata: Metadata = {
-  title: "Marketplace — Polyglot Data Platform & E-Commerce Engine",
+  title: "KhmerCart — High-Scale Polyglot E-Commerce Marketplace",
   description:
     "Production-grade distributed e-commerce architecture powered by MongoDB 8.0, Apache Cassandra, Neo4j, and Apache Hive on HDFS",
 };
@@ -18,12 +21,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[#f6faf8] text-[#09211a] antialiased">
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
         <ToastProvider>
           <CurrencyProvider>
-            <CartProvider>
-              <AppShell>{children}</AppShell>
-            </CartProvider>
+            <LocationProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <AppShell>{children}</AppShell>
+                </WishlistProvider>
+              </CartProvider>
+            </LocationProvider>
           </CurrencyProvider>
         </ToastProvider>
       </body>

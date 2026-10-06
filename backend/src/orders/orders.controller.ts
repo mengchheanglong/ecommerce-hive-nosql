@@ -36,8 +36,15 @@ export class OrdersController {
   @Put(":id")
   @ApiOperation({ summary: "Advance order fulfillment state by order ID URL parameter" })
   @ApiParam({ name: "id", example: "ORD-100001" })
-  @ApiBody({ schema: { properties: { status: { type: "string", example: "Preparing" } } } })
-  updateStatusById(@Param("id") id: string, @Body() body: { status: string }) {
-    return this.ordersService.updateStatus({ order_id: id, status: body.status });
+  @ApiBody({
+    schema: {
+      properties: {
+        status: { type: "string", example: "Preparing" },
+        courier_id: { type: "string", example: "R-101" },
+      },
+    },
+  })
+  updateStatusById(@Param("id") id: string, @Body() body: { status: string; courier_id?: string }) {
+    return this.ordersService.updateStatus({ order_id: id, status: body.status, courier_id: body.courier_id });
   }
 }

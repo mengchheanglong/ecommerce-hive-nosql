@@ -47,6 +47,21 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   delivery_address?: string;
+
+  @ApiPropertyOptional({ example: "R-101" })
+  @IsOptional()
+  @IsString()
+  assigned_courier_id?: string;
+
+  @ApiPropertyOptional({ example: "Chan Vuthy" })
+  @IsOptional()
+  @IsString()
+  assigned_courier_name?: string;
+
+  @ApiPropertyOptional({ example: "+855 12 999 888" })
+  @IsOptional()
+  @IsString()
+  courier_phone?: string;
 }
 
 export class UpdateOrderStatusDto {
@@ -55,8 +70,13 @@ export class UpdateOrderStatusDto {
   @IsString()
   order_id: string;
 
-  @ApiProperty({ example: "Out for Delivery", enum: ["Pending", "Preparing", "Out for Delivery", "Delivered"] })
+  @ApiProperty({ example: "Out for Delivery", enum: ["Pending", "Preparing", "Out for Delivery", "Delivered", "Cancelled"] })
   @IsNotEmpty()
   @IsString()
   status: string;
+
+  @ApiPropertyOptional({ example: "R-101" })
+  @IsOptional()
+  @IsString()
+  courier_id?: string;
 }

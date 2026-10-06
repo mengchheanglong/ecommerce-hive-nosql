@@ -26,11 +26,11 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Overview", href: "/merchant", icon: LayoutDashboard },
-    { name: "Products & Stock", href: "/merchant/products", icon: Package },
-    { name: "Fulfillment Orders", href: "/merchant/orders", icon: ShoppingCart },
-    { name: "Fleet Telemetry", href: "/merchant/fleet", icon: Truck },
-    { name: "Referral Network", href: "/merchant/referrals", icon: Share2 },
+    { name: "Executive Overview", href: "/merchant", icon: LayoutDashboard },
+    { name: "Products & Inventory", href: "/merchant/products", icon: Package },
+    { name: "Order Fulfillment", href: "/merchant/orders", icon: ShoppingCart },
+    { name: "Cassandra Fleet", href: "/merchant/fleet", icon: Truck },
+    { name: "Neo4j Referrals", href: "/merchant/referrals", icon: Share2 },
     { name: "Hive Warehouse", href: "/merchant/warehouse", icon: Database },
   ];
 
@@ -40,27 +40,27 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden backdrop-blur-xs"
+          className="fixed inset-0 z-40 bg-slate-950/70 lg:hidden backdrop-blur-xs"
         />
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#01281e] text-white flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 border-r border-[#0a4636] ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-950 text-slate-300 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 border-r border-slate-800 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div>
           {/* Logo / Merchant Identity */}
-          <div className="h-18 px-6 flex items-center justify-between border-b border-[#0a4636]">
+          <div className="h-16 sm:h-18 px-5 flex items-center justify-between border-b border-slate-800/80">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-[#15c089] text-[#01281e] flex items-center justify-center font-bold shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
                 <span className="font-extrabold text-sm tracking-tight text-white block">
                   Merchant Console
                 </span>
-                <span className="text-[11px] text-[#9cf0ce] font-medium block">
+                <span className="text-[11px] text-slate-400 font-medium block">
                   Operations & Datastores
                 </span>
               </div>
@@ -68,8 +68,8 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-4 space-y-1.5">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#9cf0ce]/60 px-3 py-2">
+          <nav className="p-3 space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-2">
               Management Modules
             </div>
 
@@ -85,17 +85,17 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
                   key={item.href}
                   href={item.href}
                   onClick={onClose}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-150 ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                     isActive
-                      ? "bg-[#15c089] text-[#01281e] shadow-md shadow-[#15c089]/20 font-black"
-                      : "text-[#cad6cf] hover:text-white hover:bg-white/5"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold"
+                      : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-[#01281e]" : "text-[#15c089]"}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
                     <span>{item.name}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-[#01281e]" />}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />}
                 </Link>
               );
             })}
@@ -103,22 +103,22 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
         </div>
 
         {/* Bottom Storefront Switcher */}
-        <div className="p-4 border-t border-[#0a4636] space-y-2">
+        <div className="p-4 border-t border-slate-800/80 space-y-2">
           <Link
             href="/"
-            className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-colors border border-white/10"
+            className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors border border-slate-800"
           >
-            <Store className="w-3.5 h-3.5 text-[#15c089]" />
-            <span>Switch to Customer Storefront</span>
+            <Store className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Customer Storefront</span>
           </Link>
 
           <a
             href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
-            className="w-full flex items-center justify-center space-x-1.5 py-2 text-[11px] text-[#9cf0ce] hover:underline"
+            className="w-full flex items-center justify-center space-x-1.5 py-2 text-[11px] text-slate-400 hover:text-emerald-400 transition-colors"
           >
-            <span>NestJS Swagger OpenAPI</span>
+            <span>NestJS Swagger API</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>

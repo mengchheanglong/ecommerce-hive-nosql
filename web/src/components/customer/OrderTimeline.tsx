@@ -9,10 +9,10 @@ interface OrderTimelineProps {
 
 export function OrderTimeline({ status }: OrderTimelineProps) {
   const steps = [
-    { key: "Pending", label: "Order Placed", desc: "Received into MongoDB queue" },
-    { key: "Preparing", label: "Warehouse Prep", desc: "Items picked and packaged" },
-    { key: "Out for Delivery", label: "Rider Dispatched", desc: "Tracked in Cassandra fleet" },
-    { key: "Delivered", label: "Completed", desc: "Delivered & settled" },
+    { key: "Pending", label: "Order Placed", desc: "Logged in MongoDB" },
+    { key: "Preparing", label: "Warehouse Prep", desc: "Picking & packing" },
+    { key: "Out for Delivery", label: "Rider Dispatched", desc: "Cassandra GPS active" },
+    { key: "Delivered", label: "Delivered", desc: "Confirmed & settled" },
   ];
 
   const getStepIndex = (st: string) => {
@@ -33,12 +33,12 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
   const currentIndex = getStepIndex(status);
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-3">
       <div className="grid grid-cols-4 gap-2 relative">
         {/* Connecting line */}
-        <div className="absolute top-4 left-6 right-6 h-0.5 bg-[#e2eae5] -z-0">
+        <div className="absolute top-4 left-6 right-6 h-0.5 bg-slate-200 -z-0">
           <div
-            className="h-full bg-[#15c089] transition-all duration-500"
+            className="h-full bg-emerald-500 transition-all duration-500"
             style={{ width: `${(currentIndex / 3) * 100}%` }}
           />
         </div>
@@ -51,28 +51,28 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 shadow-xs ${
                   isDone
-                    ? "bg-[#013326] text-white border-2 border-[#15c089]"
+                    ? "bg-slate-900 text-white border-2 border-emerald-500"
                     : isCurrent
-                    ? "bg-[#15c089] text-[#013326] ring-4 ring-[#15c089]/20"
-                    : "bg-white text-[#cad6cf] border-2 border-[#e2eae5]"
+                    ? "bg-emerald-500 text-slate-950 ring-4 ring-emerald-500/20"
+                    : "bg-white text-slate-400 border-2 border-slate-200"
                 }`}
               >
                 {isDone ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#15c089]" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : isCurrent ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#013326] animate-ping" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-950 animate-ping" />
                 ) : (
                   <span>{idx + 1}</span>
                 )}
               </div>
               <p
                 className={`text-xs font-bold mt-2 truncate w-full ${
-                  isCurrent ? "text-[#013326]" : isDone ? "text-[#0c835c]" : "text-[#5c7167]"
+                  isCurrent ? "text-slate-900" : isDone ? "text-emerald-700" : "text-slate-500"
                 }`}
               >
                 {step.label}
               </p>
-              <p className="text-[10px] text-[#5c7167] hidden sm:block mt-0.5 truncate w-full">
+              <p className="text-[10px] text-slate-400 hidden sm:block mt-0.5 truncate w-full">
                 {step.desc}
               </p>
             </div>

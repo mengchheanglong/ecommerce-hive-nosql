@@ -20,8 +20,8 @@ export function ToastContainer() {
               : toast.type === "warning"
               ? "bg-amber-900 text-white border-amber-700"
               : toast.type === "info"
-              ? "bg-[#0a3528] text-white border-[#0e4e3c]"
-              : "bg-[#013326] text-white border-[#0a4636]"
+              ? "bg-slate-900 text-white border-slate-700"
+              : "bg-slate-950 text-white border-slate-800"
           }`}
         >
           <div className="flex items-center space-x-2.5 truncate">
@@ -30,7 +30,7 @@ export function ToastContainer() {
             ) : toast.type === "info" ? (
               <Info className="w-4 h-4 text-sky-300 shrink-0" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 text-[#15c089] shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             )}
             <span className="truncate">{toast.message}</span>
           </div>
