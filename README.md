@@ -186,11 +186,28 @@ pnpm dev
 ```
 Open **[http://localhost:3001](http://localhost:3001)** in your browser. (All `/nest-api/*` paths automatically proxy to the NestJS backend).
 
-### 3. Multi-Container Orchestration (Docker)
+### 3. One-Command Full-Stack Docker Deployment (Recommended)
 ```bash
 docker compose up -d
 ```
-Spins up MongoDB, Redis, Apache Cassandra, and Neo4j.
+Spins up the **entire production stack in containers** with automated MongoDB seeding:
+- **Customer Storefront & Merchant Portal:** [http://localhost:3001](http://localhost:3001)
+- **NestJS Microservices API:** [http://localhost:4000](http://localhost:4000)
+- **Swagger OpenAPI Documentation:** [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
+- **MongoDB 8.0:** `localhost:27017` (auto-seeded with 51 authentic Cambodian products, customers, and orders)
+- **Redis 7:** `localhost:6379`
+- **Apache Cassandra 4.1:** `localhost:9042`
+- **Neo4j 5.18:** `localhost:7474` (HTTP Browser) / `localhost:7687` (Bolt)
+
+To rebuild after changes:
+```bash
+docker compose up -d --build
+```
+
+To stop all services:
+```bash
+docker compose down
+```
 
 ### 4. Run the Hive Warehouse Pipeline (WSL2 / Linux)
 ```powershell

@@ -1,0 +1,7 @@
+node_modules
+web/node_modules
+web/.next
+backend/node_modules
+backend/dist
+.git
+*.tsbuildinfo

@@ -96,7 +96,8 @@
 - **Web App:** Next.js 15 App Router with separated Customer and Merchant experiences, TypeScript, and Tailwind CSS on port 3001.
 
 ## Testing & Running
-- **NestJS Backend:** `cd backend && pnpm start` (accessible on `http://localhost:4000`, Swagger docs at `/api/docs`)
-- **Web App:** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
+- **Full Stack via Docker (One Command):** `docker compose up -d` (starts MongoDB, Redis, Cassandra, Neo4j, NestJS backend, and Next.js frontend with auto-seeding)
+- **NestJS Backend (Standalone):** `cd backend && pnpm start` (accessible on `http://localhost:4000`, Swagger docs at `/api/docs`)
+- **Web App (Standalone):** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
 - **MongoDB Scripts:** `mongosh ecommerce mongodb/scripts/seed-products.js`
 - **Hive Pipeline:** Run sequentially or via `./run_lab.ps1`

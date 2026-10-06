@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   # ---------------------------------------------------------------------------
-  # 1. MongoDB - Document Store (Product Catalog & Customer Profiles)
+  # 1. MongoDB - Document Store (Product Catalog, Customer Profiles & Orders)
   # ---------------------------------------------------------------------------
   mongodb:
     image: mongo:8.0
@@ -14,6 +14,12 @@ services:
       MONGO_INITDB_DATABASE: ecommerce
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   # ---------------------------------------------------------------------------
   # 2. Redis - In-Memory Key-Value (Active Carts & Session Cache)
@@ -27,6 +33,12 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
 
   # ---------------------------------------------------------------------------
   # 3. Apache Cassandra - Column-Family (Rider GPS Telemetry - 13.8M rows/day)
@@ -42,6 +54,8 @@ services:
       - CASSANDRA_DC=dc1
       - CASSANDRA_RACK=rack1
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=128M
     volumes:
       - cassandra_data:/var/lib/cassandra
 
@@ -58,11 +72,39 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/marketplace2026
       - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_pagecache_size=128M
+      - NEO4J_dbms_memory_heap_initial__size=256M
+      - NEO4J_dbms_memory_heap_max__size=512M
     volumes:
       - neo4j_data:/data
 
   # ---------------------------------------------------------------------------
-  # 5. Marketplace Full-Stack Application (Next.js 15 App Router)
+  # 5. NestJS Microservices Backend (Port 4000, Swagger Docs at /api/docs)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: marketplace-backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DB=ecommerce
+      - REDIS_URL=redis://redis:6379
+      - CASSANDRA_HOST=cassandra
+      - NEO4J_URI=bolt://neo4j:7687
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # 6. Marketplace Full-Stack Application (Next.js 15 App Router - Port 3001)
   # ---------------------------------------------------------------------------
   web:
     build:
@@ -75,14 +117,20 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - INTERNAL_API_URL=http://backend:4000
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DB=ecommerce
       - REDIS_URL=redis://redis:6379
       - CASSANDRA_HOST=cassandra
       - NEO4J_URI=bolt://neo4j:7687
     depends_on:
-      - mongodb
-      - redis
+      backend:
+        condition: service_started
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   mongo_data:
