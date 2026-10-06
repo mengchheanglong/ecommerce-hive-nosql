@@ -13,6 +13,32 @@ export const INITIAL_PRODUCTS: Product[] = [
     screen_size: "6.7 inch OLED 120Hz",
     warranty: "1 Year Official Distributor",
     description: "Flagship AMOLED display with high-efficiency 5G modem, AI computational photography, and all-day fast charge.",
+    reviews: [
+      {
+        id: "rev-1",
+        author: "Sokha Meas",
+        rating: 5,
+        date: "2026-09-20",
+        comment: "Excellent AMOLED display, buttery smooth 120Hz and super fast courier delivery in Phnom Penh.",
+        verified: true,
+      },
+      {
+        id: "rev-2",
+        author: "Piseth Seng",
+        rating: 5,
+        date: "2026-09-24",
+        comment: "Battery easily lasts 1.5 days under heavy usage. Bakong KHQR checkout was instantaneous.",
+        verified: true,
+      },
+      {
+        id: "rev-3",
+        author: "Vireak Chan",
+        rating: 4,
+        date: "2026-10-01",
+        comment: "Very solid build quality. Minor warmth under heavy gaming but overall stellar value.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P2211",
@@ -26,6 +52,24 @@ export const INITIAL_PRODUCTS: Product[] = [
     screen_size: "Touch Sensor Interface",
     warranty: "6 Months Replacement",
     description: "Active noise cancellation up to 42dB with transparency mode and water-resistant nano-coating.",
+    reviews: [
+      {
+        id: "rev-4",
+        author: "Chenda Som",
+        rating: 5,
+        date: "2026-09-18",
+        comment: "Active noise cancellation works very well during coffee shop remote work in Siem Reap.",
+        verified: true,
+      },
+      {
+        id: "rev-5",
+        author: "Kolab Heng",
+        rating: 4,
+        date: "2026-10-02",
+        comment: "Crisp highs and punchy bass. Comfortable fit for extended jogging sessions.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P2212",
@@ -39,6 +83,16 @@ export const INITIAL_PRODUCTS: Product[] = [
     screen_size: "34 inch 1500R Curved 4K",
     warranty: "2 Years Manufacturer",
     description: "Immersive panoramic display with 99% sRGB color accuracy, USB-C 90W power delivery, and built-in KVM switch.",
+    reviews: [
+      {
+        id: "rev-6",
+        author: "Rithy Pen",
+        rating: 5,
+        date: "2026-09-29",
+        comment: "Productivity dream. Single USB-C cable powers my MacBook and connects all peripherals.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P3314",
@@ -52,6 +106,16 @@ export const INITIAL_PRODUCTS: Product[] = [
     size: "L",
     colours: ["Navy Blue", "Sand Beige", "Olive"],
     description: "Breathable 100% natural organic linen tailored for tropical climates with reinforced horn-button closure.",
+    reviews: [
+      {
+        id: "rev-7",
+        author: "Dara Kong",
+        rating: 5,
+        date: "2026-09-12",
+        comment: "Wonderfully light and breathable linen fabric. Perfectly suited for sunny afternoon strolls.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P3315",
@@ -65,6 +129,16 @@ export const INITIAL_PRODUCTS: Product[] = [
     size: "Free Size (180x60cm)",
     colours: ["Crimson Red", "Royal Indigo", "Emerald Gold"],
     description: "Artisanal handwoven silk from Takeo weavers, featuring authentic heritage patterns with a modern drape.",
+    reviews: [
+      {
+        id: "rev-8",
+        author: "Bopha Nou",
+        rating: 5,
+        date: "2026-09-15",
+        comment: "Exquisite craftsmanship and soft touch. Bought two more as gifts for international guests.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P3316",
@@ -91,6 +165,16 @@ export const INITIAL_PRODUCTS: Product[] = [
     weight: "5.0 kg Bag",
     expiry_date: "2027-10-01",
     description: "Award-winning Malys Angkor aromatic long-grain jasmine rice, vacuum-sealed at source in Battambang province.",
+    reviews: [
+      {
+        id: "rev-9",
+        author: "Sophea Kim",
+        rating: 5,
+        date: "2026-09-10",
+        comment: "Unmatched fragrance when steamed. Vacuum seal keeps it fresh as day one.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P0875",
@@ -104,6 +188,16 @@ export const INITIAL_PRODUCTS: Product[] = [
     weight: "250g Glass Jar",
     expiry_date: "2028-04-15",
     description: "Protected Geographical Indication (PGI) certified Kampot peppercorns with intense floral and mint notes.",
+    reviews: [
+      {
+        id: "rev-10",
+        author: "Chan Vuthy",
+        rating: 5,
+        date: "2026-09-22",
+        comment: "The floral aroma upon freshly grinding is intoxicating. The only pepper we use at home now.",
+        verified: true,
+      },
+    ],
   },
   {
     product_id: "P0876",
@@ -224,12 +318,12 @@ export const INITIAL_RIDERS: RiderTelemetry[] = [
 ];
 
 export const INITIAL_REFERRALS: ReferralNode[] = [
-  { id: "C1001", name: "Vireak Chan", level: 1, city: "Phnom Penh", spend: 420.0, earned: 21.0, referredBy: "C0457" },
-  { id: "C1002", name: "Sophea Kim", level: 1, city: "Siem Reap", spend: 650.0, earned: 32.5, referredBy: "C0457" },
-  { id: "C1003", name: "Rithy Pen", level: 2, city: "Battambang", spend: 810.0, earned: 24.3, referredBy: "C1001" },
-  { id: "C1005", name: "Kolab Heng", level: 2, city: "Phnom Penh", spend: 390.0, earned: 11.7, referredBy: "C1002" },
-  { id: "C1004", name: "Bopha Nou", level: 3, city: "Phnom Penh", spend: 1120.0, earned: 11.2, referredBy: "C1003" },
-  { id: "C1007", name: "Dara Kong", level: 3, city: "Siem Reap", spend: 780.0, earned: 7.8, referredBy: "C1005" },
+  { id: "C1001", name: "Vireak Chan", level: 1, city: "Phnom Penh", spend: 420.0, earned: 21.0, referredBy: "C0457", date: "2026-07-10" },
+  { id: "C1002", name: "Sophea Kim", level: 1, city: "Siem Reap", spend: 650.0, earned: 32.5, referredBy: "C0457", date: "2026-07-15" },
+  { id: "C1003", name: "Rithy Pen", level: 2, city: "Battambang", spend: 810.0, earned: 24.3, referredBy: "C1001", date: "2026-08-01" },
+  { id: "C1005", name: "Kolab Heng", level: 2, city: "Phnom Penh", spend: 390.0, earned: 11.7, referredBy: "C1002", date: "2026-08-12" },
+  { id: "C1004", name: "Bopha Nou", level: 3, city: "Phnom Penh", spend: 1120.0, earned: 11.2, referredBy: "C1003", date: "2026-08-20" },
+  { id: "C1007", name: "Dara Kong", level: 3, city: "Siem Reap", spend: 780.0, earned: 7.8, referredBy: "C1005", date: "2026-09-02" },
 ];
 
 export const HIVE_QUERIES: Record<string, HiveQueryMeta> = {
@@ -282,3 +376,183 @@ export const HIVE_QUERIES: Record<string, HiveQueryMeta> = {
     ],
   },
 };
+
+// ============================================================================
+// Order Fulfillment State Machine Rules
+// ============================================================================
+export const VALID_ORDER_STATUSES = [
+  "Pending",
+  "Preparing",
+  "Out for Delivery",
+  "Delivered",
+  "Cancelled",
+] as const;
+
+export const VALID_ORDER_TRANSITIONS: Record<string, string[]> = {
+  Pending: ["Preparing", "Cancelled"],
+  Preparing: ["Out for Delivery", "Cancelled"],
+  "Out for Delivery": ["Delivered", "Cancelled"],
+  Delivered: [],
+  Cancelled: [],
+};
+
+export function isValidOrderTransition(fromStatus: string, toStatus: string): boolean {
+  if (fromStatus === toStatus) return true;
+  const allowed = VALID_ORDER_TRANSITIONS[fromStatus];
+  if (!allowed) return false;
+  return allowed.includes(toStatus);
+}
+
+// ============================================================================
+// Synchronized Global In-Memory Stores (for Cross-Route Persistence)
+// ============================================================================
+// GlobalThis singleton guarantees persistence across fast refreshes & separate Next.js route bundles
+const globalStore = globalThis as unknown as {
+  __productsStore?: Product[];
+  __ordersStore?: OrderRecord[];
+  __ridersStore?: RiderTelemetry[];
+};
+
+if (!globalStore.__productsStore) {
+  globalStore.__productsStore = JSON.parse(JSON.stringify(INITIAL_PRODUCTS));
+}
+
+if (!globalStore.__ordersStore) {
+  globalStore.__ordersStore = JSON.parse(JSON.stringify(INITIAL_ORDERS));
+}
+
+if (!globalStore.__ridersStore) {
+  globalStore.__ridersStore = JSON.parse(JSON.stringify(INITIAL_RIDERS));
+}
+
+export function getProductsStore(): Product[] {
+  return globalStore.__productsStore!;
+}
+
+export function findProductById(id: string): Product | undefined {
+  return globalStore.__productsStore!.find((p) => p.product_id === id);
+}
+
+export function addProductToStore(prod: Product): Product {
+  const store = globalStore.__productsStore!;
+  const existingIdx = store.findIndex((p) => p.product_id === prod.product_id);
+  if (existingIdx >= 0) {
+    store[existingIdx] = { ...store[existingIdx], ...prod, updated_at: new Date().toISOString() };
+    return store[existingIdx];
+  }
+  store.unshift(prod);
+  return prod;
+}
+
+export function updateProductInStore(id: string, updates: Partial<Product>): Product | null {
+  const store = globalStore.__productsStore!;
+  const idx = store.findIndex((p) => p.product_id === id);
+  if (idx >= 0) {
+    store[idx] = { ...store[idx], ...updates, updated_at: new Date().toISOString() };
+    return store[idx];
+  }
+  return null;
+}
+
+export function deleteProductFromStore(id: string): boolean {
+  const store = globalStore.__productsStore!;
+  const initialLen = store.length;
+  globalStore.__productsStore = store.filter((p) => p.product_id !== id);
+  return globalStore.__productsStore.length < initialLen;
+}
+
+export function addProductReview(
+  productId: string,
+  review: { author: string; rating: number; comment: string }
+): Product | null {
+  const prod = findProductById(productId);
+  if (!prod) return null;
+  const newRev = {
+    id: `rev-${Date.now()}`,
+    author: review.author || "Anonymous Customer",
+    rating: review.rating,
+    date: new Date().toISOString().split("T")[0],
+    comment: review.comment,
+    verified: true,
+  };
+  const list = prod.reviews ? [...prod.reviews, newRev] : [newRev];
+  const avg = Number((list.reduce((sum, r) => sum + r.rating, 0) / list.length).toFixed(1));
+  return updateProductInStore(productId, {
+    reviews: list,
+    reviews_count: list.length,
+    rating: avg,
+  });
+}
+
+export function getOrdersStore(): OrderRecord[] {
+  return globalStore.__ordersStore!;
+}
+
+export function findOrderById(id: string): OrderRecord | undefined {
+  return globalStore.__ordersStore!.find((o) => o.order_id === id);
+}
+
+export function addOrderToStore(order: OrderRecord): OrderRecord {
+  const store = globalStore.__ordersStore!;
+  const existingIdx = store.findIndex((o) => o.order_id === order.order_id);
+  if (existingIdx >= 0) {
+    store[existingIdx] = { ...store[existingIdx], ...order, updated_at: new Date().toISOString() };
+    return store[existingIdx];
+  }
+  store.unshift(order);
+  return order;
+}
+
+export function updateOrderStatusInStore(
+  orderId: string,
+  status: string,
+  force: boolean = false
+): { success: boolean; order?: OrderRecord; error?: string } {
+  const store = globalStore.__ordersStore!;
+  const idx = store.findIndex((o) => o.order_id === orderId);
+  if (idx === -1) {
+    return { success: false, error: `Order ${orderId} not found` };
+  }
+  const currentOrder = store[idx];
+  if (!force && !isValidOrderTransition(currentOrder.status, status)) {
+    return {
+      success: false,
+      error: `Invalid transition from "${currentOrder.status}" to "${status}". Legal next states: ${
+        VALID_ORDER_TRANSITIONS[currentOrder.status]?.join(", ") || "none (terminal state)"
+      }`,
+    };
+  }
+  store[idx] = { ...currentOrder, status, updated_at: new Date().toISOString() };
+  return { success: true, order: store[idx] };
+}
+
+export function getRidersStore(city?: string): RiderTelemetry[] {
+  const list = globalStore.__ridersStore!;
+  if (city && city !== "All") {
+    return list.filter((r) => r.city.toLowerCase() === city.toLowerCase());
+  }
+  return list;
+}
+
+export function updateRiderLocation(
+  riderId: string,
+  lat: string | number,
+  lng: string | number,
+  speed?: string,
+  battery?: number
+): RiderTelemetry | null {
+  const store = globalStore.__ridersStore!;
+  const idx = store.findIndex((r) => r.id === riderId);
+  if (idx >= 0) {
+    store[idx] = {
+      ...store[idx],
+      lat,
+      lng,
+      speed: speed ?? store[idx].speed,
+      battery: battery ?? store[idx].battery,
+      lastPing: new Date().toISOString(),
+    };
+    return store[idx];
+  }
+  return null;
+}

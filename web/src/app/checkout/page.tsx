@@ -19,11 +19,24 @@ import {
   Plus,
   ArrowLeft,
   Clock,
+  Tag,
+  X,
 } from "lucide-react";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, cartTotalUSD, deliveryFeeUSD, finalTotalUSD, clearCart } = useCart();
+  const {
+    cart,
+    cartTotalUSD,
+    deliveryFeeUSD,
+    discountUSD,
+    discountPercent,
+    promoCode,
+    applyPromoCode,
+    removePromoCode,
+    finalTotalUSD,
+    clearCart,
+  } = useCart();
   const { formatPrice, currency } = useCurrency();
   const { showToast } = useToast();
 
@@ -33,6 +46,7 @@ export default function CheckoutPage() {
   const [isKhqrOpen, setIsKhqrOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccessId, setOrderSuccessId] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
 
   // Address form modal
   const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -60,6 +74,14 @@ export default function CheckoutPage() {
     setNewLabel("");
     setNewStreet("");
     showToast("Address added to your profile", "success");
+  };
+
+  const handleApplyPromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoInput.trim()) return;
+    if (applyPromoCode(promoInput)) {
+      setPromoInput("");
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -93,6 +115,8 @@ export default function CheckoutPage() {
       payment_method: payMethodName,
       status: "Preparing",
       delivery_address: `${currentAddress?.street}, ${currentAddress?.city}`,
+      promo_code: promoCode || undefined,
+      discountUSD: discountUSD > 0 ? discountUSD : undefined,
     };
 
     const res = await createOrder(orderPayload);
@@ -101,7 +125,7 @@ export default function CheckoutPage() {
     if (res.success) {
       setOrderSuccessId(orderId);
       clearCart();
-      showToast(`Order #${orderId} created successfully!`, "success");
+      showToast(`Order #${orderId} created successfully in MongoDB store!`, "success");
     } else {
       showToast("Order creation encountered an issue", "error");
     }
@@ -123,7 +147,7 @@ export default function CheckoutPage() {
           </h2>
           <p className="text-sm font-mono font-bold text-[#013326]">Order Code: {orderSuccessId}</p>
           <p className="text-xs text-[#5c7167] max-w-md mx-auto">
-            Your order has been recorded into the MongoDB operational store and queued for fulfillment.
+            Your order has been recorded into the MongoDB operational store and queued for courier fulfillment.
           </p>
         </div>
 
@@ -142,6 +166,12 @@ export default function CheckoutPage() {
               {paymentMethod === "khqr" ? "NBC Bakong KHQR" : "Cash on Delivery"}
             </span>
           </div>
+          {promoCode && (
+            <div className="flex justify-between text-[#0c835c]">
+              <span>Coupon Applied:</span>
+              <span className="font-bold">{promoCode} (-{formatPrice(discountUSD)})</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm font-black text-[#013326] pt-2 border-t border-[#e2eae5]">
             <span>Settled Total:</span>
             <span className="font-mono">{formatPrice(finalTotalUSD)}</span>
@@ -150,14 +180,15 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
-            href="/orders"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-sm"
+            href={`/orders/${orderSuccessId}`}
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#013326] hover:bg-[#0a4636] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
           >
-            Track in My Orders
+            <span>Track Order Timeline</span>
+            <ArrowRight className="w-4 h-4 text-[#15c089]" />
           </Link>
           <Link
             href="/shop"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl border border-[#e2eae5] bg-white hover:bg-[#f1f6f3] text-[#013326] text-xs font-bold transition-all"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl border border-[#e2eae5] text-xs font-bold text-[#5c7167] hover:bg-[#f1f6f3] transition-colors"
           >
             Continue Shopping
           </Link>
@@ -169,13 +200,14 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-[#013326]">Your cart is empty</h2>
+        <h2 className="text-xl font-bold text-[#013326]">No items in cart</h2>
         <p className="text-xs text-[#5c7167]">Add items to your cart before proceeding to checkout.</p>
         <Link
           href="/shop"
           className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#013326] text-white text-xs font-bold"
         >
-          <span>Go to Catalog</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Return to Catalog</span>
         </Link>
       </div>
     );
@@ -183,15 +215,17 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-black text-[#013326]">Checkout & Delivery</h1>
-        <p className="text-xs text-[#5c7167]">
-          Select delivery location and settlement with instant Bakong KHQR or Cash on Delivery
-        </p>
+      {/* Breadcrumb */}
+      <div className="flex items-center space-x-2 text-xs text-[#5c7167]">
+        <Link href="/" className="hover:text-[#013326]">Home</Link>
+        <span>/</span>
+        <Link href="/cart" className="hover:text-[#013326]">Cart</Link>
+        <span>/</span>
+        <span className="text-[#013326] font-bold">Checkout</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Columns: Address & Payment Selection */}
+        {/* Left Column: Multi-Step Fulfillment Options */}
         <div className="lg:col-span-8 space-y-6">
           {/* Step 1: Delivery Address */}
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#e2eae5] shadow-card space-y-4">
@@ -200,51 +234,53 @@ export default function CheckoutPage() {
                 <div className="w-8 h-8 rounded-xl bg-[#013326] text-white flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-[#15c089]" />
                 </div>
-                <h3 className="text-base font-extrabold text-[#013326]">1. Delivery Address</h3>
+                <div>
+                  <h3 className="text-base font-extrabold text-[#013326]">1. Delivery Destination</h3>
+                  <p className="text-xs text-[#5c7167]">Select preferred shipping address</p>
+                </div>
               </div>
+
               <button
                 onClick={() => setIsAddingAddress(!isAddingAddress)}
-                className="text-xs font-bold text-[#0c835c] hover:underline flex items-center space-x-1"
+                className="text-xs font-bold text-[#0c835c] hover:underline flex items-center space-x-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add New Address</span>
               </button>
             </div>
 
-            {/* Address cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Address Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {customer.addresses.map((addr, idx) => (
                 <div
-                  key={idx}
+                  key={addr.id}
                   onClick={() => setSelectedAddressIndex(idx)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer text-xs space-y-1.5 ${
                     selectedAddressIndex === idx
                       ? "border-[#013326] bg-[#eafaf4]/30 ring-2 ring-[#15c089]/30"
                       : "border-[#e2eae5] bg-[#fafcfb] hover:bg-white"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-[#013326]">{addr.label}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="font-extrabold text-[#013326]">{addr.label}</span>
                     {selectedAddressIndex === idx && (
-                      <span className="text-[10px] font-bold text-[#0c835c] bg-[#eafaf4] px-2 py-0.5 rounded-full border border-[#9cf0ce]">
-                        Selected
-                      </span>
+                      <span className="w-2 h-2 rounded-full bg-[#15c089]" />
                     )}
                   </div>
-                  <p className="text-xs text-[#5c7167]">{addr.street}</p>
-                  <p className="text-xs font-semibold text-[#013326] mt-1">{addr.city}</p>
+                  <p className="text-[#5c7167] leading-relaxed line-clamp-2">{addr.street}</p>
+                  <p className="font-bold text-[#013326] text-[11px]">{addr.city}</p>
                 </div>
               ))}
             </div>
 
-            {/* Inline Add Address Form */}
+            {/* Add Address Form */}
             {isAddingAddress && (
-              <form onSubmit={handleAddAddress} className="p-4 rounded-2xl bg-[#f6faf8] border border-[#e2eae5] space-y-3 mt-3">
-                <h4 className="text-xs font-bold text-[#013326]">New Address Details</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form onSubmit={handleAddAddress} className="p-4 rounded-2xl bg-[#f6faf8] border border-[#e2eae5] space-y-3">
+                <h4 className="text-xs font-bold text-[#013326]">Add Destination Address</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
-                    placeholder="Label (e.g. Studio, Warehouse)"
+                    placeholder="Address Label (e.g. Condo, Warehouse)"
                     value={newLabel}
                     onChange={(e) => setNewLabel(e.target.value)}
                     required
@@ -308,7 +344,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-black text-[#e02020]">Bakong KHQR</span>
                   <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded">
-                    Popular
+                    Instant
                   </span>
                 </div>
                 <p className="text-[11px] text-[#5c7167]">ABA, Wing, ACLEDA, Sathapana instant scan</p>
@@ -359,6 +395,35 @@ export default function CheckoutPage() {
             ))}
           </div>
 
+          {/* Promo code bar on checkout */}
+          {promoCode ? (
+            <div className="p-3 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-center justify-between font-semibold">
+              <div className="flex items-center space-x-1.5">
+                <Tag className="w-3.5 h-3.5 text-[#15c089]" />
+                <span>Coupon: <strong>{promoCode}</strong> (-{formatPrice(discountUSD)})</span>
+              </div>
+              <button onClick={removePromoCode} className="p-1 hover:text-rose-600 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleApplyPromo} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Promo Code (VIP10)"
+                value={promoInput}
+                onChange={(e) => setPromoInput(e.target.value)}
+                className="flex-1 px-3 py-1.5 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] font-mono uppercase focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 bg-[#013326] text-white text-xs font-bold rounded-xl hover:bg-[#0a4636]"
+              >
+                Apply
+              </button>
+            </form>
+          )}
+
           <div className="space-y-2 text-xs pt-3 border-t border-[#e2eae5]">
             <div className="flex justify-between text-[#5c7167]">
               <span>Subtotal</span>
@@ -370,6 +435,12 @@ export default function CheckoutPage() {
                 {deliveryFeeUSD === 0 ? "FREE" : formatPrice(deliveryFeeUSD)}
               </span>
             </div>
+            {discountUSD > 0 && (
+              <div className="flex justify-between text-[#0c835c]">
+                <span>Discount ({promoCode})</span>
+                <span className="font-mono font-bold">-{formatPrice(discountUSD)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm font-black text-[#013326] pt-2 border-t border-[#e2eae5]">
               <span>Total Payable</span>
               <span className="font-mono">{formatPrice(finalTotalUSD)}</span>

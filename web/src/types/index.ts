@@ -1,3 +1,12 @@
+export interface ProductReview {
+  id: string;
+  author: string;
+  rating: number;
+  date: string;
+  comment: string;
+  verified: boolean;
+}
+
 export interface Product {
   product_id: string;
   name: string;
@@ -15,8 +24,10 @@ export interface Product {
   image?: string;
   rating?: number;
   reviews_count?: number;
+  reviews?: ProductReview[];
   stock?: number;
   created_at?: string | Date;
+  updated_at?: string | Date;
 }
 
 export interface CartItem {
@@ -42,6 +53,8 @@ export interface OrderRecord {
   payment_method: string;
   status: "Pending" | "Preparing" | "Out for Delivery" | "Delivered" | "Cancelled" | string;
   delivery_address?: string;
+  promo_code?: string;
+  discountUSD?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -69,9 +82,9 @@ export interface RiderTelemetry {
   id: string;
   name: string;
   city: string;
-  lat: string;
-  lng: string;
-  status: "Delivering" | "Picked Up" | "Idle";
+  lat: string | number;
+  lng: string | number;
+  status: "Delivering" | "Picked Up" | "Idle" | string;
   battery: number;
   speed: string;
   lastPing?: string;
@@ -85,6 +98,7 @@ export interface ReferralNode {
   spend: number;
   earned: number;
   referredBy?: string;
+  date?: string;
 }
 
 export interface HiveQueryMeta {

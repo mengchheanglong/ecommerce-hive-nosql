@@ -13,6 +13,11 @@ interface CartContextType {
   cartTotalUSD: number;
   cartCount: number;
   deliveryFeeUSD: number;
+  discountUSD: number;
+  discountPercent: number;
+  promoCode: string;
+  applyPromoCode: (code: string) => boolean;
+  removePromoCode: () => void;
   finalTotalUSD: number;
   isCartDrawerOpen: boolean;
   setIsCartDrawerOpen: (open: boolean) => void;
@@ -21,9 +26,13 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = "marketplace_cart_items";
+const PROMO_STORAGE_KEY = "marketplace_cart_promo";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [promoCode, setPromoCode] = useState<string>("");
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
+  const [isFreeShipping, setIsFreeShipping] = useState<boolean>(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const { showToast } = useToast();
@@ -33,6 +42,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         setCart(JSON.parse(stored));
+      }
+      const storedPromo = localStorage.getItem(PROMO_STORAGE_KEY);
+      if (storedPromo) {
+        const parsed = JSON.parse(storedPromo);
+        setPromoCode(parsed.code || "");
+        setDiscountPercent(parsed.percent || 0);
+        setIsFreeShipping(!!parsed.freeShipping);
       }
     } catch (e) {
       console.warn("Failed to read cart from localStorage", e);
@@ -44,10 +60,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isHydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(
+        PROMO_STORAGE_KEY,
+        JSON.stringify({ code: promoCode, percent: discountPercent, freeShipping: isFreeShipping })
+      );
     } catch (e) {
       console.warn("Failed to write cart to localStorage", e);
     }
-  }, [cart, isHydrated]);
+  }, [cart, promoCode, discountPercent, isFreeShipping, isHydrated]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart((prev) => {
@@ -89,12 +109,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
+    setPromoCode("");
+    setDiscountPercent(0);
+    setIsFreeShipping(false);
+  };
+
+  const applyPromoCode = (code: string): boolean => {
+    const clean = code.trim().toUpperCase();
+    if (clean === "VIP10") {
+      setPromoCode("VIP10");
+      setDiscountPercent(10);
+      setIsFreeShipping(false);
+      showToast("Coupon VIP10 applied! 10% discount added.", "success");
+      return true;
+    } else if (clean === "KHMER2026") {
+      setPromoCode("KHMER2026");
+      setDiscountPercent(15);
+      setIsFreeShipping(false);
+      showToast("Coupon KHMER2026 applied! 15% discount added.", "success");
+      return true;
+    } else if (clean === "FREESHIP") {
+      setPromoCode("FREESHIP");
+      setDiscountPercent(0);
+      setIsFreeShipping(true);
+      showToast("Coupon FREESHIP applied! Free nationwide shipping.", "success");
+      return true;
+    } else {
+      showToast("Invalid promo code. Try VIP10, KHMER2026, or FREESHIP.", "warning");
+      return false;
+    }
+  };
+
+  const removePromoCode = () => {
+    setPromoCode("");
+    setDiscountPercent(0);
+    setIsFreeShipping(false);
+    showToast("Promo code removed.", "info");
   };
 
   const cartTotalUSD = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const deliveryFeeUSD = cartTotalUSD >= 40 || cartTotalUSD === 0 ? 0 : 1.5;
-  const finalTotalUSD = cartTotalUSD + deliveryFeeUSD;
+
+  const baseDeliveryFee = cartTotalUSD >= 40 || cartTotalUSD === 0 ? 0 : 1.5;
+  const deliveryFeeUSD = isFreeShipping ? 0 : baseDeliveryFee;
+
+  const discountUSD = Number(((cartTotalUSD * discountPercent) / 100).toFixed(2));
+  const finalTotalUSD = Number(Math.max(0, cartTotalUSD - discountUSD + deliveryFeeUSD).toFixed(2));
 
   return (
     <CartContext.Provider
@@ -107,6 +167,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         cartTotalUSD,
         cartCount,
         deliveryFeeUSD,
+        discountUSD,
+        discountPercent,
+        promoCode,
+        applyPromoCode,
+        removePromoCode,
         finalTotalUSD,
         isCartDrawerOpen,
         setIsCartDrawerOpen,

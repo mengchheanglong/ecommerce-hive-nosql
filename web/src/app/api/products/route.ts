@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { INITIAL_PRODUCTS } from "@/lib/data";
-
-let inMemoryProducts = [...INITIAL_PRODUCTS];
+import {
+  getProductsStore,
+  addProductToStore,
+  deleteProductFromStore,
+} from "@/lib/data";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,10 +22,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, source: "mongodb", products });
     }
   } catch (error) {
-    console.warn("MongoDB fetch failed, serving fallback products:", error);
+    // MongoDB unavailable, proceed to synchronized fallback store
   }
 
-  let list = [...inMemoryProducts];
+  let list = [...getProductsStore()];
   if (category && category !== "All") {
     list = list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
   }
@@ -31,38 +33,79 @@ export async function GET(request: Request) {
     list = list.filter(
       (p) =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.category.toLowerCase().includes(search.toLowerCase())
+        p.category.toLowerCase().includes(search.toLowerCase()) ||
+        p.product_id.toLowerCase().includes(search.toLowerCase())
     );
   }
   return NextResponse.json({ success: true, source: "fallback", products: list });
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const newProduct = {
-    product_id: body.product_id || `P${Math.floor(1000 + Math.random() * 9000)}`,
-    name: body.name,
-    category: body.category,
-    price: Number(body.price),
-    status: body.status || "active",
-    screen_size: body.screen_size,
-    warranty: body.warranty,
-    size: body.size,
-    colours: body.colours,
-    weight: body.weight,
-    expiry_date: body.expiry_date,
-    description: body.description,
-    created_at: new Date(),
-  };
-
   try {
-    const { db } = await connectToDatabase();
-    const result = await db.collection("products").insertOne(newProduct);
-    return NextResponse.json({ success: true, source: "mongodb", product: newProduct, insertedId: result.insertedId });
-  } catch (error: any) {
-    console.warn("Failed to insert product in MongoDB, storing in fallback state:", error);
-    inMemoryProducts.push(newProduct as any);
-    return NextResponse.json({ success: true, source: "fallback", product: newProduct });
+    const body = await request.json();
+
+    // Polymorphic Document Validation
+    if (!body.name || typeof body.name !== "string" || body.name.trim().length < 2) {
+      return NextResponse.json(
+        { success: false, error: "Validation failed: Product name must be at least 2 characters." },
+        { status: 400 }
+      );
+    }
+
+    const priceNum = Number(body.price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Validation failed: Product price must be a positive number." },
+        { status: 400 }
+      );
+    }
+
+    const stockNum = body.stock !== undefined ? Number(body.stock) : 25;
+    if (isNaN(stockNum) || stockNum < 0) {
+      return NextResponse.json(
+        { success: false, error: "Validation failed: Product stock cannot be negative." },
+        { status: 400 }
+      );
+    }
+
+    const newProduct = {
+      product_id: body.product_id?.trim() || `P${Math.floor(1000 + Math.random() * 9000)}`,
+      name: body.name.trim(),
+      category: body.category || "Electronics",
+      price: priceNum,
+      stock: stockNum,
+      status: body.status || "active",
+      screen_size: body.screen_size?.trim() || undefined,
+      warranty: body.warranty?.trim() || undefined,
+      size: body.size?.trim() || undefined,
+      colours: Array.isArray(body.colours)
+        ? body.colours.filter((c: string) => c && c.trim().length > 0)
+        : undefined,
+      weight: body.weight?.trim() || undefined,
+      expiry_date: body.expiry_date?.trim() || undefined,
+      description: body.description?.trim() || undefined,
+      rating: 5.0,
+      reviews_count: 0,
+      reviews: [],
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      const { db } = await connectToDatabase();
+      const result = await db.collection("products").insertOne(newProduct);
+      return NextResponse.json({
+        success: true,
+        source: "mongodb",
+        product: newProduct,
+        insertedId: result.insertedId,
+      });
+    } catch (error: any) {
+      // Synchronized fallback store
+      addProductToStore(newProduct as any);
+      return NextResponse.json({ success: true, source: "fallback", product: newProduct });
+    }
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: "Invalid JSON payload" }, { status: 400 });
   }
 }
 
@@ -77,10 +120,10 @@ export async function DELETE(request: Request) {
   try {
     const { db } = await connectToDatabase();
     await db.collection("products").deleteOne({ product_id: productId });
-    return NextResponse.json({ success: true, source: "mongodb", deletedId: productId });
   } catch (error: any) {
-    console.warn("Failed to delete product in MongoDB, updating fallback state:", error);
-    inMemoryProducts = inMemoryProducts.filter((p) => p.product_id !== productId);
-    return NextResponse.json({ success: true, source: "fallback", deletedId: productId });
+    // Continue to remove from fallback store
   }
+
+  deleteProductFromStore(productId);
+  return NextResponse.json({ success: true, deletedId: productId });
 }

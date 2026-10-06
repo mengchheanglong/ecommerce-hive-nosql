@@ -1,10 +1,18 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, BadRequestException, NotFoundException } from "@nestjs/common";
 import { Db } from "mongodb";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
 
 @Injectable()
 export class OrdersService {
   constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db) {}
+
+  private validTransitions: Record<string, string[]> = {
+    Pending: ["Preparing", "Cancelled"],
+    Preparing: ["Out for Delivery", "Cancelled"],
+    "Out for Delivery": ["Delivered", "Cancelled"],
+    Delivered: [],
+    Cancelled: [],
+  };
 
   private fallbackOrders = [
     {
@@ -38,6 +46,17 @@ export class OrdersService {
       province: "Phnom Penh",
       payment_method: "Bakong KHQR",
       status: "Out for Delivery",
+      created_at: new Date(),
+    },
+    {
+      order_id: "ORD-100004",
+      customer_id: "C2241",
+      customer_name: "Piseth Seng",
+      items: [{ product_id: "P2211", name: "Noise-Cancelling Wireless Earbuds", quantity: 1, price: 65.0 }],
+      total: 65.0,
+      province: "Siem Reap",
+      payment_method: "Bakong KHQR",
+      status: "Preparing",
       created_at: new Date(),
     },
   ];
@@ -79,12 +98,36 @@ export class OrdersService {
   }
 
   async updateStatus(dto: UpdateOrderStatusDto) {
+    let currentStatus: string | undefined;
+
+    if (this.db) {
+      const existing = await this.db.collection("orders").findOne({ order_id: dto.order_id });
+      if (existing) currentStatus = existing.status;
+    }
+
+    if (!currentStatus) {
+      const fallback = this.fallbackOrders.find((o) => o.order_id === dto.order_id);
+      if (fallback) currentStatus = fallback.status;
+    }
+
+    if (currentStatus && currentStatus !== dto.status) {
+      const allowed = this.validTransitions[currentStatus];
+      if (allowed && !allowed.includes(dto.status)) {
+        throw new BadRequestException(
+          `Invalid fulfillment transition from "${currentStatus}" to "${dto.status}". Allowed next states: ${
+            allowed.join(", ") || "none (terminal state)"
+          }`
+        );
+      }
+    }
+
     if (this.db) {
       await this.db
         .collection("orders")
         .updateOne({ order_id: dto.order_id }, { $set: { status: dto.status, updated_at: new Date() } });
       return { success: true, order_id: dto.order_id, status: dto.status };
     }
+
     const order = this.fallbackOrders.find((o) => o.order_id === dto.order_id);
     if (order) order.status = dto.status;
     return { success: true, order_id: dto.order_id, status: dto.status };

@@ -3,20 +3,30 @@
 import React, { useState, useEffect } from "react";
 import { RiderTelemetry } from "@/types";
 import { INITIAL_RIDERS } from "@/lib/data";
-import { Truck, Terminal, Play, Pause, MapPin, Battery, Gauge, Zap } from "lucide-react";
+import { sendRiderPing } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
+import { Truck, Terminal, Play, Pause, MapPin, Battery, Gauge, Zap, Send } from "lucide-react";
 
 interface FleetConsoleProps {
   initialRiders?: RiderTelemetry[];
 }
 
 export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsoleProps) {
+  const [riders, setRiders] = useState<RiderTelemetry[]>(initialRiders);
   const [selectedCity, setSelectedCity] = useState("All");
   const [isStreaming, setIsStreaming] = useState(true);
+  const [pingingRiderId, setPingingRiderId] = useState<string | null>(null);
+  const { showToast } = useToast();
+
   const [logs, setLogs] = useState<string[]>([
     "[Cassandra LSM] Cluster connected on port 9042. Token partitioner active.",
     "[Cassandra LSM] Table telemetry_ks.rider_gps_pings initialized (TTL 30 days, TWCS enabled).",
     "[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, speed) VALUES ('R-101', '10:14:02', '28 km/h');",
   ]);
+
+  useEffect(() => {
+    setRiders(initialRiders);
+  }, [initialRiders]);
 
   useEffect(() => {
     if (!isStreaming) return;
@@ -31,10 +41,54 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
     return () => clearInterval(interval);
   }, [isStreaming]);
 
+  const handleSimulatePing = async (riderId: string) => {
+    setPingingRiderId(riderId);
+    const speed = `${Math.floor(20 + Math.random() * 20)} km/h`;
+    const battery = Math.floor(60 + Math.random() * 35);
+    const latOffset = (Math.random() - 0.5) * 0.01;
+    const lngOffset = (Math.random() - 0.5) * 0.01;
+    const newLat = `11.${Math.floor(5400 + Math.random() * 400)}° N`;
+    const newLng = `104.${Math.floor(9100 + Math.random() * 300)}° E`;
+
+    await sendRiderPing(riderId, newLat, newLng, speed, battery);
+
+    setRiders((prev) =>
+      prev.map((r) =>
+        r.id === riderId
+          ? {
+              ...r,
+              speed,
+              battery,
+              lat: newLat,
+              lng: newLng,
+            }
+          : r
+      )
+    );
+
+    const timeStr = new Date().toTimeString().slice(0, 8);
+    const log = `[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, speed) VALUES ('${riderId}', '${timeStr}', '${speed}');`;
+    setLogs((prev) => [log, ...prev.slice(0, 6)]);
+
+    setPingingRiderId(null);
+    showToast(`Cassandra write committed for courier ${riderId}`, "success");
+  };
+
   const filteredRiders =
     selectedCity === "All"
-      ? initialRiders
-      : initialRiders.filter((r) => r.city.toLowerCase() === selectedCity.toLowerCase());
+      ? riders
+      : riders.filter((r) => r.city.toLowerCase() === selectedCity.toLowerCase());
+
+  const getStatusBadge = (status: string) => {
+    const s = (status || "").toLowerCase().replace("_", " ");
+    if (s === "delivering") {
+      return "bg-[#eafaf4] text-[#0c835c] border border-[#9cf0ce]";
+    }
+    if (s === "picked up") {
+      return "bg-blue-50 text-blue-700 border border-blue-200";
+    }
+    return "bg-slate-100 text-slate-700";
+  };
 
   return (
     <div className="space-y-6">
@@ -104,44 +158,51 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
         {filteredRiders.map((rider) => (
           <div
             key={rider.id}
-            className="bg-white rounded-3xl p-5 border border-[#e2eae5] shadow-card hover:shadow-hover transition-all duration-200 space-y-3"
+            className="bg-white rounded-3xl p-5 border border-[#e2eae5] shadow-card hover:shadow-hover transition-all duration-200 space-y-3 flex flex-col justify-between"
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <h4 className="text-sm font-extrabold text-[#013326]">{rider.name}</h4>
-                <p className="text-[11px] font-mono text-[#5c7167]">{rider.id} • {rider.city}</p>
+            <div>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-extrabold text-[#013326]">{rider.name}</h4>
+                  <p className="text-[11px] font-mono text-[#5c7167]">{rider.id} • {rider.city}</p>
+                </div>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${getStatusBadge(
+                    rider.status
+                  )}`}
+                >
+                  {rider.status}
+                </span>
               </div>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                  rider.status === "Delivering"
-                    ? "bg-[#eafaf4] text-[#0c835c] border border-[#9cf0ce]"
-                    : rider.status === "Picked Up"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "bg-slate-100 text-slate-700"
-                }`}
-              >
-                {rider.status}
-              </span>
+
+              <div className="grid grid-cols-2 gap-2 text-xs pt-3">
+                <div className="bg-[#f6faf8] p-2 rounded-xl border border-[#e2eae5] flex items-center space-x-1.5">
+                  <Gauge className="w-3.5 h-3.5 text-[#0c835c]" />
+                  <span>{rider.speed}</span>
+                </div>
+                <div className="bg-[#f6faf8] p-2 rounded-xl border border-[#e2eae5] flex items-center space-x-1.5">
+                  <Battery className="w-3.5 h-3.5 text-[#0c835c]" />
+                  <span>{rider.battery}%</span>
+                </div>
+              </div>
+
+              <div className="text-[11px] font-mono text-[#5c7167] flex items-center justify-between pt-2 mt-2 border-t border-[#f1f6f3]">
+                <span className="flex items-center space-x-1">
+                  <MapPin className="w-3 h-3 text-[#15c089]" />
+                  <span>{rider.lat}</span>
+                </span>
+                <span>{rider.lng}</span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-              <div className="bg-[#f6faf8] p-2 rounded-xl border border-[#e2eae5] flex items-center space-x-1.5">
-                <Gauge className="w-3.5 h-3.5 text-[#0c835c]" />
-                <span>{rider.speed}</span>
-              </div>
-              <div className="bg-[#f6faf8] p-2 rounded-xl border border-[#e2eae5] flex items-center space-x-1.5">
-                <Battery className="w-3.5 h-3.5 text-[#0c835c]" />
-                <span>{rider.battery}%</span>
-              </div>
-            </div>
-
-            <div className="text-[11px] font-mono text-[#5c7167] flex items-center justify-between pt-1 border-t border-[#f1f6f3]">
-              <span className="flex items-center space-x-1">
-                <MapPin className="w-3 h-3 text-[#15c089]" />
-                <span>{rider.lat}</span>
-              </span>
-              <span>{rider.lng}</span>
-            </div>
+            <button
+              onClick={() => handleSimulatePing(rider.id)}
+              disabled={pingingRiderId === rider.id}
+              className="w-full py-2 rounded-xl bg-[#f1f6f3] hover:bg-[#013326] hover:text-white text-[#013326] text-[11px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Send className="w-3 h-3 text-[#15c089]" />
+              <span>{pingingRiderId === rider.id ? "Writing..." : "Simulate CQL Ping"}</span>
+            </button>
           </div>
         ))}
       </div>

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Body, Param } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiParam } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiParam, ApiBody } from "@nestjs/swagger";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
 
@@ -31,5 +31,13 @@ export class OrdersController {
   @ApiOperation({ summary: "Advance order fulfillment state (Pending -> Preparing -> Out for Delivery -> Delivered)" })
   updateStatus(@Body() dto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(dto);
+  }
+
+  @Put(":id")
+  @ApiOperation({ summary: "Advance order fulfillment state by order ID URL parameter" })
+  @ApiParam({ name: "id", example: "ORD-100001" })
+  @ApiBody({ schema: { properties: { status: { type: "string", example: "Preparing" } } } })
+  updateStatusById(@Param("id") id: string, @Body() body: { status: string }) {
+    return this.ordersService.updateStatus({ order_id: id, status: body.status });
   }
 }

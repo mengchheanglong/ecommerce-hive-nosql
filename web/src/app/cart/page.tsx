@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useCurrency } from "@/context/CurrencyContext";
-import { ShoppingBag, Plus, Minus, Trash2, Tag, ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
+import { ShoppingBag, Plus, Minus, Trash2, Tag, ArrowRight, ArrowLeft, ShieldCheck, X } from "lucide-react";
 
 export default function FullCartPage() {
   const {
@@ -15,22 +15,25 @@ export default function FullCartPage() {
     cartTotalUSD,
     cartCount,
     deliveryFeeUSD,
+    discountUSD,
+    discountPercent,
+    promoCode,
+    applyPromoCode,
+    removePromoCode,
     finalTotalUSD,
   } = useCart();
   const { formatPrice, currency, exchangeRate } = useCurrency();
-  const [promoCode, setPromoCode] = useState("");
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [inputCode, setInputCode] = useState("");
 
-  const applyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim().toUpperCase() === "VIP10") {
-      setDiscountPercent(10);
+    if (!inputCode.trim()) return;
+    if (applyPromoCode(inputCode)) {
+      setInputCode("");
     }
   };
 
-  const discountUSD = (cartTotalUSD * discountPercent) / 100;
-  const netTotalUSD = Math.max(0, finalTotalUSD - discountUSD);
-  const netTotalKHR = Math.round(netTotalUSD * exchangeRate);
+  const netTotalKHR = Math.round(finalTotalUSD * exchangeRate);
 
   if (cart.length === 0) {
     return (
@@ -101,31 +104,28 @@ export default function FullCartPage() {
                   <div className="flex items-center space-x-2 bg-[#f1f6f3] p-1.5 rounded-2xl border border-[#e2eae5]">
                     <button
                       onClick={() => updateQuantity(item.product.product_id, item.quantity - 1)}
-                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-xs hover:bg-[#e2eae5]"
+                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5] cursor-pointer"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-7 text-center text-xs font-bold text-[#013326]">
+                    <span className="w-6 text-center text-xs font-bold text-[#013326]">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.product.product_id, item.quantity + 1)}
-                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-xs hover:bg-[#e2eae5]"
+                      className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5] cursor-pointer"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Line item total */}
-                  <div className="text-right min-w-20">
-                    <p className="text-sm font-black text-[#013326] font-mono">
-                      {formatPrice(item.product.price * item.quantity)}
-                    </p>
-                  </div>
+                  <span className="text-sm font-mono font-black text-[#013326] w-20 text-right">
+                    {formatPrice(item.product.price * item.quantity)}
+                  </span>
 
                   <button
                     onClick={() => removeFromCart(item.product.product_id)}
-                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                    className="p-2 text-[#5c7167] hover:text-rose-600 transition-colors cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -141,30 +141,39 @@ export default function FullCartPage() {
           <h3 className="text-base font-extrabold text-[#013326]">Order Summary</h3>
 
           {/* Promo code */}
-          <form onSubmit={applyPromo} className="flex gap-2">
-            <div className="relative flex-1">
-              <Tag className="w-3.5 h-3.5 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Promo code (VIP10)"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] font-mono uppercase focus:bg-white focus:outline-none"
-              />
+          {promoCode ? (
+            <div className="p-3 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex items-center justify-between font-semibold">
+              <div className="flex items-center space-x-2">
+                <Tag className="w-3.5 h-3.5 text-[#15c089]" />
+                <span>Code <strong>{promoCode}</strong> applied ({discountPercent > 0 ? `${discountPercent}% off` : "Free Shipping"})</span>
+              </div>
+              <button
+                onClick={removePromoCode}
+                className="p-1 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Remove promo code"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-colors cursor-pointer"
-            >
-              Apply
-            </button>
-          </form>
-
-          {discountPercent > 0 && (
-            <div className="p-3 bg-[#eafaf4] rounded-2xl border border-[#9cf0ce] text-xs text-[#0c835c] flex justify-between font-semibold">
-              <span>{discountPercent}% Promo Applied</span>
-              <span>-{formatPrice(discountUSD)}</span>
-            </div>
+          ) : (
+            <form onSubmit={handleApplyPromo} className="flex gap-2">
+              <div className="relative flex-1">
+                <Tag className="w-3.5 h-3.5 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Promo code (VIP10 / KHMER2026)"
+                  value={inputCode}
+                  onChange={(e) => setInputCode(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] font-mono uppercase focus:bg-white focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-colors cursor-pointer"
+              >
+                Apply
+              </button>
+            </form>
           )}
 
           {/* Price Breakdown */}
@@ -179,9 +188,9 @@ export default function FullCartPage() {
                 {deliveryFeeUSD === 0 ? "FREE" : formatPrice(deliveryFeeUSD)}
               </span>
             </div>
-            {discountPercent > 0 && (
+            {discountUSD > 0 && (
               <div className="flex justify-between text-[#0c835c]">
-                <span>Discount</span>
+                <span>Discount ({promoCode})</span>
                 <span className="font-mono font-bold">-{formatPrice(discountUSD)}</span>
               </div>
             )}
@@ -189,7 +198,7 @@ export default function FullCartPage() {
               <span className="text-sm font-black text-[#013326]">Total Amount</span>
               <div className="text-right">
                 <span className="text-xl font-black text-[#013326] font-mono block">
-                  {formatPrice(netTotalUSD)}
+                  {formatPrice(finalTotalUSD)}
                 </span>
                 <span className="text-[11px] text-[#5c7167]">
                   (~៛{netTotalKHR.toLocaleString()} KHR)

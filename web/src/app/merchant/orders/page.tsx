@@ -42,7 +42,7 @@ export default function MerchantOrdersPage() {
       );
       showToast(`Order ${orderId} transitioned to ${newStatus}`, "success");
     } else {
-      showToast("Error updating order state", "error");
+      showToast(res.error || "Error updating order state", "error");
     }
   };
 

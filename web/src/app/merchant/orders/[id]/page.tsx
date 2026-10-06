@@ -43,6 +43,8 @@ export default function MerchantOrderDetailPage() {
     if (res.success) {
       setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
       showToast(`Order status updated to ${newStatus}`, "success");
+    } else {
+      showToast(res.error || "Cannot perform invalid state transition", "error");
     }
   };
 

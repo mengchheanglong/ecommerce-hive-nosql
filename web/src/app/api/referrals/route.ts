@@ -1,52 +1,60 @@
 import { NextResponse } from "next/server";
+import { INITIAL_REFERRALS } from "@/lib/data";
 
-export async function GET() {
-  // Neo4j Graph Data Model: 3-tier deep social network
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const customerId = searchParams.get("customerId") || "C0457";
+
+  const tier1 = INITIAL_REFERRALS.filter((r) => r.level === 1);
+  const tier2 = INITIAL_REFERRALS.filter((r) => r.level === 2);
+  const tier3 = INITIAL_REFERRALS.filter((r) => r.level === 3);
+
+  const totalRewardsUSD = INITIAL_REFERRALS.reduce((acc, cur) => acc + cur.earned, 0);
+  const totalVolumeUSD = INITIAL_REFERRALS.reduce((acc, cur) => acc + cur.spend, 0);
+
   const referralTree = {
     rootCustomer: {
-      id: "C0457",
+      id: customerId,
       name: "Sokha Meas",
       city: "Phnom Penh",
-      totalEarnedRewards: "$184.50",
-      totalNetworkUsers: 8,
+      totalEarnedRewards: `$${totalRewardsUSD.toFixed(2)}`,
+      totalNetworkSpend: `$${totalVolumeUSD.toFixed(2)}`,
+      totalNetworkUsers: INITIAL_REFERRALS.length,
+      networkDepth: 3,
     },
-    levels: [
+    network: INITIAL_REFERRALS,
+    tiers: [
       {
         tier: 1,
         label: "Direct Referrals (Level 1)",
-        rewardRate: "5% Payout",
-        users: [
-          { id: "C1001", name: "Vireak Chan", city: "Phnom Penh", date: "2026-07-10", spend: "$420.00", earned: "$21.00" },
-          { id: "C1002", name: "Sophea Kim", city: "Siem Reap", date: "2026-07-15", spend: "$650.00", earned: "$32.50" },
-        ],
+        rewardRate: "5% Reward",
+        members: tier1,
       },
       {
         tier: 2,
         label: "Second-Degree Friends (Level 2)",
-        rewardRate: "3% Payout",
-        users: [
-          { id: "C1003", name: "Rithy Pen", city: "Battambang", date: "2026-08-01", spend: "$810.00", earned: "$24.30" },
-          { id: "C1005", name: "Kolab Heng", city: "Phnom Penh", date: "2026-08-12", spend: "$390.00", earned: "$11.70" },
-          { id: "C1006", name: "Piseth Mao", city: "Siem Reap", date: "2026-08-18", spend: "$520.00", earned: "$15.60" },
-        ],
+        rewardRate: "3% Reward",
+        members: tier2,
       },
       {
         tier: 3,
         label: "Third-Degree Friends (Level 3)",
-        rewardRate: "1% Payout",
-        users: [
-          { id: "C1004", name: "Bopha Nou", city: "Phnom Penh", date: "2026-08-20", spend: "$1,120.00", earned: "$11.20" },
-          { id: "C1007", name: "Dara Kong", city: "Siem Reap", date: "2026-09-02", spend: "$780.00", earned: "$7.80" },
-          { id: "C1008", name: "Chanthy Sam", city: "Battambang", date: "2026-09-10", spend: "$440.00", earned: "$4.40" },
-        ],
+        rewardRate: "1% Reward",
+        members: tier3,
       },
     ],
     graphStats: {
       engine: "Neo4j Graph Database (Bolt Protocol)",
-      traversalType: "Index-Free Adjacency (O(1) memory pointer chasing)",
-      cypherQuery: "MATCH (origin:Customer {id: 'C0457'})-[:REFERRED*1..3]->(ref:Customer)...",
+      traversalType: "Index-Free Adjacency (O(1) memory pointer jumps)",
+      cypherQuery:
+        "MATCH (origin:Customer {id: $id})-[:REFERRED*1..3]->(ref:Customer) RETURN origin, ref, length(path)",
+      traversalLatencyMs: 1.4,
     },
   };
 
-  return NextResponse.json({ success: true, data: referralTree });
+  return NextResponse.json({
+    success: true,
+    ...referralTree,
+    data: referralTree,
+  });
 }

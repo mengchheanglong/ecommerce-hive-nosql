@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsPositive, Min, IsArray } from "class-validator";
 
 export class CreateProductDto {
   @ApiPropertyOptional({ example: "P2210" })
@@ -20,7 +20,14 @@ export class CreateProductDto {
   @ApiProperty({ example: 289.0 })
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive({ message: "Price must be a positive number greater than zero" })
   price: number;
+
+  @ApiPropertyOptional({ example: 45 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0, { message: "Stock cannot be negative" })
+  stock?: number;
 
   @ApiPropertyOptional({ example: "active" })
   @IsOptional()
@@ -44,6 +51,7 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({ example: ["Navy Blue", "Sand Beige"] })
   @IsOptional()
+  @IsArray()
   colours?: string[];
 
   @ApiPropertyOptional({ example: "5.0 kg" })

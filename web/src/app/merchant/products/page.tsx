@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { fetchProducts, deleteProduct } from "@/lib/api";
+import { fetchProducts, deleteProduct, updateProduct } from "@/lib/api";
 import { Product } from "@/types";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useToast } from "@/context/ToastContext";
+import { Modal } from "@/components/shared/Modal";
 import {
   Package,
   Plus,
   Search,
   Trash2,
   ExternalLink,
+  Edit2,
+  Save,
   Check,
   X,
   AlertCircle,
@@ -26,6 +29,20 @@ export default function MerchantProductsPage() {
   const { formatPrice } = useCurrency();
   const { showToast } = useToast();
 
+  // Edit Modal State
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editStock, setEditStock] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editScreenSize, setEditScreenSize] = useState("");
+  const [editWarranty, setEditWarranty] = useState("");
+  const [editSize, setEditSize] = useState("");
+  const [editColours, setEditColours] = useState("");
+  const [editWeight, setEditWeight] = useState("");
+  const [editExpiryDate, setEditExpiryDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const loadData = async () => {
     setLoading(true);
     const data = await fetchProducts();
@@ -36,6 +53,74 @@ export default function MerchantProductsPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const openEditModal = (prod: Product) => {
+    setEditingProduct(prod);
+    setEditName(prod.name);
+    setEditPrice(prod.price.toString());
+    setEditStock((prod.stock ?? 25).toString());
+    setEditDescription(prod.description || "");
+    setEditScreenSize(prod.screen_size || "");
+    setEditWarranty(prod.warranty || "");
+    setEditSize(prod.size || "");
+    setEditColours(prod.colours ? prod.colours.join(", ") : "");
+    setEditWeight(prod.weight || "");
+    setEditExpiryDate(prod.expiry_date || "");
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    const priceNum = parseFloat(editPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      showToast("Price must be a positive number", "warning");
+      return;
+    }
+
+    const stockNum = parseInt(editStock, 10);
+    if (isNaN(stockNum) || stockNum < 0) {
+      showToast("Stock cannot be negative", "warning");
+      return;
+    }
+
+    setSavingEdit(true);
+
+    const updates: Partial<Product> = {
+      name: editName.trim(),
+      price: priceNum,
+      stock: stockNum,
+      description: editDescription.trim() || undefined,
+    };
+
+    if (editingProduct.category === "Electronics") {
+      updates.screen_size = editScreenSize.trim() || undefined;
+      updates.warranty = editWarranty.trim() || undefined;
+    } else if (editingProduct.category === "Clothing") {
+      updates.size = editSize.trim() || undefined;
+      updates.colours = editColours
+        ? editColours.split(",").map((c) => c.trim()).filter(Boolean)
+        : undefined;
+    } else if (editingProduct.category === "Groceries") {
+      updates.weight = editWeight.trim() || undefined;
+      updates.expiry_date = editExpiryDate.trim() || undefined;
+    }
+
+    const res = await updateProduct(editingProduct.product_id, updates);
+    setSavingEdit(false);
+
+    if (res.success) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.product_id === editingProduct.product_id ? { ...p, ...updates } : p
+        )
+      );
+      setEditingProduct(null);
+      showToast(`Product "${editName}" updated successfully in MongoDB!`, "success");
+    } else {
+      showToast(res.error || "Failed to update product", "error");
+    }
+  };
 
   const handleDelete = async (productId: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}" from MongoDB catalog?`)) return;
@@ -173,7 +258,14 @@ export default function MerchantProductsPage() {
                         {prod.stock ?? 25} units
                       </span>
                     </td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-right space-x-1.5">
+                      <button
+                        onClick={() => openEditModal(prod)}
+                        className="inline-block p-1.5 rounded-lg text-[#013326] hover:bg-[#eafaf4] hover:text-[#0c835c] transition-colors cursor-pointer"
+                        title="Edit Product"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                       <Link
                         href={`/shop/${prod.product_id}`}
                         target="_blank"
@@ -197,6 +289,170 @@ export default function MerchantProductsPage() {
           </table>
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <Modal
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          title={`Edit Product: ${editingProduct.product_id}`}
+          maxWidth="max-w-2xl"
+        >
+          <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#013326] mb-1">Product Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#013326] mb-1">Category</label>
+                <input
+                  type="text"
+                  value={editingProduct.category}
+                  disabled
+                  className="w-full px-3 py-2 rounded-xl bg-slate-100 border border-[#e2eae5] text-slate-500 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#013326] mb-1">Price (USD)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] font-mono focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#013326] mb-1">Stock Units</label>
+                <input
+                  type="number"
+                  value={editStock}
+                  onChange={(e) => setEditStock(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] focus:bg-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Polymorphic Specs based on category */}
+            <div className="p-3.5 bg-[#f6faf8] rounded-2xl border border-[#e2eae5] space-y-3">
+              <span className="font-extrabold uppercase text-[10px] tracking-wider text-[#013326] block">
+                {editingProduct.category} Technical Specifications
+              </span>
+
+              {editingProduct.category === "Electronics" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Display Size</label>
+                    <input
+                      type="text"
+                      value={editScreenSize}
+                      onChange={(e) => setEditScreenSize(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Warranty Term</label>
+                    <input
+                      type="text"
+                      value={editWarranty}
+                      onChange={(e) => setEditWarranty(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingProduct.category === "Clothing" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Garment Size</label>
+                    <input
+                      type="text"
+                      value={editSize}
+                      onChange={(e) => setEditSize(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Colors (comma separated)</label>
+                    <input
+                      type="text"
+                      value={editColours}
+                      onChange={(e) => setEditColours(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingProduct.category === "Groceries" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Net Weight</label>
+                    <input
+                      type="text"
+                      value={editWeight}
+                      onChange={(e) => setEditWeight(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#5c7167] font-semibold mb-1">Expiry Date</label>
+                    <input
+                      type="date"
+                      value={editExpiryDate}
+                      onChange={(e) => setEditExpiryDate(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-[#e2eae5]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#013326] mb-1">Description</label>
+              <textarea
+                rows={3}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#f1f6f3] border border-[#e2eae5] text-[#013326] focus:bg-white focus:outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2 border-t border-[#f1f6f3]">
+              <button
+                type="button"
+                onClick={() => setEditingProduct(null)}
+                className="px-4 py-2 rounded-xl text-[#5c7167] hover:bg-[#f1f6f3] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingEdit}
+                className="px-5 py-2 rounded-xl bg-[#013326] hover:bg-[#0a4636] text-white font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 text-[#15c089]" />
+                <span>{savingEdit ? "Updating MongoDB..." : "Save Product Changes"}</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

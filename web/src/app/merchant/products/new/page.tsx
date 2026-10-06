@@ -30,31 +30,48 @@ export default function CreateProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !price) {
+    if (!name.trim() || !price) {
       showToast("Please provide product name and price", "warning");
+      return;
+    }
+
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      showToast("Price must be a valid positive number greater than $0", "warning");
+      return;
+    }
+
+    const stockNum = parseInt(stock, 10);
+    if (isNaN(stockNum) || stockNum < 0) {
+      showToast("Initial stock units cannot be negative", "warning");
       return;
     }
 
     setIsSubmitting(true);
     const payload: any = {
-      product_id: sku,
-      name,
+      product_id: sku.trim(),
+      name: name.trim(),
       category,
-      price: parseFloat(price),
-      stock: parseInt(stock, 10) || 25,
-      description: description || undefined,
+      price: priceNum,
+      stock: stockNum,
+      description: description.trim() || undefined,
       status: "active",
     };
 
     if (category === "Electronics") {
-      if (screenSize) payload.screen_size = screenSize;
-      if (warranty) payload.warranty = warranty;
+      if (screenSize.trim()) payload.screen_size = screenSize.trim();
+      if (warranty.trim()) payload.warranty = warranty.trim();
     } else if (category === "Clothing") {
-      if (size) payload.size = size;
-      if (colours) payload.colours = colours.split(",").map((c) => c.trim());
+      if (size.trim()) payload.size = size.trim();
+      if (colours.trim()) {
+        payload.colours = colours
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean);
+      }
     } else if (category === "Groceries") {
-      if (weight) payload.weight = weight;
-      if (expiryDate) payload.expiry_date = expiryDate;
+      if (weight.trim()) payload.weight = weight.trim();
+      if (expiryDate.trim()) payload.expiry_date = expiryDate.trim();
     }
 
     const res = await createProduct(payload);
@@ -64,7 +81,7 @@ export default function CreateProductPage() {
       showToast(`Product "${name}" persisted into MongoDB catalog!`, "success");
       router.push("/merchant/products");
     } else {
-      showToast("Error creating product document", "error");
+      showToast(res.error || "Error creating product document", "error");
     }
   };
 

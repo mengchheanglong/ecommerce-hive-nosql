@@ -16,21 +16,23 @@ export function CartDrawer() {
     cartTotalUSD,
     cartCount,
     deliveryFeeUSD,
+    discountUSD,
+    discountPercent,
+    promoCode,
+    applyPromoCode,
+    removePromoCode,
     finalTotalUSD,
   } = useCart();
   const { formatPrice, currency } = useCurrency();
-  const [promoCode, setPromoCode] = useState("");
-  const [discountApplied, setDiscountApplied] = useState(false);
+  const [inputCode, setInputCode] = useState("");
 
   if (!isCartDrawerOpen) return null;
 
-  const discountAmount = discountApplied ? cartTotalUSD * 0.1 : 0;
-  const netTotal = Math.max(0, finalTotalUSD - discountAmount);
-
-  const applyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim().toUpperCase() === "VIP10") {
-      setDiscountApplied(true);
+    if (!inputCode.trim()) return;
+    if (applyPromoCode(inputCode)) {
+      setInputCode("");
     }
   };
 
@@ -100,14 +102,16 @@ export function CartDrawer() {
                     <div className="flex items-center space-x-1.5 bg-[#f1f6f3] p-1 rounded-xl border border-[#e2eae5]">
                       <button
                         onClick={() => updateQuantity(item.product.product_id, item.quantity - 1)}
-                        className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs hover:bg-[#e2eae5]"
+                        className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5]"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center text-xs font-bold text-[#013326]">{item.quantity}</span>
+                      <span className="w-5 text-center text-xs font-bold text-[#013326]">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() => updateQuantity(item.product.product_id, item.quantity + 1)}
-                        className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-xs hover:bg-[#e2eae5]"
+                        className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[#013326] shadow-2xs hover:bg-[#e2eae5]"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -115,7 +119,7 @@ export function CartDrawer() {
 
                     <button
                       onClick={() => removeFromCart(item.product.product_id)}
-                      className="text-[11px] text-rose-600 hover:text-rose-800 flex items-center space-x-0.5"
+                      className="text-[11px] text-rose-500 hover:text-rose-700 flex items-center space-x-0.5"
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Remove</span>
@@ -126,34 +130,39 @@ export function CartDrawer() {
             )}
           </div>
 
-          {/* Footer Summary & Checkout */}
+          {/* Drawer Footer Summary */}
           {cart.length > 0 && (
             <div className="p-5 border-t border-[#e2eae5] bg-[#fafcfb] space-y-4">
-              {/* Promo Code Input */}
-              <form onSubmit={applyPromo} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag className="w-3.5 h-3.5 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Promo code (try VIP10)"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-white border border-[#e2eae5] text-[#013326] uppercase font-mono"
-                  />
+              {/* Promo code */}
+              {promoCode ? (
+                <div className="text-[11px] font-semibold text-[#0c835c] bg-[#eafaf4] px-3 py-1.5 rounded-xl border border-[#9cf0ce] flex justify-between items-center">
+                  <span>Coupon {promoCode} ({discountPercent > 0 ? `${discountPercent}% off` : "Free Shipping"})</span>
+                  <button
+                    onClick={removePromoCode}
+                    className="p-1 hover:text-rose-600 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="px-3.5 py-2 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-colors"
-                >
-                  Apply
-                </button>
-              </form>
-
-              {discountApplied && (
-                <div className="text-[11px] font-semibold text-[#0c835c] bg-[#eafaf4] px-3 py-1.5 rounded-xl border border-[#9cf0ce] flex justify-between">
-                  <span>VIP 10% Discount Applied!</span>
-                  <span>-{formatPrice(discountAmount)}</span>
-                </div>
+              ) : (
+                <form onSubmit={handleApplyPromo} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="w-3.5 h-3.5 text-[#5c7167] absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Promo code (VIP10 / KHMER2026)"
+                      value={inputCode}
+                      onChange={(e) => setInputCode(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white border border-[#e2eae5] text-[#013326] font-mono uppercase focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 rounded-xl bg-[#013326] text-white text-xs font-bold hover:bg-[#0a4636] transition-colors"
+                  >
+                    Apply
+                  </button>
+                </form>
               )}
 
               {/* Breakdown */}
@@ -165,12 +174,18 @@ export function CartDrawer() {
                 <div className="flex justify-between text-[#5c7167]">
                   <span>Delivery Fee</span>
                   <span className="font-mono font-bold text-[#013326]">
-                    {deliveryFeeUSD === 0 ? "FREE (Orders > $40)" : formatPrice(deliveryFeeUSD)}
+                    {deliveryFeeUSD === 0 ? "FREE" : formatPrice(deliveryFeeUSD)}
                   </span>
                 </div>
+                {discountUSD > 0 && (
+                  <div className="flex justify-between text-[#0c835c]">
+                    <span>Discount ({promoCode})</span>
+                    <span className="font-mono font-bold">-{formatPrice(discountUSD)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm font-black text-[#013326] pt-2 border-t border-[#e2eae5]">
                   <span>Estimated Total</span>
-                  <span className="font-mono">{formatPrice(netTotal)}</span>
+                  <span className="font-mono">{formatPrice(finalTotalUSD)}</span>
                 </div>
               </div>
 
