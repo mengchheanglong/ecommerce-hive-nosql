@@ -164,7 +164,7 @@ export function Header() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors">
-                    KhmerCart
+                    Rentify
                   </span>
                   <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/80 hidden sm:inline-block">
                     Marketplace
@@ -232,7 +232,7 @@ export function Header() {
           ) : (
             <div className="flex-1 text-center hidden md:block">
               <span className="text-xs font-bold text-slate-600 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                KhmerCart Merchant Operations Suite
+                Rentify Merchant Operations Suite
               </span>
             </div>
           )}

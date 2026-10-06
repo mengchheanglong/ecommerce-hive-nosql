@@ -9,7 +9,7 @@ import { AppShell } from "@/components/shared/AppShell";
 import { LocationProvider } from "@/context/LocationContext";
 
 export const metadata: Metadata = {
-  title: "KhmerCart — High-Scale Polyglot E-Commerce Marketplace",
+  title: "Rentify Marketplace — High-Scale Polyglot E-Commerce Platform",
   description:
     "Production-grade distributed e-commerce architecture powered by MongoDB 8.0, Apache Cassandra, Neo4j, and Apache Hive on HDFS",
 };

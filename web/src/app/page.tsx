@@ -387,11 +387,11 @@ export default function StorefrontHomePage() {
           </Link>
         </div>
 
-        {/* Box 4: KhmerCart Prime Services */}
+        {/* Box 4: Rentify Prime Services */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex flex-col justify-between hover:shadow-md transition-shadow">
           <div>
             <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-              KhmerCart Prime Benefits
+              Rentify Prime Benefits
             </h3>
             <p className="text-[11px] text-slate-500 mb-3.5">Express logistics & Bakong payment</p>
 

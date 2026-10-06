@@ -276,7 +276,7 @@ export default function OrderDetailPage() {
                 <div className="flex items-center space-x-2">
                   <Building2 className="w-5 h-5 text-emerald-600" />
                   <span className="font-black text-base text-slate-900 tracking-tight">
-                    KhmerCart E-Commerce Co., Ltd.
+                    Rentify E-Commerce Co., Ltd.
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">
@@ -352,7 +352,7 @@ export default function OrderDetailPage() {
                 <QrCode className="w-10 h-10 text-emerald-700 shrink-0" />
                 <div className="text-[10px] text-emerald-800">
                   <p className="font-bold">NBC Bakong Digital Seal</p>
-                  <p className="text-slate-500 font-mono">Verify at: verify.khmercart.kh/tax</p>
+                  <p className="text-slate-500 font-mono">Verify at: verify.rentify.kh/tax</p>
                 </div>
               </div>
 

@@ -101,7 +101,7 @@ export function KhqrPaymentModal({
 
             <div className="text-center space-y-0.5">
               <p className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider">
-                KHMERCART MARKETPLACE
+                RENTIFY MARKETPLACE
               </p>
               <p className="text-xl font-black text-slate-900 font-mono">
                 {formatPrice(amountUSD)}

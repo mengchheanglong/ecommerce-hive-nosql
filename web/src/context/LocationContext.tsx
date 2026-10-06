@@ -17,7 +17,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("khmercart_delivery_province");
+      const saved = localStorage.getItem("rentify_delivery_province");
       if (saved && (saved === "Phnom Penh" || saved === "Siem Reap" || saved === "Battambang")) {
         setSelectedProvinceState(saved as DeliveryProvince);
       }
@@ -29,7 +29,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const setSelectedProvince = (prov: DeliveryProvince) => {
     setSelectedProvinceState(prov);
     try {
-      localStorage.setItem("khmercart_delivery_province", prov);
+      localStorage.setItem("rentify_delivery_province", prov);
     } catch {
       // Storage unavailable fallback
     }

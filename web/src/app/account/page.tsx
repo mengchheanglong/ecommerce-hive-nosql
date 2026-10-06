@@ -66,7 +66,7 @@ export default function AccountProfilePage() {
   };
 
   const copyReferralCode = () => {
-    navigator.clipboard.writeText(`https://khmercart.kh/ref/${customer.referral_code}`);
+    navigator.clipboard.writeText(`https://rentify.kh/ref/${customer.referral_code}`);
     setCopied(true);
     showToast("Referral link copied to clipboard", "info");
     setTimeout(() => setCopied(false), 2000);
@@ -218,7 +218,7 @@ export default function AccountProfilePage() {
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed">
-            Invite friends to shop on KhmerCart. When they purchase, our Neo4j graph engine traverses your multi-tier network with sub-millisecond latency to deposit instant passive rewards.
+            Invite friends to shop on Rentify. When they purchase, our Neo4j graph engine traverses your multi-tier network with sub-millisecond latency to deposit instant passive rewards.
           </p>
 
           {/* Referral Code Copy Card */}
