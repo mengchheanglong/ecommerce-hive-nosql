@@ -212,7 +212,7 @@ export default function MerchantOrderDetailPage() {
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer active:scale-95 ${
                     nextSt === "Cancelled"
                       ? "bg-white hover:bg-rose-50 text-rose-600 border border-rose-200"
-                      : "bg-slate-900 hover:bg-emerald-600 text-white"
+                      : "bg-slate-900 hover:bg-blue-600 text-white"
                   }`}
                 >
                   <span>Transition to: {nextSt}</span>
@@ -225,13 +225,13 @@ export default function MerchantOrderDetailPage() {
 
         {/* COURIER DISPATCH PANEL */}
         {order.status !== "Delivered" && order.status !== "Cancelled" && (
-          <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-4 text-xs">
+          <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-4 text-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Truck className="w-4 h-4 text-emerald-700" />
+                <Truck className="w-4 h-4 text-blue-700" />
                 <h4 className="font-extrabold text-slate-900">Cassandra Courier Fleet Dispatch</h4>
               </div>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
                 800 Live Couriers Available
               </span>
             </div>
@@ -244,7 +244,7 @@ export default function MerchantOrderDetailPage() {
                 <select
                   value={selectedRiderId}
                   onChange={(e) => setSelectedRiderId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 cursor-pointer focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 >
                   <optgroup label={`Local Hub: ${order.province}`}>
                     {riders
@@ -275,12 +275,12 @@ export default function MerchantOrderDetailPage() {
                   </div>
                   <div className="flex items-center space-x-3 text-[11px] text-slate-600 pt-0.5">
                     <span className="flex items-center space-x-1">
-                      <Gauge className="w-3 h-3 text-emerald-600" />
+                      <Gauge className="w-3 h-3 text-blue-600" />
                       <span>{assignedRider.speed}</span>
                     </span>
                     <span>•</span>
                     <span className="flex items-center space-x-1">
-                      <Battery className="w-3 h-3 text-emerald-600" />
+                      <Battery className="w-3 h-3 text-blue-600" />
                       <span>{assignedRider.battery}%</span>
                     </span>
                     <span>•</span>
@@ -294,7 +294,7 @@ export default function MerchantOrderDetailPage() {
               <button
                 type="button"
                 onClick={handleDispatchCourier}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95"
+                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95"
               >
                 <Truck className="w-4 h-4" />
                 <span>Assign & Dispatch Courier to Customer Destination</span>
@@ -307,7 +307,7 @@ export default function MerchantOrderDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1 text-xs">
             <div className="flex items-center space-x-1.5 font-bold text-slate-900">
-              <User className="w-4 h-4 text-emerald-600" />
+              <User className="w-4 h-4 text-blue-600" />
               <span>Customer Information</span>
             </div>
             <p className="text-slate-900 font-semibold">{order.customer_name}</p>
@@ -317,7 +317,7 @@ export default function MerchantOrderDetailPage() {
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1 text-xs">
             <div className="flex items-center space-x-1.5 font-bold text-slate-900">
-              <MapPin className="w-4 h-4 text-emerald-600" />
+              <MapPin className="w-4 h-4 text-blue-600" />
               <span>Delivery Destination</span>
             </div>
             <p className="text-slate-600">{order.delivery_address || `${order.province}, Cambodia`}</p>

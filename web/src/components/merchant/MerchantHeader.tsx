@@ -45,7 +45,7 @@ export function MerchantHeader({ onToggleSidebar, title, subtitle }: MerchantHea
           rel="noreferrer"
           className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-xs font-mono font-semibold transition-all"
         >
-          <Server className="w-3.5 h-3.5 text-emerald-600" />
+          <Server className="w-3.5 h-3.5 text-blue-600" />
           <span>Swagger API</span>
           <ExternalLink className="w-3 h-3 text-slate-400" />
         </a>
@@ -53,7 +53,7 @@ export function MerchantHeader({ onToggleSidebar, title, subtitle }: MerchantHea
         {/* Quick Customer Storefront Toggle */}
         <Link
           href="/"
-          className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all shadow-xs"
+          className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs"
         >
           Customer Store
         </Link>

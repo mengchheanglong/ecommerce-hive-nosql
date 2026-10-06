@@ -85,13 +85,13 @@ export function ReferralGraph() {
       <div className="bg-slate-950 text-emerald-400 p-5 sm:p-6 rounded-2xl border border-slate-800 font-mono text-xs space-y-3 shadow-inner">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
           <div className="flex items-center space-x-2">
-            <Terminal className="w-4 h-4 text-emerald-400" />
+            <Terminal className="w-4 h-4 text-blue-400" />
             <span className="font-bold text-white">Neo4j Bolt Cypher Traversal Engine</span>
           </div>
 
           <button
             onClick={handleTestCypher}
-            className="px-3 py-1 bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-slate-800 rounded-xl text-[11px] font-bold transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold transition-all shadow-xs cursor-pointer active:scale-95"
           >
             Run Graph Traversal Test
           </button>

@@ -8,7 +8,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f6faf8] text-[#09211a]">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Sidebar */}
       <MerchantSidebar
         isOpen={sidebarOpen}

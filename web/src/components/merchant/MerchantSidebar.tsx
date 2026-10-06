@@ -53,7 +53,7 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           {/* Logo / Merchant Identity */}
           <div className="h-16 sm:h-18 px-5 flex items-center justify-between border-b border-slate-800/80">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/25">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
@@ -87,15 +87,15 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
                   onClick={onClose}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                     isActive
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold"
+                      ? "bg-blue-600 text-white font-bold shadow-sm shadow-blue-600/30 border border-blue-500"
                       : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
                     <span>{item.name}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
                 </Link>
               );
             })}
@@ -108,7 +108,7 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
             href="/"
             className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors border border-slate-800"
           >
-            <Store className="w-3.5 h-3.5 text-emerald-400" />
+            <Store className="w-3.5 h-3.5 text-blue-400" />
             <span>Customer Storefront</span>
           </Link>
 
@@ -116,7 +116,7 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
             href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
-            className="w-full flex items-center justify-center space-x-1.5 py-2 text-[11px] text-slate-400 hover:text-emerald-400 transition-colors"
+            className="w-full flex items-center justify-center space-x-1.5 py-2 text-[11px] text-slate-400 hover:text-blue-400 transition-colors"
           >
             <span>NestJS Swagger API</span>
             <ExternalLink className="w-3 h-3" />

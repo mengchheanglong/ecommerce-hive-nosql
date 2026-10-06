@@ -25,7 +25,7 @@ export default function MerchantWarehousePage() {
       {/* Pipeline Architecture Deep-Dive */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
         <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-100">
-          <Layers className="w-5 h-5 text-emerald-600" />
+          <Layers className="w-5 h-5 text-blue-600" />
           <h3 className="text-base font-bold text-slate-900">
             Hive Warehouse & Query Optimization Architecture
           </h3>
@@ -33,7 +33,7 @@ export default function MerchantWarehousePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
               Stage 1
             </span>
             <h4 className="text-xs font-bold text-slate-900 mt-2">HDFS CSV Staging</h4>
@@ -43,7 +43,7 @@ export default function MerchantWarehousePage() {
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
               Stage 2
             </span>
             <h4 className="text-xs font-bold text-slate-900 mt-2">orders_raw Table</h4>
@@ -53,7 +53,7 @@ export default function MerchantWarehousePage() {
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
               Stage 3
             </span>
             <h4 className="text-xs font-bold text-slate-900 mt-2">Partition & Bucket</h4>
@@ -63,7 +63,7 @@ export default function MerchantWarehousePage() {
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
               Stage 4
             </span>
             <h4 className="text-xs font-bold text-slate-900 mt-2">Columnar ORC</h4>
@@ -73,7 +73,7 @@ export default function MerchantWarehousePage() {
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
               Stage 5
             </span>
             <h4 className="text-xs font-bold text-slate-900 mt-2">Tez BI Reporting</h4>

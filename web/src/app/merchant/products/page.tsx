@@ -41,6 +41,12 @@ export default function MerchantProductsPage() {
   const [editColours, setEditColours] = useState("");
   const [editWeight, setEditWeight] = useState("");
   const [editExpiryDate, setEditExpiryDate] = useState("");
+  const [editDimensions, setEditDimensions] = useState("");
+  const [editMaterial, setEditMaterial] = useState("");
+  const [editVolume, setEditVolume] = useState("");
+  const [editSkinType, setEditSkinType] = useState("");
+  const [editArtisan, setEditArtisan] = useState("");
+  const [editOriginProvince, setEditOriginProvince] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
   const loadData = async () => {
@@ -66,6 +72,12 @@ export default function MerchantProductsPage() {
     setEditColours(prod.colours ? prod.colours.join(", ") : "");
     setEditWeight(prod.weight || "");
     setEditExpiryDate(prod.expiry_date || "");
+    setEditDimensions(prod.dimensions || "");
+    setEditMaterial(prod.material || "");
+    setEditVolume(prod.volume || "");
+    setEditSkinType(prod.skin_type || "");
+    setEditArtisan(prod.artisan || "");
+    setEditOriginProvince(prod.origin_province || "");
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -96,14 +108,23 @@ export default function MerchantProductsPage() {
     if (editingProduct.category === "Electronics") {
       updates.screen_size = editScreenSize.trim() || undefined;
       updates.warranty = editWarranty.trim() || undefined;
-    } else if (editingProduct.category === "Clothing") {
+    } else if (editingProduct.category === "Clothing" || editingProduct.category === "Fashion & Accessories") {
       updates.size = editSize.trim() || undefined;
       updates.colours = editColours
         ? editColours.split(",").map((c) => c.trim()).filter(Boolean)
         : undefined;
-    } else if (editingProduct.category === "Groceries") {
+    } else if (editingProduct.category === "Groceries" || editingProduct.category === "Food & Groceries") {
       updates.weight = editWeight.trim() || undefined;
       updates.expiry_date = editExpiryDate.trim() || undefined;
+    } else if (editingProduct.category === "Home & Living") {
+      updates.dimensions = editDimensions.trim() || undefined;
+      updates.material = editMaterial.trim() || undefined;
+    } else if (editingProduct.category === "Beauty & Wellness") {
+      updates.volume = editVolume.trim() || undefined;
+      updates.skin_type = editSkinType.trim() || undefined;
+    } else if (editingProduct.category === "Arts & Culture") {
+      updates.artisan = editArtisan.trim() || undefined;
+      updates.origin_province = editOriginProvince.trim() || undefined;
     }
 
     const res = await updateProduct(editingProduct.product_id, updates);
@@ -135,7 +156,15 @@ export default function MerchantProductsPage() {
 
   const filtered = useMemo(() => {
     return products
-      .filter((p) => (selectedCategory === "All" ? true : p.category === selectedCategory))
+      .filter((p) => {
+        if (selectedCategory === "All") return true;
+        if (p.category === selectedCategory) return true;
+        if (p.category_slug && p.category_slug.toLowerCase() === selectedCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-")) return true;
+        if (p.category_aliases && p.category_aliases.some((a) => a.toLowerCase() === selectedCategory.toLowerCase())) return true;
+        if ((selectedCategory === "Food & Groceries" || selectedCategory === "Groceries") && (p.category === "Groceries" || p.category === "Food & Groceries" || p.category === "Food")) return true;
+        if ((selectedCategory === "Fashion & Accessories" || selectedCategory === "Clothing") && (p.category === "Clothing" || p.category === "Fashion & Accessories" || p.category === "Fashion")) return true;
+        return false;
+      })
       .filter((p) =>
         searchQuery === ""
           ? true
@@ -157,9 +186,9 @@ export default function MerchantProductsPage() {
 
         <Link
           href="/merchant/products/new"
-          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
+          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-emerald-400" />
+          <Plus className="w-4 h-4 text-white" />
           <span>Add New Product</span>
         </Link>
       </div>
@@ -167,13 +196,21 @@ export default function MerchantProductsPage() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
-          {["All", "Electronics", "Clothing", "Groceries"].map((cat) => (
+          {[
+            "All",
+            "Electronics",
+            "Food & Groceries",
+            "Fashion & Accessories",
+            "Home & Living",
+            "Beauty & Wellness",
+            "Arts & Culture",
+          ].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-xs"
+                  ? "bg-blue-600 text-white shadow-xs font-bold"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900"
               }`}
             >
@@ -189,7 +226,7 @@ export default function MerchantProductsPage() {
             placeholder="Search SKU or name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-100/80 border border-slate-200/80 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-100/80 border border-slate-200/80 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
           />
         </div>
       </div>
@@ -240,7 +277,7 @@ export default function MerchantProductsPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                          <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                             {prod.name}
                           </p>
                           <p className="text-[10px] font-mono text-slate-400 mt-0.5">
@@ -262,16 +299,34 @@ export default function MerchantProductsPage() {
                           {prod.warranty ? `• Warranty: ${prod.warranty}` : ""}
                         </span>
                       )}
-                      {prod.category === "Clothing" && (
+                      {(prod.category === "Clothing" || prod.category === "Fashion & Accessories") && (
                         <span>
                           {prod.size ? `Size: ${prod.size}` : ""}{" "}
                           {prod.colours ? `• Colors: ${prod.colours.join(", ")}` : ""}
                         </span>
                       )}
-                      {prod.category === "Groceries" && (
+                      {(prod.category === "Groceries" || prod.category === "Food & Groceries") && (
                         <span>
                           {prod.weight ? `Net: ${prod.weight}` : ""}{" "}
                           {prod.expiry_date ? `• Exp: ${prod.expiry_date}` : ""}
+                        </span>
+                      )}
+                      {prod.category === "Home & Living" && (
+                        <span>
+                          {prod.dimensions ? `Dim: ${prod.dimensions}` : ""}{" "}
+                          {prod.material ? `• Mat: ${prod.material}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
+                        </span>
+                      )}
+                      {prod.category === "Beauty & Wellness" && (
+                        <span>
+                          {prod.volume ? `Vol: ${prod.volume}` : ""}{" "}
+                          {prod.skin_type ? `• Type: ${prod.skin_type}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
+                        </span>
+                      )}
+                      {prod.category === "Arts & Culture" && (
+                        <span>
+                          {prod.artisan ? `Artisan: ${prod.artisan}` : ""}{" "}
+                          {prod.origin_province ? `• Prov: ${prod.origin_province}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
                         </span>
                       )}
                     </td>
@@ -398,7 +453,7 @@ export default function MerchantProductsPage() {
                 </div>
               )}
 
-              {editingProduct.category === "Clothing" && (
+              {(editingProduct.category === "Clothing" || editingProduct.category === "Fashion & Accessories") && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-500 font-semibold mb-1">Garment Size</label>
@@ -421,7 +476,7 @@ export default function MerchantProductsPage() {
                 </div>
               )}
 
-              {editingProduct.category === "Groceries" && (
+              {(editingProduct.category === "Groceries" || editingProduct.category === "Food & Groceries") && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-500 font-semibold mb-1">Net Weight</label>
@@ -438,6 +493,81 @@ export default function MerchantProductsPage() {
                       type="date"
                       value={editExpiryDate}
                       onChange={(e) => setEditExpiryDate(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingProduct.category === "Home & Living" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Dimensions</label>
+                    <input
+                      type="text"
+                      value={editDimensions}
+                      onChange={(e) => setEditDimensions(e.target.value)}
+                      placeholder="e.g. 24cm x 18cm x 12cm"
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Material</label>
+                    <input
+                      type="text"
+                      value={editMaterial}
+                      onChange={(e) => setEditMaterial(e.target.value)}
+                      placeholder="e.g. Terracotta / Woven Rattan"
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingProduct.category === "Beauty & Wellness" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Net Volume</label>
+                    <input
+                      type="text"
+                      value={editVolume}
+                      onChange={(e) => setEditVolume(e.target.value)}
+                      placeholder="e.g. 50ml Dropper Bottle"
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Skin / Treatment Type</label>
+                    <input
+                      type="text"
+                      value={editSkinType}
+                      onChange={(e) => setEditSkinType(e.target.value)}
+                      placeholder="e.g. Sensitive / Dry / All Skin"
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingProduct.category === "Arts & Culture" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Master Artisan / Cooperative</label>
+                    <input
+                      type="text"
+                      value={editArtisan}
+                      onChange={(e) => setEditArtisan(e.target.value)}
+                      placeholder="e.g. Angkor Heritage Guild"
+                      className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-500 font-semibold mb-1">Origin Province</label>
+                    <input
+                      type="text"
+                      value={editOriginProvince}
+                      onChange={(e) => setEditOriginProvince(e.target.value)}
+                      placeholder="e.g. Siem Reap, Kampong Chhnang"
                       className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80"
                     />
                   </div>
@@ -466,9 +596,9 @@ export default function MerchantProductsPage() {
               <button
                 type="submit"
                 disabled={savingEdit}
-                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer disabled:opacity-50"
               >
-                <Save className="w-4 h-4 text-emerald-400" />
+                <Save className="w-4 h-4 text-white" />
                 <span>{savingEdit ? "Updating MongoDB..." : "Save Product Changes"}</span>
               </button>
             </div>

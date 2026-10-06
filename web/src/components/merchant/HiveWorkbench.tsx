@@ -65,7 +65,7 @@ export function HiveWorkbench() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-slate-950 text-white flex items-center justify-center">
-            <Terminal className="w-5 h-5 text-emerald-400" />
+            <Terminal className="w-5 h-5 text-blue-400" />
           </div>
           <div>
             <h3 className="text-base font-extrabold text-slate-900">Apache Hive 3.1 Analytics Console</h3>
@@ -81,7 +81,7 @@ export function HiveWorkbench() {
               onClick={() => setActiveQuery(qId)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                 activeQuery === qId
-                  ? "bg-slate-900 text-white shadow-xs font-bold"
+                  ? "bg-blue-600 text-white shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -100,9 +100,9 @@ export function HiveWorkbench() {
               <span className="font-bold text-white">// {current.title}</span>
               <button
                 onClick={handleCopy}
-                className="text-emerald-400 hover:text-white flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 cursor-pointer transition-colors"
+                className="text-slate-300 hover:text-white flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 cursor-pointer transition-colors"
               >
-                {copied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <CheckCheck className="w-3.5 h-3.5 text-blue-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
             </div>
@@ -113,14 +113,14 @@ export function HiveWorkbench() {
 
           <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center space-x-2 text-[11px] text-slate-400">
-              <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+              <Cpu className="w-3.5 h-3.5 text-blue-400" />
               <span>Tez Engine • 8 Buckets Hash-Partitioned</span>
             </div>
 
             <button
               onClick={handleExecute}
               disabled={isExecuting}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
             >
               {isExecuting ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -167,8 +167,8 @@ export function HiveWorkbench() {
           </div>
 
           {/* Speedup banner */}
-          <div className="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 text-xs text-emerald-800 flex items-start space-x-2.5">
-            <Zap className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+          <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-200/80 text-xs text-blue-900 flex items-start space-x-2.5">
+            <Zap className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
             <div>
               <strong className="block text-slate-900">Optimization Mechanics:</strong>
               <p className="mt-0.5 text-slate-600">{current.speedup}</p>

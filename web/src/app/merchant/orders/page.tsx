@@ -198,7 +198,7 @@ export default function MerchantOrdersPage() {
                                 className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer shadow-2xs active:scale-95 ${
                                   nextSt === "Cancelled"
                                     ? "bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200"
-                                    : "bg-slate-900 hover:bg-emerald-600 text-white"
+                                    : "bg-slate-900 hover:bg-blue-600 text-white"
                                 }`}
                               >
                                 → {nextSt}

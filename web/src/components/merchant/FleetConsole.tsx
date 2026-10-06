@@ -111,7 +111,7 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
               onClick={() => setSelectedCity(city)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 selectedCity === city
-                  ? "bg-slate-900 text-white shadow-xs font-bold"
+                  ? "bg-blue-600 text-white shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -180,18 +180,18 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-3">
                 <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex items-center space-x-1.5">
-                  <Gauge className="w-3.5 h-3.5 text-emerald-600" />
+                  <Gauge className="w-3.5 h-3.5 text-blue-600" />
                   <span className="font-semibold text-slate-800">{rider.speed}</span>
                 </div>
                 <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex items-center space-x-1.5">
-                  <Battery className="w-3.5 h-3.5 text-emerald-600" />
+                  <Battery className="w-3.5 h-3.5 text-blue-600" />
                   <span className="font-semibold text-slate-800">{rider.battery}%</span>
                 </div>
               </div>
 
               <div className="text-[11px] font-mono text-slate-500 flex items-center justify-between pt-2 mt-2 border-t border-slate-100">
                 <span className="flex items-center space-x-1">
-                  <MapPin className="w-3 h-3 text-emerald-600" />
+                  <MapPin className="w-3 h-3 text-blue-600" />
                   <span>{rider.lat}</span>
                 </span>
                 <span>{rider.lng}</span>
@@ -203,7 +203,7 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
               disabled={pingingRiderId === rider.id}
               className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-800 text-[11px] font-semibold transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
             >
-              <Send className="w-3 h-3 text-emerald-500" />
+              <Send className="w-3 h-3 text-blue-500" />
               <span>{pingingRiderId === rider.id ? "Writing to Cassandra..." : "Simulate CQL Ping"}</span>
             </button>
           </div>
