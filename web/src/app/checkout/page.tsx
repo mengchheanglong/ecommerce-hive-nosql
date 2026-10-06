@@ -48,7 +48,7 @@ export default function CheckoutPage() {
     const idx = INITIAL_CUSTOMER.addresses.findIndex((a) => a.city === selectedProvince);
     return idx >= 0 ? idx : 0;
   });
-  const [paymentMethod, setPaymentMethod] = useState<"khqr" | "cod" | "card">("khqr");
+  const [paymentMethod, setPaymentMethod] = useState<"khqr" | "cod" | "abapay">("khqr");
   const [isKhqrOpen, setIsKhqrOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccessId, setOrderSuccessId] = useState<string | null>(null);
@@ -96,6 +96,11 @@ export default function CheckoutPage() {
 
     if (paymentMethod === "khqr") {
       setIsKhqrOpen(true);
+      return;
+    }
+
+    if (paymentMethod === "abapay") {
+      await finalizeOrder("ABA Pay");
       return;
     }
 
@@ -170,7 +175,11 @@ export default function CheckoutPage() {
           <div className="flex justify-between text-slate-500">
             <span>Payment Method:</span>
             <span className="font-bold text-slate-900">
-              {paymentMethod === "khqr" ? "NBC Bakong KHQR" : "Cash on Delivery"}
+              {paymentMethod === "khqr"
+                ? "NBC Bakong KHQR"
+                : paymentMethod === "abapay"
+                ? "ABA Pay"
+                : "Cash on Delivery (COD)"}
             </span>
           </div>
           {promoCode && (
@@ -239,7 +248,7 @@ export default function CheckoutPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-emerald-400" />
+                  <MapPin className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900">1. Delivery Destination</h3>
@@ -249,7 +258,7 @@ export default function CheckoutPage() {
 
               <button
                 onClick={() => setIsAddingAddress(!isAddingAddress)}
-                className="text-xs font-bold text-emerald-700 hover:underline flex items-center space-x-1 cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add New Address</span>
@@ -269,14 +278,14 @@ export default function CheckoutPage() {
                   }}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer text-xs space-y-1.5 ${
                     selectedAddressIndex === idx
-                      ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                      ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/20"
                       : "border-slate-200/80 bg-slate-50 hover:bg-white"
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-extrabold text-slate-900">{addr.label}</span>
                     {selectedAddressIndex === idx && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="w-2 h-2 rounded-full bg-blue-600" />
                     )}
                   </div>
                   <p className="text-slate-500 leading-relaxed line-clamp-2">{addr.street}</p>
@@ -339,7 +348,7 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center space-x-2.5">
               <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-emerald-400" />
+                <CreditCard className="w-4 h-4 text-blue-400" />
               </div>
               <h3 className="text-base font-extrabold text-slate-900">2. Payment Method</h3>
             </div>
@@ -354,36 +363,46 @@ export default function CheckoutPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-rose-600">Bakong KHQR</span>
+                  <span className="text-xs font-black text-rose-600">NBC Bakong KHQR</span>
                   <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded">
-                    Instant
+                    Instant QR
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">ABA, Wing, ACLEDA, Sathapana instant scan</p>
+                <p className="text-[11px] text-slate-500">ABA, Wing, ACLEDA, Sathapana instant dynamic scan</p>
               </div>
 
               <div
                 onClick={() => setPaymentMethod("cod")}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   paymentMethod === "cod"
-                    ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                    ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/20"
                     : "border-slate-200/80 bg-slate-50 hover:bg-white"
                 }`}
               >
-                <span className="text-xs font-bold text-slate-900 block mb-1">Cash on Delivery (COD)</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-slate-900">Cash on Delivery</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-700 font-medium px-1.5 py-0.5 rounded">
+                    Doorstep
+                  </span>
+                </div>
                 <p className="text-[11px] text-slate-500">Pay upon courier arrival at doorstep</p>
               </div>
 
               <div
-                onClick={() => setPaymentMethod("card")}
+                onClick={() => setPaymentMethod("abapay")}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                  paymentMethod === "card"
-                    ? "border-slate-900 bg-emerald-50/50 ring-2 ring-emerald-500/30"
+                  paymentMethod === "abapay"
+                    ? "border-sky-600 bg-sky-50/50 ring-2 ring-sky-500/20"
                     : "border-slate-200/80 bg-slate-50 hover:bg-white"
                 }`}
               >
-                <span className="text-xs font-bold text-slate-900 block mb-1">Credit / Debit Card</span>
-                <p className="text-[11px] text-slate-500">Visa, Mastercard, UnionPay gateway</p>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-black text-sky-700">ABA Pay</span>
+                  <span className="text-[10px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded">
+                    Instant Push
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500">ABA Mobile instant push & deep-link checkout</p>
               </div>
             </div>
           </div>
@@ -462,16 +481,18 @@ export default function CheckoutPage() {
           <button
             onClick={handlePlaceOrder}
             disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50"
+            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                <CheckCircle2 className="w-4 h-4 text-white" />
                 <span>
                   {paymentMethod === "khqr"
                     ? `Open Bakong KHQR (${formatPrice(finalTotalUSD)})`
+                    : paymentMethod === "abapay"
+                    ? `Pay with ABA Pay (${formatPrice(finalTotalUSD)})`
                     : `Confirm & Place Order (${formatPrice(finalTotalUSD)})`}
                 </span>
               </>

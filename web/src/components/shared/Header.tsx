@@ -7,6 +7,8 @@ import { useCart } from "@/context/CartContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useLocation } from "@/context/LocationContext";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import {
   Layers,
   ShoppingBag,
@@ -25,7 +27,13 @@ import {
   ChevronDown,
   ShieldCheck,
   Zap,
+  Gift,
+  Percent,
+  Globe,
+  Check,
+  LogOut,
 } from "lucide-react";
+import { CategoryMegaMenu } from "./CategoryMegaMenu";
 
 export function Header() {
   const pathname = usePathname();
@@ -34,10 +42,16 @@ export function Header() {
   const { currency, setCurrency, formatPrice } = useCurrency();
   const { wishlistCount } = useWishlist();
   const { selectedProvince, setSelectedProvince, availableProvinces } = useLocation();
+  const { user, isAuthenticated, setIsSignInModalOpen, logout } = useAuth();
+  const { showToast } = useToast();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [searchCategory, setSearchCategory] = useState("All");
   const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
+  const [localeDropdownOpen, setLocaleDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState<"en" | "km">("en");
 
   const isMerchant = pathname.startsWith("/merchant");
 
@@ -56,8 +70,8 @@ export function Header() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Left Announcement */}
           <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
-            <span className="inline-flex items-center space-x-1.5 text-emerald-400 font-semibold">
-              <Zap className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+            <span className="inline-flex items-center space-x-1.5 text-blue-400 font-semibold">
+              <Zap className="w-3 h-3 text-blue-400 fill-blue-400" />
               <span>Express Delivery</span>
             </span>
             <span className="hidden sm:inline text-slate-400">
@@ -65,7 +79,7 @@ export function Header() {
             </span>
             <span className="hidden md:inline text-slate-600">•</span>
             <span className="hidden md:inline-flex items-center space-x-1 text-slate-300">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <ShieldCheck className="w-3 h-3 text-blue-400" />
               <span>NBC Bakong KHQR $0 fee</span>
             </span>
           </div>
@@ -79,7 +93,7 @@ export function Header() {
                 onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}
                 className="flex items-center space-x-1 text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
-                <MapPin className="w-3 h-3 text-emerald-400" />
+                <MapPin className="w-3 h-3 text-blue-400" />
                 <span className="hidden xs:inline text-slate-400">Deliver to:</span>
                 <span className="font-semibold text-white">{selectedProvince}</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
@@ -100,13 +114,14 @@ export function Header() {
                       onClick={() => {
                         setSelectedProvince(prov);
                         setLocationDropdownOpen(false);
+                        showToast(`Active delivery hub set to ${prov}`, "info");
                       }}
                       className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-100 cursor-pointer ${
-                        selectedProvince === prov ? "font-bold text-emerald-700 bg-emerald-50/60" : "text-slate-700"
+                        selectedProvince === prov ? "font-bold text-blue-700 bg-blue-50/60" : "text-slate-700"
                       }`}
                     >
                       <span>{prov}</span>
-                      {selectedProvince === prov && <span className="text-[10px] text-emerald-600">Active</span>}
+                      {selectedProvince === prov && <span className="text-[10px] text-blue-600 font-semibold">Active</span>}
                     </button>
                   ))}
                 </div>
@@ -143,7 +158,7 @@ export function Header() {
             {/* Merchant Portal Quick Link */}
             <Link
               href="/merchant"
-              className="hidden sm:flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 transition-colors font-semibold"
+              className="hidden sm:flex items-center space-x-1 text-blue-400 hover:text-blue-300 transition-colors font-semibold"
             >
               <Store className="w-3 h-3" />
               <span>Seller Hub</span>
@@ -157,149 +172,196 @@ export function Header() {
         <div className="flex items-center justify-between h-16 sm:h-18 gap-3 sm:gap-6">
           {/* Left: Brand Identity */}
           <div className="flex items-center space-x-3 shrink-0">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white font-bold shadow-md shadow-slate-950/10 border border-slate-800 group-hover:scale-105 transition-transform">
-                <Layers className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors">
-                    Rentify
-                  </span>
-                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/80 hidden sm:inline-block">
-                    Marketplace
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 font-medium hidden md:block">
-                  Polyglot NoSQL • MongoDB • Cassandra • Hive
-                </p>
-              </div>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <img
+                src="/assets/rentify-logo.webp"
+                alt="Rentify Marketplace"
+                className="w-8 h-8 rounded-lg object-contain shadow-xs group-hover:scale-105 transition-transform"
+              />
+              <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                Rentify Marketplace
+              </span>
             </Link>
           </div>
 
-          {/* Center: Universal Scoped Search Bar (Storefront) or Domain Selector */}
+          {/* Center: Universal Pill Search Bar */}
           {!isMerchant ? (
-            <div className="flex-1 max-w-2xl mx-2 hidden md:block">
+            <div className="flex-1 max-w-xl mx-4 hidden md:block">
               <form
                 onSubmit={handleSearchSubmit}
-                className="flex items-center rounded-xl bg-slate-100/90 border border-slate-200/90 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-inner overflow-hidden"
+                className="flex items-center rounded-full bg-slate-100/90 border border-slate-200/90 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-600 transition-all pl-3 pr-2 py-1.5 shadow-inner"
               >
-                {/* Category Scope Dropdown */}
-                <div className="relative border-r border-slate-300/70 shrink-0">
-                  <select
-                    value={searchCategory}
-                    onChange={(e) => setSearchCategory(e.target.value)}
-                    className="bg-slate-200/70 hover:bg-slate-200 text-slate-700 text-xs font-bold pl-3 pr-6 py-2.5 outline-none cursor-pointer appearance-none transition-colors"
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  aria-label="Department Scope"
+                  className="bg-transparent text-slate-700 font-semibold text-xs border-r border-slate-300 pr-2 mr-2 outline-none cursor-pointer max-w-[135px] truncate shrink-0"
+                >
+                  <option value="All">All Departments</option>
+                  <option value="Food & Groceries">Food & Groceries</option>
+                  <option value="Fashion & Accessories">Fashion & Accessories</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Home & Living">Home & Living</option>
+                  <option value="Beauty & Wellness">Beauty & Wellness</option>
+                  <option value="Arts & Culture">Arts & Culture</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Search products, brands..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  className="w-full text-xs bg-transparent text-slate-900 placeholder:text-slate-400 outline-none"
+                />
+                {searchVal && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchVal("")}
+                    className="p-1 mr-1 text-slate-400 hover:text-slate-700 cursor-pointer"
                   >
-                    <option value="All">All Categories</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Clothing">Clothing</option>
-                    <option value="Groceries">Groceries</option>
-                  </select>
-                  <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-
-                {/* Search Input */}
-                <div className="relative flex-1 flex items-center">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search 200,000+ authentic Cambodian products, electronics, food..."
-                    value={searchVal}
-                    onChange={(e) => setSearchVal(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-xs bg-transparent text-slate-900 placeholder:text-slate-400 outline-none"
-                  />
-                  {searchVal && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchVal("")}
-                      className="p-1 mr-1 text-slate-400 hover:text-slate-700"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Submit Button */}
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <button
                   type="submit"
-                  className="m-1 px-4 py-1.5 bg-slate-900 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 active:scale-95 shadow-xs"
+                  aria-label="Submit search"
+                  className="p-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shrink-0 ml-1 transition-colors cursor-pointer"
                 >
-                  Search
+                  <Search className="w-3.5 h-3.5" />
                 </button>
               </form>
             </div>
           ) : (
             <div className="flex-1 text-center hidden md:block">
               <span className="text-xs font-bold text-slate-600 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                Rentify Merchant Operations Suite
+                Merchant Operations Suite
               </span>
             </div>
           )}
 
-          {/* Right Controls: Store/Merchant switcher, Currency, Wishlist & Cart */}
-          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
-            {/* Domain Switcher */}
-            <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
-              <Link
-                href="/"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  !isMerchant
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Store className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="hidden sm:inline">Store</span>
-              </Link>
+          {/* Right Controls: Merchant link, Language, Wishlist, Cart, Sign In */}
+          <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+            {/* Merchant Quick Switcher */}
+            <Link
+              href="/merchant"
+              className={`hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                isMerchant
+                  ? "bg-slate-900 text-white shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900 bg-slate-100/80"
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-slate-500" />
+              <span>Merchant</span>
+            </Link>
 
-              <Link
-                href="/merchant"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  isMerchant
-                    ? "bg-slate-900 text-white shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+            {/* Language & Currency Globe Switcher */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setLocaleDropdownOpen(!localeDropdownOpen)}
+                className="p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-full transition-colors cursor-pointer flex items-center gap-1"
+                title="Currency & Language Preferences"
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">Merchant</span>
-              </Link>
+                <Globe className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono font-bold text-slate-700 hidden lg:inline">
+                  {currency}
+                </span>
+              </button>
+
+              {localeDropdownOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-56 bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 py-3 px-3 z-50 animate-in fade-in zoom-in-95 duration-100 space-y-3"
+                  onMouseLeave={() => setLocaleDropdownOpen(false)}
+                >
+                  {/* Currency Selector */}
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 px-1">
+                      Currency
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrency("USD");
+                          setLocaleDropdownOpen(false);
+                          showToast("Currency switched to USD ($)", "info");
+                        }}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                          currency === "USD"
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60"
+                        }`}
+                      >
+                        <span>USD ($)</span>
+                        {currency === "USD" && <Check className="w-3.5 h-3.5 text-white" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrency("KHR");
+                          setLocaleDropdownOpen(false);
+                          showToast("Currency switched to KHR (៛ 4,100)", "info");
+                        }}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                          currency === "KHR"
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60"
+                        }`}
+                      >
+                        <span>KHR (៛)</span>
+                        {currency === "KHR" && <Check className="w-3.5 h-3.5 text-white" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-2.5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 px-1">
+                      Language / ភាសា
+                    </p>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLang("en");
+                          setLocaleDropdownOpen(false);
+                          showToast("Language set to English", "info");
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                          selectedLang === "en" ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>English (US)</span>
+                        {selectedLang === "en" && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLang("km");
+                          setLocaleDropdownOpen(false);
+                          showToast("បានប្ដូរទៅជាភាសាខ្មែរ (Khmer)", "info");
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                          selectedLang === "km" ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>ភាសាខ្មែរ (Khmer)</span>
+                        {selectedLang === "km" && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Currency Toggle */}
-            <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold">
-              <button
-                onClick={() => setCurrency("USD")}
-                className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                  currency === "USD"
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                $ USD
-              </button>
-              <button
-                onClick={() => setCurrency("KHR")}
-                className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                  currency === "KHR"
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                ៛ KHR
-              </button>
-            </div>
-
-            {/* Wishlist Icon Button */}
+            {/* Wishlist Button */}
             {!isMerchant && (
               <Link
                 href="/wishlist"
-                className="relative p-2.5 rounded-xl border border-slate-200/80 text-slate-700 hover:text-slate-950 hover:bg-slate-100/80 transition-colors hidden sm:flex items-center justify-center cursor-pointer"
+                className="relative p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-full transition-colors hidden sm:flex items-center justify-center cursor-pointer"
                 title="View Wishlist"
               >
-                <Heart className={`w-4 h-4 ${wishlistCount > 0 ? "text-rose-500 fill-rose-500" : ""}`} />
+                <Heart className={`w-4.5 h-4.5 ${wishlistCount > 0 ? "text-rose-500 fill-rose-500" : ""}`} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-rose-500 text-white text-[10px] font-extrabold rounded-full shadow-xs">
+                  <span className="absolute 0 top-0 right-0 flex items-center justify-center min-w-4 h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full">
                     {wishlistCount}
                   </span>
                 )}
@@ -310,104 +372,127 @@ export function Header() {
             {!isMerchant && (
               <button
                 onClick={() => setIsCartDrawerOpen(true)}
-                className="relative flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-xs active:scale-95 cursor-pointer"
+                className="relative p-2 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
                 title="Open Shopping Cart"
               >
-                <ShoppingBag className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-bold font-mono hidden sm:inline">
-                  {formatPrice(cartTotalUSD)}
-                </span>
+                <ShoppingBag className="w-4.5 h-4.5" />
                 {cartCount > 0 && (
-                  <span className="flex items-center justify-center min-w-5 h-5 px-1 bg-emerald-500 text-slate-950 text-[10px] font-extrabold rounded-full shadow-xs">
+                  <span className="absolute 0 top-0 right-0 flex items-center justify-center min-w-4 h-4 px-1 bg-blue-600 text-white text-[9px] font-bold rounded-full">
                     {cartCount}
                   </span>
                 )}
               </button>
             )}
 
-            {/* Account Link */}
-            <Link
-              href="/account"
-              className="p-2.5 rounded-xl border border-slate-200/80 text-slate-600 hover:text-slate-950 hover:bg-slate-100/80 transition-colors hidden sm:flex items-center justify-center"
-              title="Customer Account & Addresses"
-            >
-              <User className="w-4 h-4" />
-            </Link>
+            {/* Authentication / User Profile Button */}
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-900 text-xs font-bold transition-all shadow-xs cursor-pointer border border-slate-200"
+                >
+                  <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">
+                    {user.name.charAt(0)}
+                  </div>
+                  <span className="max-w-[90px] truncate">{user.name.split(" ")[0]}</span>
+                  <span className="text-[9px] px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full font-bold hidden sm:inline">
+                    VIP
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </button>
+
+                {userMenuOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-60 bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 py-2.5 z-50 animate-in fade-in zoom-in-95 duration-100"
+                    onMouseLeave={() => setUserMenuOpen(false)}
+                  >
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-[11px] text-slate-500 font-mono">{user.phone}</p>
+                      <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 w-fit">
+                        <span>⭐ {user.tier}</span>
+                        <span>•</span>
+                        <span>{user.loyalty_points} pts</span>
+                      </div>
+                    </div>
+
+                    <div className="py-1">
+                      <Link
+                        href="/account"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium"
+                      >
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span>My Profile & Rewards</span>
+                      </Link>
+                      <Link
+                        href="/orders"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium"
+                      >
+                        <Package className="w-4 h-4 text-slate-400" />
+                        <span>Track My Orders</span>
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium"
+                      >
+                        <Heart className="w-4 h-4 text-slate-400" />
+                        <span>Saved Wishlist ({wishlistCount})</span>
+                      </Link>
+                      <Link
+                        href="/merchant"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium border-t border-slate-100 mt-1 pt-2"
+                      >
+                        <Store className="w-4 h-4 text-blue-600" />
+                        <span className="font-bold text-blue-600">Merchant Hub</span>
+                      </Link>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-1 px-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-xl font-bold transition-colors cursor-pointer flex items-center justify-between"
+                      >
+                        <span>Sign Out</span>
+                        <LogOut className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsSignInModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100"
+              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Storefront Secondary Sub-navigation Bar */}
-        {!isMerchant && (
-          <div className="border-t border-slate-200/60 py-2.5 flex items-center justify-between overflow-x-auto text-xs">
-            <div className="flex items-center space-x-1.5 font-medium shrink-0">
-              <Link
-                href="/shop"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  pathname === "/shop"
-                    ? "bg-slate-900 text-white font-semibold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                All Products
-              </Link>
-              <Link
-                href="/shop?category=Electronics"
-                className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all"
-              >
-                Electronics
-              </Link>
-              <Link
-                href="/shop?category=Clothing"
-                className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all"
-              >
-                Clothing & Apparel
-              </Link>
-              <Link
-                href="/shop?category=Groceries"
-                className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all"
-              >
-                Groceries & Organics
-              </Link>
-              <Link
-                href="/orders"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  pathname === "/orders"
-                    ? "bg-slate-900 text-white font-semibold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                Track Orders
-              </Link>
-              <Link
-                href="/account"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  pathname === "/account"
-                    ? "bg-slate-900 text-white font-semibold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                Account
-              </Link>
-            </div>
-
-            <div className="hidden lg:flex items-center space-x-2 text-[11px] font-medium text-emerald-700 bg-emerald-50/70 px-3 py-1 rounded-full border border-emerald-200/60 shrink-0">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <span>800 Live Couriers • Cassandra Telemetry Active</span>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Storefront Category Navigation Bar with Interactive Hover Mega-Menu */}
+      {!isMerchant && <CategoryMegaMenu />}
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (

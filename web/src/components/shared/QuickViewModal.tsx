@@ -150,9 +150,9 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
               <button
                 onClick={handleAddToCart}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                <ShoppingBag className="w-4 h-4 text-blue-400" />
                 <span>Add to Cart</span>
               </button>
             </div>

@@ -12,10 +12,12 @@ export function Footer() {
           {/* Col 1: Platform Overview */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-slate-950 flex items-center justify-center text-white">
-                <Layers className="w-4 h-4 text-emerald-400" />
-              </div>
-              <span className="font-extrabold text-base text-slate-900 tracking-tight">Marketplace</span>
+              <img
+                src="/assets/rentify-logo.webp"
+                alt="Rentify Marketplace"
+                className="w-7 h-7 rounded-lg object-contain shadow-2xs"
+              />
+              <span className="font-bold text-base text-slate-900 tracking-tight">Rentify Marketplace</span>
             </div>
             <p className="text-xs leading-relaxed text-slate-500">
               Next-generation high-scale Cambodian online marketplace powered by a polyglot persistence architecture.
@@ -118,15 +120,15 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
           <div>
-            &copy; 2026 Marketplace Data Platform. All rights reserved.
+            &copy; 2026 Rentify Marketplace. All rights reserved.
           </div>
           <div className="flex items-center space-x-4">
             <span className="flex items-center space-x-1 text-slate-600">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
               <span>Bakong KHQR Certified</span>
             </span>
             <span className="flex items-center space-x-1 text-slate-600">
-              <Truck className="w-3.5 h-3.5 text-emerald-600" />
+              <Truck className="w-3.5 h-3.5 text-blue-600" />
               <span>Phnom Penh • Siem Reap • Battambang</span>
             </span>
           </div>

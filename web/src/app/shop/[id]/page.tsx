@@ -411,7 +411,7 @@ export default function ProductDetailPage() {
               </span>
               <span>•</span>
               <span className="flex items-center space-x-1">
-                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
                 <span>NBC Bakong KHQR $0 fee</span>
               </span>
             </div>
@@ -421,12 +421,12 @@ export default function ProductDetailPage() {
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between text-xs">
             <div className="flex items-center space-x-3">
               <div className="w-11 h-11 rounded-xl bg-slate-950 text-white flex items-center justify-center font-bold">
-                <Store className="w-5 h-5 text-emerald-400" />
+                <Store className="w-5 h-5 text-blue-400" />
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
                   <span className="font-extrabold text-slate-900">{seller.name}</span>
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 </div>
                 <div className="flex items-center space-x-2 text-[11px] text-slate-500 mt-0.5">
                   <span className="flex items-center space-x-0.5 text-amber-600 font-semibold">
@@ -475,7 +475,7 @@ export default function ProductDetailPage() {
                 onClick={handleAddToCartSingle}
                 className={`flex-1 py-3.5 px-4 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95 ${
                   justAdded
-                    ? "bg-emerald-600 text-white ring-2 ring-emerald-500/30"
+                    ? "bg-blue-600 text-white ring-2 ring-blue-500/30"
                     : "bg-slate-900 hover:bg-slate-800 text-white"
                 }`}
               >
@@ -486,7 +486,7 @@ export default function ProductDetailPage() {
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                    <ShoppingBag className="w-4 h-4 text-blue-400" />
                     <span>Add to Cart ({formatPrice(product.price * qty)})</span>
                   </>
                 )}
@@ -495,7 +495,7 @@ export default function ProductDetailPage() {
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
+                className="py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
               >
                 <span>Buy Now</span>
                 <ArrowRight className="w-4 h-4" />
@@ -577,7 +577,7 @@ export default function ProductDetailPage() {
       {fbtItems.length >= 2 && (
         <section className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-emerald-600" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             <h3 className="text-lg font-bold text-slate-900">Frequently Bought Together</h3>
             <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[10px] font-bold rounded-full border border-rose-200">
               Save 10% on Bundle
@@ -593,7 +593,7 @@ export default function ProductDetailPage() {
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-[11px] font-bold text-slate-900 line-clamp-1">{product.name}</p>
-                <p className="text-xs font-mono font-bold text-emerald-700">{formatPrice(product.price)}</p>
+                <p className="text-xs font-mono font-bold text-slate-900">{formatPrice(product.price)}</p>
               </div>
 
               <span className="text-xl font-bold text-slate-400">+</span>
@@ -604,7 +604,7 @@ export default function ProductDetailPage() {
                   <img src={fbtItems[0].image} alt={fbtItems[0].name} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-[11px] font-bold text-slate-900 line-clamp-1">{fbtItems[0].name}</p>
-                <p className="text-xs font-mono font-bold text-emerald-700">{formatPrice(fbtItems[0].price)}</p>
+                <p className="text-xs font-mono font-bold text-slate-900">{formatPrice(fbtItems[0].price)}</p>
               </div>
 
               <span className="text-xl font-bold text-slate-400">+</span>
@@ -615,7 +615,7 @@ export default function ProductDetailPage() {
                   <img src={fbtItems[1].image} alt={fbtItems[1].name} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-[11px] font-bold text-slate-900 line-clamp-1">{fbtItems[1].name}</p>
-                <p className="text-xs font-mono font-bold text-emerald-700">{formatPrice(fbtItems[1].price)}</p>
+                <p className="text-xs font-mono font-bold text-slate-900">{formatPrice(fbtItems[1].price)}</p>
               </div>
             </div>
 
@@ -623,7 +623,7 @@ export default function ProductDetailPage() {
             <div className="lg:col-span-4 bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-3">
               <div className="space-y-1.5 text-xs">
                 <label className="flex items-center space-x-2 text-slate-800">
-                  <input type="checkbox" checked disabled className="rounded text-emerald-600" />
+                  <input type="checkbox" checked disabled className="rounded text-blue-600" />
                   <span className="truncate">This item: {product.name}</span>
                 </label>
                 <label className="flex items-center space-x-2 text-slate-800 cursor-pointer">
@@ -631,7 +631,7 @@ export default function ProductDetailPage() {
                     type="checkbox"
                     checked={bundleIncludeItem1}
                     onChange={(e) => setBundleIncludeItem1(e.target.checked)}
-                    className="rounded text-emerald-600 cursor-pointer"
+                    className="rounded text-blue-600 cursor-pointer"
                   />
                   <span className="truncate">{fbtItems[0].name} ({formatPrice(fbtItems[0].price)})</span>
                 </label>
@@ -640,7 +640,7 @@ export default function ProductDetailPage() {
                     type="checkbox"
                     checked={bundleIncludeItem2}
                     onChange={(e) => setBundleIncludeItem2(e.target.checked)}
-                    className="rounded text-emerald-600 cursor-pointer"
+                    className="rounded text-blue-600 cursor-pointer"
                   />
                   <span className="truncate">{fbtItems[1].name} ({formatPrice(fbtItems[1].price)})</span>
                 </label>
@@ -663,8 +663,8 @@ export default function ProductDetailPage() {
                 onClick={handleAddBundleToCart}
                 className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center space-x-1.5 ${
                   fbtAdded
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-900 hover:bg-emerald-600 text-white"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-900 hover:bg-blue-600 text-white"
                 }`}
               >
                 {fbtAdded ? (
@@ -674,7 +674,7 @@ export default function ProductDetailPage() {
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                    <ShoppingBag className="w-4 h-4 text-blue-400" />
                     <span>Add All Selected to Cart</span>
                   </>
                 )}
@@ -689,7 +689,7 @@ export default function ProductDetailPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <div className="flex items-center space-x-2">
-              <MessageSquare className="w-5 h-5 text-emerald-600" />
+              <MessageSquare className="w-5 h-5 text-blue-600" />
               <h3 className="text-lg font-bold text-slate-900">Customer Ratings & Verified Reviews</h3>
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -709,35 +709,47 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center bg-slate-50/70 p-5 rounded-2xl border border-slate-200/60">
           <div className="md:col-span-4 text-center md:text-left space-y-1">
             <span className="text-4xl font-extrabold text-slate-900 font-mono">
-              {product.rating ?? 4.8}
+              {(product.rating ?? 0) > 0 ? product.rating : "—"}
             </span>
             <div className="flex items-center justify-center md:justify-start space-x-1 text-amber-500">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-current" />
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${
+                    (product.rating ?? 0) > i ? "fill-current" : "text-slate-300"
+                  }`}
+                />
               ))}
             </div>
-            <p className="text-xs text-slate-500">Based on {product.reviews_count ?? 32} verified ratings</p>
+            <p className="text-xs text-slate-500">
+              Based on {product.reviews_count ?? reviewsList.length} verified ratings
+            </p>
           </div>
 
           <div className="md:col-span-8 space-y-1.5 text-xs text-slate-600">
-            {[
-              { star: 5, pct: 82 },
-              { star: 4, pct: 13 },
-              { star: 3, pct: 3 },
-              { star: 2, pct: 1 },
-              { star: 1, pct: 1 },
-            ].map((row) => (
-              <div key={row.star} className="flex items-center space-x-2">
-                <span className="w-12 text-[11px] font-semibold">{row.star} Stars</span>
-                <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 rounded-full"
-                    style={{ width: `${row.pct}%` }}
-                  />
+            {(() => {
+              const total = reviewsList.length;
+              const rows = [5, 4, 3, 2, 1].map((star) => {
+                if (total === 0) {
+                  return { star, pct: 0, count: 0 };
+                }
+                const count = reviewsList.filter((r) => Math.round(r.rating) === star).length;
+                const pct = Math.round((count / total) * 100);
+                return { star, pct, count };
+              });
+              return rows.map((row) => (
+                <div key={row.star} className="flex items-center space-x-2">
+                  <span className="w-12 text-[11px] font-semibold">{row.star} Stars</span>
+                  <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                      style={{ width: `${row.pct}%` }}
+                    />
+                  </div>
+                  <span className="w-8 text-right text-[11px] font-mono text-slate-400">{row.pct}%</span>
                 </div>
-                <span className="w-8 text-right text-[11px] font-mono text-slate-400">{row.pct}%</span>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
 
@@ -756,7 +768,7 @@ export default function ProductDetailPage() {
                   placeholder="e.g. Sokha Meas"
                   value={reviewAuthor}
                   onChange={(e) => setReviewAuthor(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
 
@@ -790,7 +802,7 @@ export default function ProductDetailPage() {
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
                 required
-                className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
               />
             </div>
 
@@ -805,7 +817,7 @@ export default function ProductDetailPage() {
               <button
                 type="submit"
                 disabled={submittingReview}
-                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{submittingReview ? "Publishing to MongoDB..." : "Publish Review"}</span>
@@ -864,7 +876,7 @@ export default function ProductDetailPage() {
             <h3 className="text-lg font-bold text-slate-900">Related Items in {product.category}</h3>
             <Link
               href={`/shop?category=${product.category}`}
-              className="text-xs font-semibold text-emerald-700 hover:underline flex items-center space-x-1"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center space-x-1"
             >
               <span>Explore Category</span>
               <ArrowRight className="w-3.5 h-3.5" />

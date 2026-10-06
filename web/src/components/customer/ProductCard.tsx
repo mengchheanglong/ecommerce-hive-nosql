@@ -171,7 +171,7 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
 
           {/* Product Name */}
           <Link href={`/shop/${product.product_id}`} className="block group/link">
-            <h3 className="text-sm font-bold text-slate-900 group-hover/link:text-emerald-700 transition-colors line-clamp-1 leading-snug">
+            <h3 className="text-sm font-bold text-slate-900 group-hover/link:text-blue-600 transition-colors line-clamp-1 leading-snug">
               {product.name}
             </h3>
           </Link>
@@ -253,8 +253,8 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
             onClick={handleAddToCart}
             className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center space-x-1.5 shadow-xs cursor-pointer active:scale-95 ${
               justAdded
-                ? "bg-emerald-600 text-white ring-2 ring-emerald-500/30"
-                : "bg-slate-900 hover:bg-emerald-600 text-white"
+                ? "bg-blue-600 text-white ring-2 ring-blue-500/30"
+                : "bg-slate-900 hover:bg-blue-600 text-white"
             }`}
           >
             {justAdded ? (
@@ -264,7 +264,7 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
               </>
             ) : (
               <>
-                <Plus className="w-3.5 h-3.5 text-emerald-400 group-hover:text-white transition-colors" />
+                <Plus className="w-3.5 h-3.5 text-blue-400 group-hover:text-white transition-colors" />
                 <span>Add</span>
               </>
             )}

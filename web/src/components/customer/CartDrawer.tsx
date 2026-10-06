@@ -48,7 +48,7 @@ export function CartDrawer() {
           <div className="p-4 sm:p-5 border-b border-slate-200/80 flex items-center justify-between bg-white">
             <div className="flex items-center space-x-2.5">
               <div className="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center text-white">
-                <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                <ShoppingBag className="w-4 h-4 text-blue-400" />
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-slate-900">Shopping Cart</h3>
@@ -69,9 +69,9 @@ export function CartDrawer() {
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-semibold text-slate-700">
                   {cartTotalUSD < 30 ? (
-                    <>Add <strong className="text-emerald-700 font-mono">{formatPrice(30 - cartTotalUSD)}</strong> for Free Delivery</>
+                    <>Add <strong className="text-blue-700 font-mono">{formatPrice(30 - cartTotalUSD)}</strong> for Free Delivery</>
                   ) : (
-                    <span className="text-emerald-700 font-bold">🎉 FREE Delivery Unlocked!</span>
+                    <span className="text-blue-700 font-bold">🎉 FREE Delivery Unlocked!</span>
                   )}
                 </span>
                 <span className="font-mono text-slate-400 font-bold">
@@ -80,7 +80,7 @@ export function CartDrawer() {
               </div>
               <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  className="h-full bg-blue-600 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, (cartTotalUSD / 30) * 100)}%` }}
                 />
               </div>
@@ -132,7 +132,7 @@ export function CartDrawer() {
                       {item.product.category}
                     </span>
                     <h4 className="text-xs font-bold text-slate-900 truncate mt-0.5">{item.product.name}</h4>
-                    <p className="text-xs font-mono font-bold text-emerald-700 mt-1">
+                    <p className="text-xs font-mono font-bold text-slate-900 mt-1">
                       {formatPrice(item.product.price)} each
                     </p>
                   </div>
@@ -192,7 +192,7 @@ export function CartDrawer() {
                       placeholder="Promo code (VIP10 / KHMER2026)"
                       value={inputCode}
                       onChange={(e) => setInputCode(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white border border-slate-200/80 text-slate-900 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white border border-slate-200/80 text-slate-900 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                     />
                   </div>
                   <button
@@ -239,7 +239,7 @@ export function CartDrawer() {
                 <Link
                   href="/checkout"
                   onClick={() => setIsCartDrawerOpen(false)}
-                  className="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold text-center flex items-center justify-center space-x-1.5 shadow-xs transition-all active:scale-95"
+                  className="py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold text-center flex items-center justify-center space-x-1.5 shadow-xs transition-all active:scale-95"
                 >
                   <span>Checkout</span>
                   <ArrowRight className="w-3.5 h-3.5" />

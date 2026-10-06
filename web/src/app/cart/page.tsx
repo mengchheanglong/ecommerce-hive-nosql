@@ -52,7 +52,7 @@ export default function FullCartPage() {
           className="inline-flex items-center space-x-2 px-6 py-3 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-xs"
         >
           <span>Browse Products</span>
-          <ArrowRight className="w-4 h-4 text-emerald-400" />
+          <ArrowRight className="w-4 h-4 text-blue-400" />
         </Link>
       </div>
     );
@@ -78,14 +78,14 @@ export default function FullCartPage() {
       <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center space-x-2 font-bold text-slate-800">
-            <Truck className="w-4 h-4 text-emerald-600" />
+            <Truck className="w-4 h-4 text-blue-600" />
             {amountToFreeShipping > 0 ? (
               <span>
-                Add <strong className="text-emerald-700 font-mono">{formatPrice(amountToFreeShipping)}</strong> more to unlock <strong className="text-slate-900">FREE Express Delivery</strong>!
+                Add <strong className="text-blue-700 font-mono">{formatPrice(amountToFreeShipping)}</strong> more to unlock <strong className="text-slate-900">FREE Express Delivery</strong>!
               </span>
             ) : (
-              <span className="text-emerald-700 flex items-center space-x-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span className="text-blue-700 flex items-center space-x-1">
+                <CheckCircle2 className="w-4 h-4 text-blue-600" />
                 <span>Congratulations! You qualified for FREE Express Courier Delivery!</span>
               </span>
             )}
@@ -96,7 +96,7 @@ export default function FullCartPage() {
         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-500 rounded-full ${
-              amountToFreeShipping === 0 ? "bg-emerald-500" : "bg-gradient-to-r from-amber-400 to-emerald-500"
+              amountToFreeShipping === 0 ? "bg-blue-600" : "bg-gradient-to-r from-blue-400 to-indigo-600"
             }`}
             style={{ width: `${shippingProgress}%` }}
           />
@@ -253,7 +253,7 @@ export default function FullCartPage() {
 
           <Link
             href="/checkout"
-            className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+            className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
           >
             <span>Proceed to Checkout</span>
             <ArrowRight className="w-4 h-4" />

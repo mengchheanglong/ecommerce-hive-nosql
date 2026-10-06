@@ -10,6 +10,7 @@ import {
   addOrderToStore,
   updateOrderStatusInStore,
   getRidersStore,
+  addProductReview,
   INITIAL_REFERRALS,
 } from "./data";
 
@@ -17,9 +18,14 @@ import {
 const BACKEND_BASE = "/nest-api";
 const LOCAL_API_BASE = "/api";
 
-export async function fetchProducts(category?: string, search?: string): Promise<Product[]> {
+export async function fetchProducts(
+  category?: string,
+  search?: string,
+  subcategory?: string
+): Promise<Product[]> {
   const query = new URLSearchParams();
   if (category && category !== "All") query.append("category", category);
+  if (subcategory && subcategory !== "all") query.append("subcategory", subcategory);
   if (search) query.append("search", search);
   const qStr = query.toString() ? `?${query.toString()}` : "";
 
@@ -52,7 +58,21 @@ export async function fetchProducts(category?: string, search?: string): Promise
   // 3. Resilient in-memory synchronized store
   let list = [...getProductsStore()];
   if (category && category !== "All") {
-    list = list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+    const catLower = category.toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.category.toLowerCase() === catLower ||
+        (p.category_slug && p.category_slug.toLowerCase() === catLower) ||
+        (p.category_aliases && p.category_aliases.some((a) => a.toLowerCase() === catLower))
+    );
+  }
+  if (subcategory && subcategory !== "all") {
+    const subLower = subcategory.toLowerCase();
+    list = list.filter(
+      (p) =>
+        (p.subcategory && p.subcategory.toLowerCase() === subLower) ||
+        (p.subcategory_name && p.subcategory_name.toLowerCase() === subLower)
+    );
   }
   if (search) {
     list = list.filter(
@@ -63,6 +83,37 @@ export async function fetchProducts(category?: string, search?: string): Promise
     );
   }
   return list;
+}
+
+export async function fetchCategoryCounts(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch(`${BACKEND_BASE}/products/meta/counts`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.counts && typeof data.counts === "object" && Object.keys(data.counts).length > 0) {
+        return data.counts;
+      }
+    }
+  } catch (err) {
+    // Proceed
+  }
+
+  // Fallback: Compute counts from local synchronized products store
+  const store = getProductsStore();
+  const counts: Record<string, number> = {};
+  for (const p of store) {
+    if (p.category_slug) {
+      counts[p.category_slug] = (counts[p.category_slug] || 0) + 1;
+    }
+    if (p.subcategory) {
+      counts[p.subcategory] = (counts[p.subcategory] || 0) + 1;
+    }
+    if (p.category) {
+      const slug = p.category.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      counts[slug] = (counts[slug] || 0) + 1;
+    }
+  }
+  return counts;
 }
 
 export async function fetchProductById(id: string): Promise<Product | null> {
@@ -226,19 +277,44 @@ export async function submitProductReview(
   review: { author: string; rating: number; comment: string }
 ): Promise<{ success: boolean; product?: Product; error?: string }> {
   try {
-    const res = await fetch(`${LOCAL_API_BASE}/products/${productId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(review),
-    });
-    if (res.ok) {
-      return await res.json();
+    const prod = (await fetchProductById(productId)) || findProductById(productId);
+    if (!prod) {
+      return { success: false, error: "Product not found" };
     }
-  } catch (err) {
-    // Synchronized store
+
+    const newRev = {
+      id: `rev-${Date.now()}`,
+      author: review.author.trim() || "Verified Buyer",
+      rating: review.rating,
+      date: new Date().toISOString().split("T")[0],
+      comment: review.comment.trim(),
+      verified: true,
+    };
+
+    const currentReviews = prod.reviews || [];
+    const updatedReviews = [newRev, ...currentReviews];
+    const avgRating = Number(
+      (updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length).toFixed(1)
+    );
+
+    const updates: Partial<Product> = {
+      reviews: updatedReviews,
+      reviews_count: updatedReviews.length,
+      rating: avgRating,
+    };
+
+    // Update in MongoDB via updateProduct (which calls PUT /nest-api/products/:id)
+    const updateRes = await updateProduct(productId, updates);
+    addProductReview(productId, review);
+
+    if (updateRes.success && updateRes.product) {
+      return { success: true, product: updateRes.product };
+    }
+    return { success: true, product: { ...prod, ...updates } };
+  } catch (err: any) {
+    const localUpdated = addProductReview(productId, review);
+    return { success: !!localUpdated, product: localUpdated || undefined };
   }
-  const prod = findProductById(productId);
-  return { success: !!prod, product: prod };
 }
 
 export async function fetchOrders(): Promise<OrderRecord[]> {

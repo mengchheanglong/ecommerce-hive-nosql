@@ -167,7 +167,7 @@ export default function OrderDetailPage() {
           return (
             <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
                   <Truck className="w-5 h-5" />
                 </div>
                 <div>
@@ -175,12 +175,12 @@ export default function OrderDetailPage() {
                     <span className="text-xs font-bold text-slate-900">
                       Assigned Courier: Rider {assignedRider.name} ({assignedRider.id})
                     </span>
-                    <span className="px-1.5 py-0.2 bg-emerald-200 text-emerald-800 text-[9px] font-bold rounded">
+                    <span className="px-1.5 py-0.2 bg-blue-100 text-blue-800 text-[9px] font-bold rounded">
                       Cassandra Telemetry
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 flex items-center space-x-1 mt-0.5">
-                    <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
+                    <Radio className="w-3 h-3 text-blue-600 animate-pulse" />
                     <span>
                       Speed: {assignedRider.speed} • Battery: {assignedRider.battery}% • Hub: {assignedRider.city} ({assignedRider.lat}, {assignedRider.lng})
                     </span>
@@ -191,7 +191,7 @@ export default function OrderDetailPage() {
                 href={`tel:${riderPhone.replace(/\s+/g, "")}`}
                 className="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 flex items-center space-x-1 hover:bg-slate-50 transition-colors shadow-2xs self-end sm:self-auto cursor-pointer"
               >
-                <Phone className="w-3 h-3 text-emerald-600" />
+                <Phone className="w-3 h-3 text-blue-600" />
                 <span>Call Rider ({riderPhone})</span>
               </a>
             </div>
@@ -202,7 +202,7 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1 text-xs">
             <div className="flex items-center space-x-2 text-slate-900 font-bold">
-              <MapPin className="w-4 h-4 text-emerald-600" />
+              <MapPin className="w-4 h-4 text-blue-600" />
               <span>Delivery Destination</span>
             </div>
             <p className="text-slate-600 mt-1">{order.delivery_address || `${order.province}, Cambodia`}</p>
@@ -211,7 +211,7 @@ export default function OrderDetailPage() {
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1 text-xs">
             <div className="flex items-center space-x-2 text-slate-900 font-bold">
-              <CreditCard className="w-4 h-4 text-emerald-600" />
+              <CreditCard className="w-4 h-4 text-blue-600" />
               <span>Settlement Method</span>
             </div>
             <p className="text-slate-600 mt-1">{order.payment_method}</p>
@@ -274,7 +274,7 @@ export default function OrderDetailPage() {
             <div className="flex justify-between items-start border-b border-slate-200 pb-4">
               <div>
                 <div className="flex items-center space-x-2">
-                  <Building2 className="w-5 h-5 text-emerald-600" />
+                  <Building2 className="w-5 h-5 text-blue-600" />
                   <span className="font-black text-base text-slate-900 tracking-tight">
                     Rentify E-Commerce Co., Ltd.
                   </span>
@@ -288,7 +288,7 @@ export default function OrderDetailPage() {
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="text-[10px] font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                   Official Tax Receipt
                 </span>
                 <p className="font-mono font-bold text-xs text-slate-900 mt-1.5">

@@ -55,7 +55,7 @@ export default function CustomerOrdersPage() {
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                 statusFilter === st
-                  ? "bg-slate-900 text-white shadow-xs"
+                  ? "bg-blue-600 text-white shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
@@ -85,7 +85,7 @@ export default function CustomerOrdersPage() {
             className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-all shadow-xs"
           >
             <span>Start Shopping</span>
-            <ArrowRight className="w-4 h-4 text-emerald-400" />
+            <ArrowRight className="w-4 h-4 text-blue-400" />
           </Link>
         </div>
       ) : (
@@ -163,7 +163,7 @@ export default function CustomerOrdersPage() {
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-slate-500 pt-1 gap-2">
                 <div className="flex items-center space-x-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
                   <span>Delivery Zone: <strong className="text-slate-800">{ord.province}</strong></span>
                 </div>
                 <span>Customer ID: <strong className="text-slate-800">{ord.customer_id}</strong> ({ord.customer_name})</span>
