@@ -1,0 +1,130 @@
+{
+  "timestamp": "2026-10-06 15:36:11",
+  "totalRecords": 1000000,
+  "csvSizeMb": 74.39,
+  "warehouseSizeMb": 21.15,
+  "compressionRatio": 3.52,
+  "benchmarks": {
+    "D1_RevenueByProvince": {
+      "csvLatencyMs": 423.32,
+      "warehouseLatencyMs": 50.87,
+      "speedup": 8.3,
+      "results": [
+        {
+          "province": "Phnom Penh",
+          "revenue": 42130965.2
+        },
+        {
+          "province": "Siem Reap",
+          "revenue": 19191375.01
+        },
+        {
+          "province": "Battambang",
+          "revenue": 7570672.18
+        },
+        {
+          "province": "Kandal",
+          "revenue": 3058095.15
+        },
+        {
+          "province": "Sihanoukville",
+          "revenue": 2341096.15
+        },
+        {
+          "province": "Kampot",
+          "revenue": 2253587.83
+        }
+      ]
+    },
+    "D2_TopCustomers": {
+      "latencyMs": 363.99,
+      "results": [
+        {
+          "id": "C10524",
+          "name": "Bopha Pich 524",
+          "city": "Battambang",
+          "spend": 14479.74
+        },
+        {
+          "id": "C47708",
+          "name": "Neary Long 708",
+          "city": "Phnom Penh",
+          "spend": 13982.51
+        },
+        {
+          "id": "C28429",
+          "name": "Bopha Pich 429",
+          "city": "Phnom Penh",
+          "spend": 13311.93
+        },
+        {
+          "id": "C13118",
+          "name": "Sophea Mao 118",
+          "city": "Phnom Penh",
+          "spend": 13257.03
+        },
+        {
+          "id": "C45423",
+          "name": "Neary Long 423",
+          "city": "Siem Reap",
+          "spend": 13150.46
+        }
+      ]
+    },
+    "D3_PopularCategories": {
+      "latencyMs": 47.81,
+      "results": [
+        {
+          "category": "Electronics",
+          "count": 300194,
+          "revenue": 146423934.76
+        },
+        {
+          "category": "Groceries",
+          "count": 250265,
+          "revenue": 7128597.29
+        },
+        {
+          "category": "Clothing",
+          "count": 249730,
+          "revenue": 19903188.38
+        },
+        {
+          "category": "Home & Kitchen",
+          "count": 100138,
+          "revenue": 14665313.19
+        },
+        {
+          "category": "Beauty",
+          "count": 49966,
+          "revenue": 2939812.41
+        },
+        {
+          "category": "Books",
+          "count": 49707,
+          "revenue": 1941038.67
+        }
+      ]
+    },
+    "D4_OrderTiers": {
+      "latencyMs": 46.01,
+      "results": [
+        {
+          "tier": "normal",
+          "count": 578158,
+          "revenue": 22618564.58
+        },
+        {
+          "tier": "high",
+          "count": 421842,
+          "revenue": 170383320.12
+        }
+      ]
+    },
+    "D5_PartitionPruning": {
+      "prunedLatencyMs": 4.15,
+      "fullScanLatencyMs": 10.92,
+      "dataSkippedPercent": 60.0
+    }
+  }
+}

@@ -23,7 +23,12 @@ metastore_db/
 Thumbs.db
 *.swp
 *.swo
-.vscode/*
+*.vscode/*
 !.vscode/settings.json
 .idea/
 *.tsbuildinfo
+
+# Data Warehouse Generated Datasets (Keep JSON results, ignore large CSV/Parquet)
+data/warehouse/*.csv
+data/warehouse/*.parquet
+data/warehouse/orders_opt/
