@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Put, Body } from "@nestjs/common";
-import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { Controller, Get, Post, Put, Body, Param } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
 
@@ -12,6 +12,13 @@ export class OrdersController {
   @ApiOperation({ summary: "List customer orders sorted by creation date" })
   findAll() {
     return this.ordersService.findAll();
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: "Get single order by order_id" })
+  @ApiParam({ name: "id", example: "ORD-100001" })
+  findOne(@Param("id") id: string) {
+    return this.ordersService.findOne(id);
   }
 
   @Post()

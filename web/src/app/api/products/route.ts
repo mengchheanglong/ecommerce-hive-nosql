@@ -1,92 +1,86 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { INITIAL_PRODUCTS } from "@/lib/data";
 
-export async function GET() {
+let inMemoryProducts = [...INITIAL_PRODUCTS];
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get("category");
+  const search = searchParams.get("search");
+
   try {
     const { db } = await connectToDatabase();
-    const products = await db.collection("products").find({}).toArray();
-    return NextResponse.json({ success: true, source: "mongodb", products });
+    const query: any = {};
+    if (category && category !== "All") query.category = category;
+    if (search) query.name = { $regex: search, $options: "i" };
+
+    const products = await db.collection("products").find(query).toArray();
+    if (products.length > 0) {
+      return NextResponse.json({ success: true, source: "mongodb", products });
+    }
   } catch (error) {
     console.warn("MongoDB fetch failed, serving fallback products:", error);
-    const fallbackProducts = [
-      {
-        product_id: "P2210",
-        name: "Ultra Smartphone Pro Max",
-        category: "Electronics",
-        price: 289.0,
-        status: "active",
-        screen_size: "6.7 inch OLED",
-        warranty: "1 Year Official",
-        description: "Flagship AMOLED display with high-efficiency 5G modem and all-day fast charge.",
-      },
-      {
-        product_id: "P3314",
-        name: "Premium Linen Casual Shirt",
-        category: "Clothing",
-        price: 18.5,
-        status: "active",
-        size: "L",
-        colours: ["Navy Blue", "Sand Beige"],
-        description: "Breathable 100% natural organic linen tailored for tropical climates.",
-      },
-      {
-        product_id: "P0874",
-        name: "Battambang Jasmine Fragrant Rice 5kg",
-        category: "Groceries",
-        price: 4.8,
-        status: "active",
-        weight: "5.0 kg",
-        expiry_date: "2027-10-01",
-        description: "Award-winning Malys Angkor aromatic long-grain rice, vacuum-sealed at source.",
-      },
-    ];
-    return NextResponse.json({ success: true, source: "fallback", products: fallbackProducts });
   }
+
+  let list = [...inMemoryProducts];
+  if (category && category !== "All") {
+    list = list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+  }
+  if (search) {
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+  return NextResponse.json({ success: true, source: "fallback", products: list });
 }
 
 export async function POST(request: Request) {
+  const body = await request.json();
+  const newProduct = {
+    product_id: body.product_id || `P${Math.floor(1000 + Math.random() * 9000)}`,
+    name: body.name,
+    category: body.category,
+    price: Number(body.price),
+    status: body.status || "active",
+    screen_size: body.screen_size,
+    warranty: body.warranty,
+    size: body.size,
+    colours: body.colours,
+    weight: body.weight,
+    expiry_date: body.expiry_date,
+    description: body.description,
+    created_at: new Date(),
+  };
+
   try {
-    const body = await request.json();
     const { db } = await connectToDatabase();
-
-    const newProduct = {
-      product_id: body.product_id || `P${Math.floor(1000 + Math.random() * 9000)}`,
-      name: body.name,
-      category: body.category,
-      price: Number(body.price),
-      status: body.status || "active",
-      screen_size: body.screen_size,
-      warranty: body.warranty,
-      size: body.size,
-      colours: body.colours,
-      weight: body.weight,
-      expiry_date: body.expiry_date,
-      description: body.description,
-      created_at: new Date(),
-    };
-
     const result = await db.collection("products").insertOne(newProduct);
-    return NextResponse.json({ success: true, product: newProduct, insertedId: result.insertedId });
+    return NextResponse.json({ success: true, source: "mongodb", product: newProduct, insertedId: result.insertedId });
   } catch (error: any) {
-    console.error("Failed to insert product in MongoDB:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn("Failed to insert product in MongoDB, storing in fallback state:", error);
+    inMemoryProducts.push(newProduct as any);
+    return NextResponse.json({ success: true, source: "fallback", product: newProduct });
   }
 }
 
 export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const productId = searchParams.get("id");
+
+  if (!productId) {
+    return NextResponse.json({ success: false, error: "Missing product id" }, { status: 400 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const productId = searchParams.get("id");
-
-    if (!productId) {
-      return NextResponse.json({ success: false, error: "Missing product id" }, { status: 400 });
-    }
-
     const { db } = await connectToDatabase();
     await db.collection("products").deleteOne({ product_id: productId });
-    return NextResponse.json({ success: true, deletedId: productId });
+    return NextResponse.json({ success: true, source: "mongodb", deletedId: productId });
   } catch (error: any) {
-    console.error("Failed to delete product in MongoDB:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn("Failed to delete product in MongoDB, updating fallback state:", error);
+    inMemoryProducts = inMemoryProducts.filter((p) => p.product_id !== productId);
+    return NextResponse.json({ success: true, source: "fallback", deletedId: productId });
   }
 }

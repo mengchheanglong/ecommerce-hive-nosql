@@ -6,7 +6,7 @@ import { CreateProductDto } from "./dto/create-product.dto";
 export class CatalogService {
   constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db) {}
 
-  private fallbackProducts = [
+  private fallbackProducts: any[] = [
     {
       product_id: "P2210",
       name: "Ultra Smartphone Pro Max",
@@ -104,5 +104,24 @@ export class CatalogService {
     }
     this.fallbackProducts = this.fallbackProducts.filter((p) => p.product_id !== productId);
     return { success: true, deletedId: productId };
+  }
+
+  async update(productId: string, dto: Partial<CreateProductDto>) {
+    if (this.db) {
+      try {
+        await this.db.collection("products").updateOne(
+          { product_id: productId },
+          { $set: { ...dto, updated_at: new Date() } }
+        );
+        return { success: true, product_id: productId };
+      } catch (err) {
+        console.warn("MongoDB update failed, updating fallback:", err);
+      }
+    }
+    const idx = this.fallbackProducts.findIndex((p) => p.product_id === productId);
+    if (idx !== -1) {
+      this.fallbackProducts[idx] = { ...this.fallbackProducts[idx], ...dto };
+    }
+    return { success: true, product_id: productId };
   }
 }

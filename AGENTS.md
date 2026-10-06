@@ -2,7 +2,7 @@
 
 ## Project Overview
 - **Project Name:** ecommerce-hive-nosql
-- **Description:** A polyglot persistence data platform and interactive Next.js full-stack marketplace for high-scale e-commerce workloads, combining MongoDB, Apache Cassandra, Redis, Neo4j, and Apache Hive on HDFS.
+- **Description:** A polyglot persistence data platform and interactive Next.js full-stack marketplace for high-scale e-commerce workloads, combining MongoDB, Apache Cassandra, Redis, Neo4j, and Apache Hive on HDFS, featuring fully separated Customer Storefront and Merchant Operations portals.
 
 ## Project Structure
 ```
@@ -40,27 +40,48 @@
 │       └── crud-operations.js       # Full CRUD demo script
 ├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
 │   ├── src/
-│   │   ├── catalog/                 # MongoDB Catalog microservice
-│   │   ├── orders/                  # MongoDB Orders & state machine
-│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service
-│   │   ├── referral/                # Neo4j Graph referral service
-│   │   ├── warehouse/               # Apache Hive reporting service
+│   │   ├── catalog/                 # MongoDB Catalog microservice (GET, POST, PUT, DELETE)
+│   │   ├── orders/                  # MongoDB Orders & state machine (GET, GET :id, POST, PUT)
+│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service (160 writes/sec)
+│   │   ├── referral/                # Neo4j Graph referral service (3-tier social graph)
+│   │   ├── warehouse/               # Apache Hive reporting service (OLAP batch)
 │   │   ├── database/                # Native MongoDB connection module
-│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
+│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup (/api/docs)
 │   ├── package.json
+│   └── tsconfig.json
 ├── cassandra/                       # Apache Cassandra CQL Schemas & Compaction Config
 │   └── schema.cql
 ├── neo4j/                           # Neo4j Graph Cypher Schema & Traversal Queries
 │   └── queries.cypher
 └── web/                             # Next.js 15 Full-Stack Web Application (Port 3001)
     ├── src/
-    │   ├── app/
-    │   │   ├── api/                 # API routes (products, analytics, riders)
-    │   │   ├── globals.css
-    │   │   ├── layout.tsx
-    │   │   └── page.tsx             # Interactive dashboard & marketplace
-    │   └── lib/
-    │       └── mongodb.ts           # Native MongoDB connection driver
+    │   ├── types/                   # Unified TypeScript models
+    │   ├── context/                 # CartContext, CurrencyContext, ToastContext
+    │   ├── lib/                     # API client & resilient fallback stores
+    │   ├── components/
+    │   │   ├── shared/              # Header, Footer, Modal, QuickViewModal, ToastContainer
+    │   │   ├── customer/            # ProductCard, CartDrawer, KhqrPaymentModal, OrderTimeline
+    │   │   └── merchant/            # MerchantSidebar, MerchantHeader, KpiCard, FleetConsole, ReferralGraph, HiveWorkbench
+    │   └── app/
+    │       ├── layout.tsx           # Global root layout wrapping providers
+    │       ├── page.tsx             # Customer Storefront Landing Page
+    │       ├── shop/                # Customer Full Catalog Explorer
+    │       │   └── [id]/            # Detailed Product Page (PDP)
+    │       ├── cart/                # Dedicated Shopping Cart Page
+    │       ├── checkout/            # Multi-step Checkout (Bakong KHQR, COD)
+    │       ├── orders/              # Customer My Orders & Delivery Tracking
+    │       │   └── [id]/            # Order Timeline & Details Inspection
+    │       ├── account/             # Customer Profile, Addresses & Referral Link
+    │       ├── merchant/            # Merchant Portal Shell Layout
+    │       │   ├── page.tsx         # Merchant Executive Overview Dashboard
+    │       │   ├── products/        # Inventory Management Data Table
+    │       │   │   └── new/         # Add Product Form with Polymorphic Specs
+    │       │   ├── orders/          # Fulfillment Queue & State Machine
+    │       │   │   └── [id]/        # Order Fulfillment Inspector
+    │       │   ├── fleet/           # Cassandra Live Fleet Telemetry (160 writes/sec)
+    │       │   ├── referrals/       # Neo4j 3-Level Referral Reward Network
+    │       │   └── warehouse/       # Apache Hive OLAP Workbench (Queries D1-D4)
+    │       └── api/                 # Next.js API Routes (/api/products, orders, riders, referrals, analytics)
     ├── package.json
     ├── tailwind.config.ts
     └── tsconfig.json
@@ -72,11 +93,10 @@
 - **Schemas:** Defined in JSON Schema (draft-07) format.
 - **DDL ordering:** Hive DDL files are prefixed with numbers (`01-`, `02-`, ...) to indicate execution order.
 - **Backend:** NestJS 10 with Swagger OpenAPI documentation on `http://localhost:4000/api/docs`.
-- **Web App:** Next.js 15 with App Router, TypeScript, and Tailwind CSS. Runs on port 3001.
+- **Web App:** Next.js 15 App Router with separated Customer and Merchant experiences, TypeScript, and Tailwind CSS on port 3001.
 
 ## Testing & Running
 - **NestJS Backend:** `cd backend && pnpm start` (accessible on `http://localhost:4000`, Swagger docs at `/api/docs`)
 - **Web App:** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
 - **MongoDB Scripts:** `mongosh ecommerce mongodb/scripts/seed-products.js`
 - **Hive Pipeline:** Run sequentially or via `./run_lab.ps1`
-

@@ -83,20 +83,25 @@ The platform organizes its business logic across isolated microservice domains:
 
 ## ⚡ Dual-Portal User Interface
 
-The platform provides a dedicated portal switch in the top navigation, completely separating the consumer experience from merchant operations:
+The platform provides a dedicated portal switch in the top navigation, completely separating the consumer experience from merchant operations across dedicated Next.js 15 App Router routes:
 
-### 🛍️ 1. Consumer Storefront (`/`)
-- **Live Catalog & Quick View:** Instant category filters, keyword search, price sorting, and detailed product modal with polymorphic attributes.
-- **Dual-Currency Conversion:** Instant toggle between **USD ($)** and **Khmer Riel (៛)** with real exchange rates (`1 USD = 4,100 KHR`).
-- **Cart Drawer & Multi-Step Checkout:** Slide-over cart, authentic Bakong KHQR QR card with 3-minute timer, and Cash on Delivery.
-- **Customer Account:** View active orders, delivery tracking, and manage saved delivery addresses.
+### 🛍️ 1. Consumer Storefront
+- **Landing Page (`/`):** Hero showcase, real-time metrics, trust badges, category quick pills, and featured products grid.
+- **Full Catalog Explorer (`/shop`):** Category filtering, search query input, price sorting (Low → High, High → Low), and Grid/List view toggle.
+- **Product Details Page (`/shop/[id]`):** High-resolution product display, category-specific polymorphic specifications, stock counter, quantity stepper, Add to Cart, and Buy Now.
+- **Shopping Bag (`/cart`):** Full itemized cart with quantity steppers, promo code discount engine (`VIP10`), express delivery calculator, and total conversion in USD and KHR (`1 USD = 4,100 KHR`).
+- **Checkout & Settlement (`/checkout`):** Multi-step checkout with delivery address selection, interactive **Bakong KHQR** QR modal with 3-minute countdown timer and simulated ABA/Wing scan, and Cash on Delivery.
+- **Order Tracking (`/orders` & `/orders/[id]`):** Live delivery progression timeline (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`), itemized order receipts, and delivery coordinates.
+- **Account & Addresses (`/account`):** Customer profile, VIP Gold loyalty points, saved delivery addresses CRUD, and Neo4j social referral code sharing.
 
 ### 💼 2. Merchant & Operations Portal (`/merchant`)
-- **Inventory CRUD (MongoDB):** Add new products with dynamic category-specific fields, edit pricing, and delete items with instant MongoDB persistence.
-- **Orders & Fulfillment State Machine:** Review incoming orders and update delivery progression (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`).
-- **Fleet Command (Cassandra):** Live Cassandra CQL INSERT terminal stream, battery gauges, speedometers, and city dispatch filters.
-- **Referral Graph (Neo4j):** 3-tier deep invitation network visualizer with commission tier payouts (Level 1: 5%, Level 2: 3%, Level 3: 1%).
-- **Data Warehouse BI (Apache Hive):** 2M monthly orders dashboard, provincial revenue charts, top spenders leaderboard, and interactive HiveQL console.
+- **Executive Overview (`/merchant`):** Angkoro-style KPI metric cards (GMV, orders, active SKUs, courier fleet), polyglot datastore health matrix, and live order fulfillment queue.
+- **Inventory & Stock Management (`/merchant/products`):** Full catalog management data table with category filter, search by SKU/name, and direct MongoDB document deletion.
+- **Create Product Document (`/merchant/products/new`):** Dynamic form supporting category polymorphic specifications (Screen Size and Warranty for Electronics, Size and Colours for Clothing, Net Weight and Expiry for Groceries).
+- **Fulfillment & Order State Machine (`/merchant/orders` & `/merchant/orders/[id]`):** Live order queue with state machine status updates advancing orders from Pending to Delivered.
+- **Fleet Telemetry Command (`/merchant/fleet`):** Real-time Apache Cassandra ingestion stream (160 writes/sec, 13.8M rows/day), live CQL log viewer, and city fleet dispatch filters.
+- **Social Referral Network (`/merchant/referrals`):** Neo4j 3-tier deep tree network visualizer calculating multi-tier commission rewards (Tier 1: 5%, Tier 2: 3%, Tier 3: 1%).
+- **Warehouse Analytics Workbench (`/merchant/warehouse`):** Interactive Apache Hive console for analytical queries (D1 through D4), Tez execution time benchmark, and ORC optimization breakdown.
 
 ---
 
@@ -106,23 +111,39 @@ The platform provides a dedicated portal switch in the top navigation, completel
 .
 ├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
 │   ├── src/
-│   │   ├── catalog/                 # MongoDB Catalog controller & service
-│   │   ├── orders/                  # MongoDB Orders & state machine
-│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service
-│   │   ├── referral/                # Neo4j Graph referral service
-│   │   ├── warehouse/               # Apache Hive reporting service
+│   │   ├── catalog/                 # MongoDB Catalog controller, service & DTOs
+│   │   ├── orders/                  # MongoDB Orders & state machine controller & service
+│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service (160 writes/sec)
+│   │   ├── referral/                # Neo4j Graph referral service (3-tier social graph)
+│   │   ├── warehouse/               # Apache Hive reporting service (OLAP batch)
 │   │   ├── database/                # Native MongoDB connection module
-│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup
+│   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup (/api/docs)
 │   ├── package.json
 │   └── tsconfig.json
 ├── web/                             # Next.js 15 Full-Stack Application (Port 3001)
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── api/                 # Endpoints (products, orders, riders, referrals, analytics)
-│   │   │   ├── layout.tsx
-│   │   │   └── page.tsx             # Dual-Mode Storefront & Merchant UI
-│   │   └── lib/
-│   │       └── mongodb.ts           # Native MongoDB connection pool
+│   │   ├── types/                   # Unified TypeScript models
+│   │   ├── context/                 # CartContext, CurrencyContext, ToastContext
+│   │   ├── lib/                     # API client & resilient fallback stores
+│   │   ├── components/
+│   │   │   ├── shared/              # Header, Footer, Modal, QuickViewModal, ToastContainer, AppShell
+│   │   │   ├── customer/            # ProductCard, CartDrawer, KhqrPaymentModal, OrderTimeline
+│   │   │   └── merchant/            # MerchantSidebar, MerchantHeader, KpiCard, FleetConsole, ReferralGraph, HiveWorkbench
+│   │   └── app/
+│   │       ├── layout.tsx           # Global root layout wrapping providers
+│   │       ├── page.tsx             # Customer Storefront Landing Page
+│   │       ├── shop/                # Full Catalog Explorer & PDP (/shop/[id])
+│   │       ├── cart/                # Dedicated Shopping Bag Page
+│   │       ├── checkout/            # Multi-step Checkout with Bakong KHQR
+│   │       ├── orders/              # Orders & Delivery Tracking (/orders/[id])
+│   │       ├── account/             # Customer Profile, Addresses & Referral Link
+│   │       ├── merchant/            # Merchant Portal Shell Layout & Overview
+│   │       │   ├── products/        # Inventory Management Table & Create Form (/new)
+│   │       │   ├── orders/          # Fulfillment Queue & State Machine (/orders/[id])
+│   │       │   ├── fleet/           # Cassandra Live Fleet Telemetry (160 writes/sec)
+│   │       │   ├── referrals/       # Neo4j 3-Level Referral Reward Network
+│   │       │   └── warehouse/       # Apache Hive OLAP Workbench (Queries D1-D4)
+│   │       └── api/                 # Next.js API Routes (products, orders, riders, referrals, analytics)
 │   ├── package.json
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
@@ -138,8 +159,6 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   ├── cap-theorem-analysis.md      # Multi-DC Partition Analysis (AP vs CP)
 │   ├── hive-warehouse-design.md     # Hive Partitioning, Bucketing & ORC
 │   └── nosql-database-design.md     # NoSQL Engine Selection Rationale
-├── hive/                            # Apache Hive Warehouse DDL, ETL & Queries
-├── mongodb/                         # MongoDB Schemas & Standalone Scripts
 ├── run_lab.ps1                      # Automated pipeline runner
 ├── AGENTS.md
 └── README.md

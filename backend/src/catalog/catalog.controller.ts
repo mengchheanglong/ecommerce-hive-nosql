@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, Query } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiQuery, ApiParam } from "@nestjs/swagger";
 import { CatalogService } from "./catalog.service";
 import { CreateProductDto } from "./dto/create-product.dto";
@@ -27,6 +27,13 @@ export class CatalogController {
   @ApiOperation({ summary: "Create a new product with polymorphic document schema in MongoDB" })
   create(@Body() dto: CreateProductDto) {
     return this.catalogService.create(dto);
+  }
+
+  @Put(":id")
+  @ApiOperation({ summary: "Update product attributes in MongoDB collection" })
+  @ApiParam({ name: "id", example: "P2210" })
+  update(@Param("id") id: string, @Body() dto: Partial<CreateProductDto>) {
+    return this.catalogService.update(id, dto);
   }
 
   @Delete(":id")

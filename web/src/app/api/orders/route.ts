@@ -1,92 +1,66 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { INITIAL_ORDERS } from "@/lib/data";
+
+let inMemoryOrders = [...INITIAL_ORDERS];
 
 export async function GET() {
   try {
     const { db } = await connectToDatabase();
     const orders = await db.collection("orders").find({}).sort({ created_at: -1 }).toArray();
-    return NextResponse.json({ success: true, source: "mongodb", orders });
+    if (orders.length > 0) {
+      return NextResponse.json({ success: true, source: "mongodb", orders });
+    }
   } catch (error) {
-    console.warn("MongoDB fetch failed, serving default orders:", error);
-    const defaultOrders = [
-      {
-        order_id: "ORD-100001",
-        customer_id: "C0457",
-        customer_name: "Sokha Meas",
-        items: [{ product_id: "P2210", name: "Ultra Smartphone Pro Max", quantity: 1, price: 289.0 }],
-        total: 289.0,
-        province: "Phnom Penh",
-        payment_method: "Bakong KHQR",
-        status: "Delivered",
-        created_at: new Date("2026-09-03"),
-      },
-      {
-        order_id: "ORD-100002",
-        customer_id: "C1893",
-        customer_name: "Chenda Som",
-        items: [{ product_id: "P0874", name: "Battambang Jasmine Fragrant Rice 5kg", quantity: 4, price: 4.8 }],
-        total: 19.2,
-        province: "Siem Reap",
-        payment_method: "Cash (COD)",
-        status: "Delivered",
-        created_at: new Date("2026-09-03"),
-      },
-      {
-        order_id: "ORD-100003",
-        customer_id: "C0457",
-        customer_name: "Sokha Meas",
-        items: [{ product_id: "P3314", name: "Premium Linen Casual Shirt", quantity: 2, price: 18.5 }],
-        total: 37.0,
-        province: "Phnom Penh",
-        payment_method: "Bakong KHQR",
-        status: "Out for Delivery",
-        created_at: new Date(),
-      },
-    ];
-    return NextResponse.json({ success: true, source: "fallback", orders: defaultOrders });
+    console.warn("MongoDB orders fetch failed, serving default orders:", error);
   }
+  return NextResponse.json({ success: true, source: "fallback", orders: inMemoryOrders });
 }
 
 export async function POST(request: Request) {
+  const body = await request.json();
+  const newOrder = {
+    order_id: body.order_id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+    customer_id: body.customer_id || "C0457",
+    customer_name: body.customer_name || "Sokha Meas",
+    items: body.items || [],
+    total: Number(body.total),
+    province: body.province || "Phnom Penh",
+    payment_method: body.payment_method || "Bakong KHQR",
+    status: body.status || "Preparing",
+    delivery_address: body.delivery_address || "Street 271, Phnom Penh",
+    created_at: new Date().toISOString(),
+  };
+
   try {
-    const body = await request.json();
     const { db } = await connectToDatabase();
-
-    const newOrder = {
-      order_id: body.order_id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-      customer_id: body.customer_id || "C0457",
-      customer_name: body.customer_name || "Sokha Meas",
-      items: body.items || [],
-      total: Number(body.total),
-      province: body.province || "Phnom Penh",
-      payment_method: body.payment_method || "Bakong KHQR",
-      status: body.status || "Pending",
-      delivery_address: body.delivery_address,
-      created_at: new Date(),
-    };
-
     const result = await db.collection("orders").insertOne(newOrder);
-    return NextResponse.json({ success: true, order: newOrder, insertedId: result.insertedId });
+    return NextResponse.json({ success: true, source: "mongodb", order: newOrder, insertedId: result.insertedId });
   } catch (error: any) {
-    console.error("Failed to insert order in MongoDB:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn("Failed to insert order in MongoDB, storing in fallback state:", error);
+    inMemoryOrders.unshift(newOrder as any);
+    return NextResponse.json({ success: true, source: "fallback", order: newOrder });
   }
 }
 
 export async function PUT(request: Request) {
+  const body = await request.json();
+  const { order_id, status } = body;
+
+  if (!order_id || !status) {
+    return NextResponse.json({ success: false, error: "Missing order_id or status" }, { status: 400 });
+  }
+
   try {
-    const body = await request.json();
-    const { order_id, status } = body;
-
-    if (!order_id || !status) {
-      return NextResponse.json({ success: false, error: "Missing order_id or status" }, { status: 400 });
-    }
-
     const { db } = await connectToDatabase();
     await db.collection("orders").updateOne({ order_id }, { $set: { status, updated_at: new Date() } });
-    return NextResponse.json({ success: true, order_id, status });
+    return NextResponse.json({ success: true, source: "mongodb", order_id, status });
   } catch (error: any) {
-    console.error("Failed to update order status in MongoDB:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn("Failed to update order status in MongoDB, updating fallback state:", error);
+    const existing = inMemoryOrders.find((o) => o.order_id === order_id);
+    if (existing) {
+      existing.status = status;
+    }
+    return NextResponse.json({ success: true, source: "fallback", order_id, status });
   }
 }

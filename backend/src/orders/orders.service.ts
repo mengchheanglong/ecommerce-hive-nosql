@@ -89,4 +89,17 @@ export class OrdersService {
     if (order) order.status = dto.status;
     return { success: true, order_id: dto.order_id, status: dto.status };
   }
+
+  async findOne(orderId: string) {
+    if (this.db) {
+      try {
+        const order = await this.db.collection("orders").findOne({ order_id: orderId });
+        if (order) return { success: true, order };
+      } catch (err) {
+        console.warn("MongoDB findOne order failed, using fallback:", err);
+      }
+    }
+    const order = this.fallbackOrders.find((o) => o.order_id === orderId);
+    return { success: !!order, order };
+  }
 }
