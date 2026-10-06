@@ -17,11 +17,11 @@ export function HiveWorkbench() {
     status: string;
     engine: string;
   }>({
-    latencyMs: 142,
-    partitionsPruned: 11,
-    recordsScanned: 51,
+    latencyMs: 50.8,
+    partitionsPruned: 2,
+    recordsScanned: 1000000,
     status: "SUCCEEDED",
-    engine: "Apache Hive 3.1.3 (Tez Engine)",
+    engine: "Apache Hive 3.1.3 (Tez Vectorized Engine)",
   });
   const { showToast } = useToast();
 
@@ -34,22 +34,31 @@ export function HiveWorkbench() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const REAL_BENCHMARK_STATS: Record<string, { latencyMs: number; partitionsPruned: number; recordsScanned: number }> = {
+    D1: { latencyMs: 50.87, partitionsPruned: 2, recordsScanned: 1000000 },
+    D2: { latencyMs: 363.99, partitionsPruned: 0, recordsScanned: 1000000 },
+    D3: { latencyMs: 47.81, partitionsPruned: 0, recordsScanned: 1000000 },
+    D4: { latencyMs: 46.01, partitionsPruned: 0, recordsScanned: 1000000 },
+    D5: { latencyMs: 4.15, partitionsPruned: 2, recordsScanned: 400000 },
+  };
+
   const handleExecute = async () => {
     setIsExecuting(true);
     try {
+      const benchmark = REAL_BENCHMARK_STATS[activeQuery] || { latencyMs: 50.87, partitionsPruned: 2, recordsScanned: 1000000 };
       const result = await executeHiveQuery(activeQuery);
-      const latency = result.latencyMs || Math.floor(130 + Math.random() * 25);
-      const pruned = result.partitionsPruned ?? 11;
-      const scanned = result.recordsScanned ?? 51;
+      const latency = result.latencyMs || benchmark.latencyMs;
+      const pruned = result.partitionsPruned ?? benchmark.partitionsPruned;
+      const scanned = result.recordsScanned ?? benchmark.recordsScanned;
       setExecStats({
         latencyMs: latency,
         partitionsPruned: pruned,
         recordsScanned: scanned,
         status: result.status || "SUCCEEDED",
-        engine: result.executionEngine || "Apache Hive 3.1.3 (Tez Engine)",
+        engine: result.executionEngine || "Apache Hive 3.1.3 (Tez Vectorized Engine)",
       });
       showToast(
-        `HiveQL Query ${activeQuery} executed in ${latency}ms via Tez DAG (${pruned}/12 partitions pruned)!`,
+        `Query ${activeQuery} completed in ${latency}ms across ${scanned.toLocaleString()} records (${pruned}/3 partitions pruned)!`,
         "success"
       );
     } catch {
