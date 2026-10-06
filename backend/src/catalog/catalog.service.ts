@@ -375,24 +375,59 @@ export class CatalogService implements OnModuleInit {
     }
   }
 
-  async findAll(category?: string, search?: string) {
+  async findAll(category?: string, search?: string, subcategory?: string) {
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
     if (this.db) {
       try {
         const query: any = {};
-        if (category && category !== "All") query.category = category;
-        if (search) {
+
+        // Intelligent category matching across name, slug, or aliases
+        if (category && category !== "All") {
+          const escCat = escapeRegex(category);
           query.$or = [
-            { name: { $regex: search, $options: "i" } },
-            { category: { $regex: search, $options: "i" } },
-            { product_id: { $regex: search, $options: "i" } },
-            { description: { $regex: search, $options: "i" } },
+            { category: { $regex: `^${escCat}$`, $options: "i" } },
+            { category_slug: { $regex: `^${escCat}$`, $options: "i" } },
+            { category_aliases: { $regex: `^${escCat}$`, $options: "i" } },
           ];
         }
 
-        const products = await this.db.collection("products").find(query).toArray();
-        if (products && products.length > 0) {
-          return { success: true, source: "mongodb", count: products.length, products };
+        // Subcategory filter
+        if (subcategory && subcategory !== "all") {
+          const escSub = escapeRegex(subcategory);
+          const subCond = [
+            { subcategory: { $regex: `^${escSub}$`, $options: "i" } },
+            { subcategory_name: { $regex: `^${escSub}$`, $options: "i" } },
+          ];
+          if (query.$or) {
+            query.$and = [{ $or: query.$or }, { $or: subCond }];
+            delete query.$or;
+          } else {
+            query.$or = subCond;
+          }
         }
+
+        // Search keyword filter
+        if (search) {
+          const searchCond = [
+            { name: { $regex: search, $options: "i" } },
+            { category: { $regex: search, $options: "i" } },
+            { subcategory_name: { $regex: search, $options: "i" } },
+            { product_id: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+          ];
+          if (query.$and) {
+            query.$and.push({ $or: searchCond });
+          } else if (query.$or) {
+            query.$and = [{ $or: query.$or }, { $or: searchCond }];
+            delete query.$or;
+          } else {
+            query.$or = searchCond;
+          }
+        }
+
+        const products = await this.db.collection("products").find(query).toArray();
+        return { success: true, source: "mongodb", count: products.length, products };
       } catch (err) {
         console.warn("MongoDB catalog query failed, using fallback:", err);
       }
@@ -400,7 +435,21 @@ export class CatalogService implements OnModuleInit {
 
     let filtered = [...this.fallbackProducts];
     if (category && category !== "All") {
-      filtered = filtered.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+      const catLower = category.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.category.toLowerCase() === catLower ||
+          (p.category_slug && p.category_slug.toLowerCase() === catLower) ||
+          (p.category_aliases && p.category_aliases.some((a: string) => a.toLowerCase() === catLower))
+      );
+    }
+    if (subcategory && subcategory !== "all") {
+      const subLower = subcategory.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          (p.subcategory && p.subcategory.toLowerCase() === subLower) ||
+          (p.subcategory_name && p.subcategory_name.toLowerCase() === subLower)
+      );
     }
     if (search) {
       const q = search.toLowerCase();
@@ -413,6 +462,35 @@ export class CatalogService implements OnModuleInit {
       );
     }
     return { success: true, source: "fallback", count: filtered.length, products: filtered };
+  }
+
+  async getCategoryCounts() {
+    if (this.db) {
+      try {
+        const [categoriesAgg, subcategoriesAgg] = await Promise.all([
+          this.db
+            .collection("products")
+            .aggregate([{ $group: { _id: "$category_slug", count: { $sum: 1 } } }])
+            .toArray(),
+          this.db
+            .collection("products")
+            .aggregate([{ $group: { _id: "$subcategory", count: { $sum: 1 } } }])
+            .toArray(),
+        ]);
+
+        const counts: Record<string, number> = {};
+        for (const item of categoriesAgg) {
+          if (item._id) counts[item._id] = item.count;
+        }
+        for (const item of subcategoriesAgg) {
+          if (item._id) counts[item._id] = item.count;
+        }
+        return { success: true, counts };
+      } catch (err) {
+        console.warn("Failed to aggregate category counts:", err);
+      }
+    }
+    return { success: true, counts: {} };
   }
 
   async findOne(productId: string) {
@@ -437,6 +515,18 @@ export class CatalogService implements OnModuleInit {
       colours: dto.colours,
       weight: dto.weight,
       expiry_date: dto.expiry_date,
+      dimensions: dto.dimensions,
+      material: dto.material,
+      volume: dto.volume,
+      skin_type: dto.skin_type,
+      artisan: dto.artisan,
+      origin_province: dto.origin_province,
+      category_slug: dto.category_slug,
+      category_aliases: dto.category_aliases,
+      subcategory: dto.subcategory,
+      subcategory_name: dto.subcategory_name,
+      stock: dto.stock ?? 50,
+      image: dto.image,
       description: dto.description,
       frequently_bought_with: dto.frequently_bought_with || [],
       created_at: new Date(),

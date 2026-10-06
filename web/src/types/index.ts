@@ -31,6 +31,12 @@ export interface Product {
   colours?: string[];
   weight?: string;
   expiry_date?: string;
+  dimensions?: string;
+  material?: string;
+  volume?: string;
+  skin_type?: string;
+  artisan?: string;
+  origin_province?: string;
   image?: string;
   images?: string[];
   seller?: SellerInfo;
@@ -39,6 +45,10 @@ export interface Product {
   reviews_count?: number;
   reviews?: ProductReview[];
   stock?: number;
+  category_slug?: string;
+  category_aliases?: string[];
+  subcategory?: string;
+  subcategory_name?: string;
   created_at?: string | Date;
   updated_at?: string | Date;
 }

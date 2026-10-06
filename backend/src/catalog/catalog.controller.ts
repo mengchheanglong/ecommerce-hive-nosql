@@ -9,11 +9,22 @@ export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
 
   @Get()
-  @ApiOperation({ summary: "List products with optional category and search filters" })
-  @ApiQuery({ name: "category", required: false, description: "Filter by category (Electronics, Clothing, Groceries)" })
+  @ApiOperation({ summary: "List products with optional category, subcategory, and search filters" })
+  @ApiQuery({ name: "category", required: false, description: "Filter by category name or slug" })
+  @ApiQuery({ name: "subcategory", required: false, description: "Filter by subcategory slug" })
   @ApiQuery({ name: "search", required: false, description: "Search keyword" })
-  findAll(@Query("category") category?: string, @Query("search") search?: string) {
-    return this.catalogService.findAll(category, search);
+  findAll(
+    @Query("category") category?: string,
+    @Query("subcategory") subcategory?: string,
+    @Query("search") search?: string
+  ) {
+    return this.catalogService.findAll(category, search, subcategory);
+  }
+
+  @Get("meta/counts")
+  @ApiOperation({ summary: "Get live aggregate product counts by category and subcategory" })
+  getCategoryCounts() {
+    return this.catalogService.getCategoryCounts();
   }
 
   @Get(":id")
