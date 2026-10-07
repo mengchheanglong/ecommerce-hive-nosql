@@ -11,13 +11,15 @@ import { ToastContainer } from "./ToastContainer";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isMerchant = pathname?.startsWith("/merchant");
+  const isAdmin = pathname?.startsWith("/admin");
+  const isDashboard = isMerchant || isAdmin;
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-blue-500/20 selection:text-blue-950">
-      {!isMerchant && <Header />}
+      {!isDashboard && <Header />}
       <div className="flex-1 flex flex-col">{children}</div>
-      {!isMerchant && <Footer />}
-      <CartDrawer />
+      {!isDashboard && <Footer />}
+      {!isDashboard && <CartDrawer />}
       <SignInModal />
       <ToastContainer />
     </div>

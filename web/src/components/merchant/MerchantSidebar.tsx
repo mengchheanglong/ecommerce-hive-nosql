@@ -72,12 +72,15 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
             </div>
 
             {navItems.map((item) => {
-              const isActive =
+              const active =
                 item.href === "/merchant"
                   ? pathname === "/merchant"
-                  : pathname === item.href || (item.href !== "/merchant" && pathname.startsWith(item.href) && !pathname.includes("/new") && item.href !== "/merchant/products/new");
-              const isExact = pathname === item.href;
-              const active = item.href === "/merchant" ? pathname === "/merchant" : pathname.startsWith(item.href);
+                  : item.href === "/merchant/products"
+                  ? pathname === "/merchant/products" ||
+                    (pathname.startsWith("/merchant/products/") && pathname !== "/merchant/products/new")
+                  : item.href === "/merchant/products/new"
+                  ? pathname === "/merchant/products/new"
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
 
               return (

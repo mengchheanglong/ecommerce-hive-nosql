@@ -79,7 +79,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               const isActive =
                 item.href === "/admin"
                   ? pathname === "/admin"
-                  : pathname.startsWith(item.href);
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
 
               return (
