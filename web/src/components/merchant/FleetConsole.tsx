@@ -90,18 +90,12 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2 text-xs text-slate-500 font-medium mb-1">
-            <span>Merchant Console</span>
-            <span>/</span>
-            <span className="text-slate-900 font-semibold">Delivery Telemetry</span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Cassandra Telemetry Fleet Command</h3>
-          <p className="text-xs text-slate-500">
-            High-throughput time-series ingestion (160 writes / second • 13.8M rows / day across 800 riders)
-          </p>
+      {/* Fleet Region & Ring Filter Strip */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center space-x-2 text-xs font-semibold text-slate-700">
+          <MapPin className="w-4 h-4 text-purple-600" />
+          <span>Active Telemetry Ring:</span>
+          <span className="text-slate-400 font-normal">Filter couriers by geographic cluster</span>
         </div>
 
         <div className="flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80">
@@ -111,7 +105,7 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
               onClick={() => setSelectedCity(city)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 selectedCity === city
-                  ? "bg-blue-600 text-white shadow-xs font-bold"
+                  ? "bg-purple-600 text-white shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >

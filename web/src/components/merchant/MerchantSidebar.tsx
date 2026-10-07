@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
-  PlusCircle,
   ShoppingCart,
   TrendingUp,
   Store,
@@ -27,7 +26,6 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
   const navItems = [
     { name: "Store Cockpit", href: "/merchant", icon: LayoutDashboard },
     { name: "Products & Stock", href: "/merchant/products", icon: Package },
-    { name: "Add New Product", href: "/merchant/products/new", icon: PlusCircle },
     { name: "Order Fulfillment", href: "/merchant/orders", icon: ShoppingCart },
     { name: "Store Analytics", href: "/merchant/analytics", icon: TrendingUp },
   ];
@@ -76,10 +74,7 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
                 item.href === "/merchant"
                   ? pathname === "/merchant"
                   : item.href === "/merchant/products"
-                  ? pathname === "/merchant/products" ||
-                    (pathname.startsWith("/merchant/products/") && pathname !== "/merchant/products/new")
-                  : item.href === "/merchant/products/new"
-                  ? pathname === "/merchant/products/new"
+                  ? pathname.startsWith("/merchant/products")
                   : pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
 
