@@ -35,18 +35,31 @@ export default function OrderDetailPage() {
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
-    async function load() {
+    let timer: NodeJS.Timeout;
+    async function load(showSpinner = false) {
       if (!orderId) return;
-      setLoading(true);
-      const [orderData, riderData] = await Promise.all([
-        fetchOrderById(orderId),
-        fetchRiders(),
-      ]);
-      setOrder(orderData);
-      setRiders(riderData);
-      setLoading(false);
+      if (showSpinner) setLoading(true);
+      try {
+        const [orderData, riderData] = await Promise.all([
+          fetchOrderById(orderId),
+          fetchRiders(),
+        ]);
+        setOrder(orderData);
+        setRiders(riderData);
+      } catch (err) {
+        // Retrying on next tick
+      } finally {
+        if (showSpinner) setLoading(false);
+      }
     }
-    load();
+    load(true);
+
+    // Live polling every 2s to reflect digital-twin progression & Cassandra telemetry
+    timer = setInterval(() => {
+      load(false);
+    }, 2000);
+
+    return () => clearInterval(timer);
   }, [orderId]);
 
   if (loading) {
@@ -152,6 +165,7 @@ export default function OrderDetailPage() {
         {(order.status === "Out for Delivery" || order.status === "Delivered") && (() => {
           const assignedRider =
             riders.find((r) => r.id === order.assigned_courier_id) ||
+            riders.find((r) => r.name.toLowerCase() === (order.assigned_courier_name || "").toLowerCase()) ||
             riders.find((r) => r.city.toLowerCase() === order.province.toLowerCase()) ||
             riders[0];
           const riderPhone =

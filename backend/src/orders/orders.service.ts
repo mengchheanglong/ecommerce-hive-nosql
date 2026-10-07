@@ -25,6 +25,17 @@ export class OrdersService {
     "R-301": { name: "Heng Samnang", phone: "+855 17 444 333" },
     "R-302": { name: "Keo Visal", phone: "+855 17 333 222" },
     "R-303": { name: "Prum Kosal", phone: "+855 17 222 111" },
+    // Logistics Sandbox DRV IDs mapping
+    "DRV-001": { name: "Chan Vuthy", phone: "+855 12 999 888" },
+    "DRV-002": { name: "Sok Rith", phone: "+855 12 888 777" },
+    "DRV-003": { name: "Meng Kiri", phone: "+855 12 777 666" },
+    "DRV-004": { name: "Long Sovann", phone: "+855 12 666 555" },
+    "DRV-005": { name: "Thy Dara", phone: "+855 15 777 666" },
+    "DRV-006": { name: "Chea Bora", phone: "+855 15 555 444" },
+    "DRV-007": { name: "Nop Chhay", phone: "+855 15 444 333" },
+    "DRV-008": { name: "Heng Samnang", phone: "+855 17 444 333" },
+    "DRV-009": { name: "Keo Visal", phone: "+855 17 333 222" },
+    "DRV-010": { name: "Prum Kosal", phone: "+855 17 222 111" },
   };
 
   private fallbackOrders: any[] = [
@@ -242,10 +253,27 @@ export class OrdersService {
           }
         }
       }
+      // Notify logistics sandbox digital twin immediately via webhook
+      this.notifyLogisticsSandbox(order).catch(() => {});
+
       return { success: true, insertedId: res.insertedId, order };
     }
     this.fallbackOrders.unshift(order);
+    this.notifyLogisticsSandbox(order).catch(() => {});
     return { success: true, order };
+  }
+
+  private async notifyLogisticsSandbox(order: any): Promise<void> {
+    try {
+      await fetch('http://localhost:3001/api/integrations/ecommerce/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order),
+        signal: AbortSignal.timeout(2000),
+      });
+    } catch {
+      // Non-blocking bridge notification
+    }
   }
 
   async updateStatus(dto: UpdateOrderStatusDto) {

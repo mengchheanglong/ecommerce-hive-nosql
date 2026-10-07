@@ -134,6 +134,13 @@ export default function CheckoutPage() {
     const res = await createOrder(orderPayload);
     setIsSubmitting(false);
 
+    // Instant digital-twin synchronization webhook to logistics-sandbox
+    fetch("http://localhost:3001/api/integrations/ecommerce/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderPayload),
+    }).catch(() => {});
+
     if (res.success) {
       setOrderSuccessId(orderId);
       clearCart();
@@ -202,6 +209,15 @@ export default function CheckoutPage() {
             <span>Track Order Timeline</span>
             <ArrowRight className="w-4 h-4 text-emerald-400" />
           </Link>
+          <a
+            href="http://localhost:5173"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <Truck className="w-4 h-4 text-white" />
+            <span>Watch in Sandbox Twin (Port 5173)</span>
+          </a>
           <Link
             href="/shop"
             className="w-full sm:w-auto px-6 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
