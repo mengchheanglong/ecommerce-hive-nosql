@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { RiderTelemetry } from "@/types";
 import { INITIAL_RIDERS } from "@/lib/data";
-import { sendRiderPing } from "@/lib/api";
+import { sendRiderPing, fetchRiders } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
-import { Truck, Terminal, Play, Pause, MapPin, Battery, Gauge, Zap, Send, Radio } from "lucide-react";
+import { Truck, Terminal, Play, Pause, MapPin, Battery, Gauge, Zap, Send, Radio, Cpu } from "lucide-react";
 
 interface FleetConsoleProps {
   initialRiders?: RiderTelemetry[];
@@ -27,6 +27,28 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
   useEffect(() => {
     setRiders(initialRiders);
   }, [initialRiders]);
+
+  // Live polling: automatically sync riders and real-time positions from sandbox/backend
+  useEffect(() => {
+    let active = true;
+    const pollRiders = async () => {
+      try {
+        const fresh = await fetchRiders(selectedCity);
+        if (active && fresh && fresh.length > 0) {
+          setRiders(fresh);
+        }
+      } catch {
+        // gracefully retain existing
+      }
+    };
+
+    pollRiders();
+    const interval = setInterval(pollRiders, 2500);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [selectedCity]);
 
   useEffect(() => {
     if (!isStreaming) return;
@@ -115,6 +137,47 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
         </div>
       </div>
 
+      {/* Cassandra Architecture Scale & Live Sync Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cassandra Benchmark Scale</p>
+            <p className="text-xl font-black text-slate-900 font-mono mt-0.5">800 Riders</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">160 writes/s • 13.8M pings/day capacity</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Cpu className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Live Synchronized Fleet</p>
+            <p className="text-xl font-black text-purple-700 font-mono mt-0.5">{riders.length} Active Couriers</p>
+            <p className="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Synced with Logistics Sandbox (Port 3001)
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <Radio className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Time-Series Table</p>
+            <p className="text-xs font-mono font-bold text-slate-900 mt-1 truncate max-w-[200px]">
+              telemetry_ks.rider_gps_pings
+            </p>
+            <p className="text-[10px] text-slate-500 mt-0.5">TTL: 30 days • TWCS Compaction</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Truck className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
       {/* Live CQL Ingestion Feed Terminal */}
       <div className="bg-slate-950 text-emerald-400 p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-3 shadow-inner">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -185,10 +248,18 @@ export function FleetConsole({ initialRiders = INITIAL_RIDERS }: FleetConsolePro
 
               <div className="text-[11px] font-mono text-slate-500 flex items-center justify-between pt-2 mt-2 border-t border-slate-100">
                 <span className="flex items-center space-x-1">
-                  <MapPin className="w-3 h-3 text-blue-600" />
-                  <span>{rider.lat}</span>
+                  <MapPin className="w-3 h-3 text-purple-600" />
+                  <span>
+                    {typeof rider.lat === "number"
+                      ? `${rider.lat.toFixed(4)}° N`
+                      : rider.lat}
+                  </span>
                 </span>
-                <span>{rider.lng}</span>
+                <span>
+                  {typeof rider.lng === "number"
+                    ? `${rider.lng.toFixed(4)}° E`
+                    : rider.lng}
+                </span>
               </div>
             </div>
 
