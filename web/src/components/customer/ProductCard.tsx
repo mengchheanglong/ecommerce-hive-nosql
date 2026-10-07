@@ -37,6 +37,9 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
 
   const saved = isInWishlist(product.product_id);
 
+  const availableStock = Math.max(0, product.stock ?? 0);
+  const isOutOfStock = availableStock <= 0;
+
   // Compute realistic compare-at price for promotional discounts
   const hasDiscount = (product.price > 20 && product.price < 500) || product.category === "Electronics";
   const compareAtPrice = hasDiscount ? product.price * 1.2 : null;
@@ -45,6 +48,7 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
     addToCart(product, 1);
     setJustAdded(true);
     setTimeout(() => {
@@ -98,20 +102,26 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
 
         {/* Top Floating Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none z-10">
-          {rankBadge && (
-            <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500 text-slate-950 shadow-xs flex items-center space-x-1">
-              <span>{rankBadge}</span>
+          {isOutOfStock ? (
+            <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-rose-600 text-white shadow-xs">
+              Out of Stock
             </span>
+          ) : (
+            rankBadge && (
+              <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500 text-slate-950 shadow-xs flex items-center space-x-1">
+                <span>{rankBadge}</span>
+              </span>
+            )
           )}
           <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-white/95 backdrop-blur-md text-slate-800 border border-white/60 shadow-xs">
             {product.category}
           </span>
-          {discountPercent && (
+          {!isOutOfStock && discountPercent && (
             <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-600 text-white shadow-xs">
               -{discountPercent}% OFF
             </span>
           )}
-          {featuredBadge && (
+          {!isOutOfStock && featuredBadge && (
             <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-600 text-white shadow-xs flex items-center space-x-1">
               <Sparkles className="w-2.5 h-2.5" />
               <span>{featuredBadge}</span>
@@ -245,19 +255,30 @@ export function ProductCard({ product, onQuickView, featuredBadge, rankBadge }: 
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-slate-400 font-medium">In Stock • Ships immediately</p>
+            {isOutOfStock ? (
+              <p className="text-[10px] text-rose-500 font-semibold">● Out of Stock</p>
+            ) : availableStock <= 5 ? (
+              <p className="text-[10px] text-amber-600 font-medium">Only {availableStock} left in stock</p>
+            ) : (
+              <p className="text-[10px] text-emerald-600 font-medium">In Stock ({availableStock})</p>
+            )}
           </div>
 
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center space-x-1.5 shadow-xs cursor-pointer active:scale-95 ${
-              justAdded
-                ? "bg-blue-600 text-white ring-2 ring-blue-500/30"
-                : "bg-slate-900 hover:bg-blue-600 text-white"
+            disabled={isOutOfStock}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center space-x-1.5 shadow-xs ${
+              isOutOfStock
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                : justAdded
+                ? "bg-blue-600 text-white ring-2 ring-blue-500/30 cursor-pointer active:scale-95"
+                : "bg-slate-900 hover:bg-blue-600 text-white cursor-pointer active:scale-95"
             }`}
           >
-            {justAdded ? (
+            {isOutOfStock ? (
+              <span>Sold Out</span>
+            ) : justAdded ? (
               <>
                 <Check className="w-3.5 h-3.5 text-white animate-in zoom-in" />
                 <span>Added!</span>

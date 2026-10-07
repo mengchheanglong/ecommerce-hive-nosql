@@ -19,8 +19,12 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
   if (!product) return null;
 
+  const availableStock = Math.max(0, product.stock ?? 0);
+  const isOutOfStock = availableStock <= 0;
+
   const handleAddToCart = () => {
-    addToCart(product, qty);
+    if (isOutOfStock) return;
+    addToCart(product, Math.min(qty, availableStock));
     setQty(1);
     onClose();
   };
@@ -49,10 +53,17 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
           <div className="flex items-center justify-between text-xs px-1 text-slate-500 font-mono">
             <span>SKU: {product.product_id}</span>
-            <span className="text-emerald-700 font-semibold flex items-center gap-1 font-sans">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              In Stock
-            </span>
+            {isOutOfStock ? (
+              <span className="text-rose-600 font-semibold flex items-center gap-1 font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Out of Stock
+              </span>
+            ) : (
+              <span className="text-emerald-700 font-semibold flex items-center gap-1 font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                In Stock ({availableStock})
+              </span>
+            )}
           </div>
         </div>
 
@@ -67,8 +78,8 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   ({product.reviews_count || 45} reviews)
                 </span>
               </div>
-              <span className="text-xs font-medium text-slate-500">
-                {product.stock ?? 25} units available
+              <span className={`text-xs font-medium ${isOutOfStock ? "text-rose-600 font-bold" : "text-slate-500"}`}>
+                {isOutOfStock ? "Sold Out" : `${availableStock} units available`}
               </span>
             </div>
 
@@ -134,26 +145,33 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
             <div className="flex items-center space-x-2.5">
               <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
                 <button
+                  disabled={isOutOfStock || qty <= 1}
                   onClick={() => setQty(Math.max(1, qty - 1))}
-                  className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-6 text-center text-xs font-bold text-slate-900">{qty}</span>
+                <span className="w-6 text-center text-xs font-bold text-slate-900">{isOutOfStock ? 0 : qty}</span>
                 <button
-                  onClick={() => setQty(qty + 1)}
-                  className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer"
+                  disabled={isOutOfStock || qty >= availableStock}
+                  onClick={() => setQty(Math.min(availableStock, qty + 1))}
+                  className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               <button
+                disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all active:scale-95 cursor-pointer"
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all ${
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                    : "bg-slate-900 hover:bg-blue-600 text-white active:scale-95 cursor-pointer"
+                }`}
               >
                 <ShoppingBag className="w-4 h-4 text-blue-400" />
-                <span>Add to Cart</span>
+                <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
               </button>
             </div>
           </div>

@@ -135,6 +135,17 @@ export function CartDrawer() {
                     <p className="text-xs font-mono font-bold text-slate-900 mt-1">
                       {formatPrice(item.product.price)} each
                     </p>
+                    {Math.max(0, item.product.stock ?? 0) <= 0 ? (
+                      <span className="text-[10px] font-bold text-rose-600 block mt-0.5">● Out of Stock</span>
+                    ) : item.quantity > Math.max(0, item.product.stock ?? 0) ? (
+                      <span className="text-[10px] font-bold text-rose-600 block mt-0.5">
+                        ● Exceeds stock ({Math.max(0, item.product.stock ?? 0)} available)
+                      </span>
+                    ) : item.quantity >= Math.max(0, item.product.stock ?? 0) ? (
+                      <span className="text-[10px] text-amber-600 font-medium block mt-0.5">
+                        Max stock reached
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="flex flex-col items-end space-y-2 shrink-0">
@@ -149,8 +160,13 @@ export function CartDrawer() {
                         {item.quantity}
                       </span>
                       <button
+                        disabled={item.quantity >= Math.max(0, item.product.stock ?? 0)}
                         onClick={() => updateQuantity(item.product.product_id, item.quantity + 1)}
-                        className="w-5 h-5 rounded-md bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 cursor-pointer"
+                        className={`w-5 h-5 rounded-md flex items-center justify-center text-slate-700 shadow-2xs ${
+                          item.quantity >= Math.max(0, item.product.stock ?? 0)
+                            ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                            : "bg-white hover:bg-slate-200 cursor-pointer"
+                        }`}
                       >
                         <Plus className="w-3 h-3" />
                       </button>

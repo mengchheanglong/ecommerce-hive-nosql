@@ -389,9 +389,15 @@ export async function createOrder(
         addOrderToStore(data.order);
         return { success: true, order: data.order };
       }
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errData.message || (typeof errData === "string" ? errData : "Order creation failed"),
+      };
     }
   } catch (err) {
-    // Proceed
+    // Proceed to fallback only if backend service is unreachable
   }
 
   // 2. Secondary: Next.js API Route

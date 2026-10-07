@@ -577,12 +577,18 @@ export class CatalogService implements OnModuleInit {
     for (const item of items) {
       const qty = Number(item.quantity) || 1;
       if (this.db) {
-        const res = await this.db.collection("products").findOneAndUpdate(
-          { product_id: item.product_id },
-          { $inc: { stock: -qty }, $set: { updated_at: new Date() } },
-          { returnDocument: "after" }
-        );
-        results.push({ product_id: item.product_id, updated: !!res, product: res });
+        const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
+        if (prod) {
+          const newStock = Math.max(0, (prod.stock ?? 0) - qty);
+          const res = await this.db.collection("products").findOneAndUpdate(
+            { product_id: item.product_id },
+            { $set: { stock: newStock, updated_at: new Date() } },
+            { returnDocument: "after" }
+          );
+          results.push({ product_id: item.product_id, updated: true, stock: newStock, product: res });
+        } else {
+          results.push({ product_id: item.product_id, updated: false, message: "Product not found" });
+        }
       } else {
         const prod = this.fallbackProducts.find((p) => p.product_id === item.product_id);
         if (prod) {

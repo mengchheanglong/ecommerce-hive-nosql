@@ -237,6 +237,10 @@ export default function ProductDetailPage() {
   const reviewsList = product.reviews || [];
   const isSaved = isInWishlist(product.product_id);
 
+  // Stock availability check
+  const availableStock = Math.max(0, product.stock ?? 0);
+  const isOutOfStock = availableStock <= 0;
+
   // Seller details (authentic Cambodian sellers)
   const seller = product.seller || {
     name:
@@ -313,10 +317,17 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-50/95 backdrop-blur-md text-[11px] font-semibold text-emerald-700 border border-emerald-200/60 shadow-xs flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>In Stock ({product.stock ?? 25} units)</span>
-            </div>
+            {isOutOfStock ? (
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-rose-50/95 backdrop-blur-md text-[11px] font-semibold text-rose-700 border border-rose-200/60 shadow-xs flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <span>Out of Stock</span>
+              </div>
+            ) : (
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-50/95 backdrop-blur-md text-[11px] font-semibold text-emerald-700 border border-emerald-200/60 shadow-xs flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>In Stock ({availableStock} units)</span>
+              </div>
+            )}
           </div>
 
           {/* Thumbnail Strip Switcher */}
@@ -454,16 +465,20 @@ export default function ProductDetailPage() {
             <div className="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80 self-start sm:self-auto">
               <button
                 type="button"
+                disabled={isOutOfStock || qty <= 1}
                 onClick={() => setQty(Math.max(1, qty - 1))}
-                className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-800 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-800 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="w-8 text-center text-xs font-bold text-slate-900">{qty}</span>
+              <span className="w-8 text-center text-xs font-bold text-slate-900">
+                {isOutOfStock ? 0 : qty}
+              </span>
               <button
                 type="button"
-                onClick={() => setQty(qty + 1)}
-                className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-800 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer"
+                disabled={isOutOfStock || qty >= availableStock}
+                onClick={() => setQty(Math.min(availableStock, qty + 1))}
+                className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-800 shadow-2xs hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -472,14 +487,19 @@ export default function ProductDetailPage() {
             <div className="flex-1 flex gap-3">
               <button
                 type="button"
+                disabled={isOutOfStock}
                 onClick={handleAddToCartSingle}
-                className={`flex-1 py-3.5 px-4 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95 ${
-                  justAdded
-                    ? "bg-blue-600 text-white ring-2 ring-blue-500/30"
-                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                className={`flex-1 py-3.5 px-4 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center space-x-2 ${
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                    : justAdded
+                    ? "bg-blue-600 text-white ring-2 ring-blue-500/30 cursor-pointer active:scale-95"
+                    : "bg-slate-900 hover:bg-slate-800 text-white cursor-pointer active:scale-95"
                 }`}
               >
-                {justAdded ? (
+                {isOutOfStock ? (
+                  <span>Out of Stock</span>
+                ) : justAdded ? (
                   <>
                     <Check className="w-4 h-4 text-white animate-in zoom-in" />
                     <span>Added ({formatPrice(product.price * qty)})</span>
@@ -494,11 +514,16 @@ export default function ProductDetailPage() {
 
               <button
                 type="button"
+                disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className="py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
+                className={`py-3.5 px-6 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-1.5 ${
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                    : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer active:scale-95"
+                }`}
               >
-                <span>Buy Now</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>{isOutOfStock ? "Out of Stock" : "Buy Now"}</span>
+                {!isOutOfStock && <ArrowRight className="w-4 h-4" />}
               </button>
             </div>
           </div>

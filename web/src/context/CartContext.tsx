@@ -70,19 +70,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart, promoCode, discountPercent, isFreeShipping, isHydrated]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
+    const maxStock = Math.max(0, product.stock ?? 0);
+    if (maxStock <= 0) {
+      showToast(`${product.name} is currently out of stock`, "warning");
+      return;
+    }
+
     setCart((prev) => {
       const index = prev.findIndex((item) => item.product.product_id === product.product_id);
       if (index > -1) {
+        const currentQty = prev[index].quantity;
+        if (currentQty >= maxStock) {
+          showToast(`Limit reached: only ${maxStock} units of ${product.name} available`, "warning");
+          return prev;
+        }
+        const clampedQty = Math.min(maxStock, currentQty + quantity);
         const next = [...prev];
         next[index] = {
           ...next[index],
-          quantity: next[index].quantity + quantity,
+          quantity: clampedQty,
         };
+        showToast(`Updated ${product.name} quantity in cart to ${clampedQty}`, "success");
         return next;
       }
-      return [...prev, { product, quantity }];
+      const initialQty = Math.min(maxStock, Math.max(1, quantity));
+      showToast(`Added ${initialQty}x ${product.name} to cart`, "success");
+      return [...prev, { product, quantity: initialQty }];
     });
-    showToast(`Added ${quantity}x ${product.name} to cart`, "success");
   };
 
   const removeFromCart = (productId: string) => {
@@ -101,9 +115,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     setCart((prev) =>
-      prev.map((item) =>
-        item.product.product_id === productId ? { ...item, quantity } : item
-      )
+      prev
+        .map((item) => {
+          if (item.product.product_id === productId) {
+            const maxStock = Math.max(0, item.product.stock ?? 0);
+            if (maxStock <= 0) {
+              showToast(`${item.product.name} is now out of stock`, "warning");
+              return { ...item, quantity: 0 };
+            }
+            if (quantity > maxStock) {
+              showToast(`Only ${maxStock} units available for ${item.product.name}`, "warning");
+              return { ...item, quantity: maxStock };
+            }
+            return { ...item, quantity };
+          }
+          return item;
+        })
+        .filter((item) => item.quantity > 0)
     );
   };
 

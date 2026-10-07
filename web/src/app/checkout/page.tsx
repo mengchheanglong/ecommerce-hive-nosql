@@ -91,8 +91,26 @@ export default function CheckoutPage() {
     }
   };
 
+  const hasOutOfStockItems = cart.some(
+    (item) => (item.product.stock ?? 0) <= 0 || item.quantity > (item.product.stock ?? 0)
+  );
+
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
+
+    const invalidItem = cart.find(
+      (item) => (item.product.stock ?? 0) <= 0 || item.quantity > (item.product.stock ?? 0)
+    );
+    if (invalidItem) {
+      const avail = Math.max(0, invalidItem.product.stock ?? 0);
+      showToast(
+        avail <= 0
+          ? `${invalidItem.product.name} is out of stock. Please remove it from cart.`
+          : `Only ${avail} unit(s) available for ${invalidItem.product.name}. Please adjust quantity.`,
+        "error"
+      );
+      return;
+    }
 
     if (paymentMethod === "khqr") {
       setIsKhqrOpen(true);
@@ -108,6 +126,20 @@ export default function CheckoutPage() {
   };
 
   const finalizeOrder = async (payMethodName: string) => {
+    const invalidItem = cart.find(
+      (item) => (item.product.stock ?? 0) <= 0 || item.quantity > (item.product.stock ?? 0)
+    );
+    if (invalidItem) {
+      const avail = Math.max(0, invalidItem.product.stock ?? 0);
+      showToast(
+        avail <= 0
+          ? `${invalidItem.product.name} is out of stock. Please remove it from cart.`
+          : `Only ${avail} unit(s) available for ${invalidItem.product.name}.`,
+        "error"
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -134,19 +166,19 @@ export default function CheckoutPage() {
     const res = await createOrder(orderPayload);
     setIsSubmitting(false);
 
-    // Instant digital-twin synchronization webhook to logistics-sandbox
-    fetch("http://localhost:3001/api/integrations/ecommerce/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload),
-    }).catch(() => {});
-
     if (res.success) {
+      // Instant digital-twin synchronization webhook to logistics-sandbox
+      fetch("http://localhost:3001/api/integrations/ecommerce/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      }).catch(() => {});
+
       setOrderSuccessId(orderId);
       clearCart();
       showToast(`Order #${orderId} created successfully in MongoDB store!`, "success");
     } else {
-      showToast("Order creation encountered an issue", "error");
+      showToast(res.error || "Order creation rejected due to stock limit", "error");
     }
   };
 
@@ -494,10 +526,16 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {hasOutOfStockItems && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium text-center">
+              Some items in your cart exceed available inventory. Please adjust quantities to proceed.
+            </div>
+          )}
+
           <button
             onClick={handlePlaceOrder}
-            disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50"
+            disabled={isSubmitting || hasOutOfStockItems}
+            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -505,7 +543,9 @@ export default function CheckoutPage() {
               <>
                 <CheckCircle2 className="w-4 h-4 text-white" />
                 <span>
-                  {paymentMethod === "khqr"
+                  {hasOutOfStockItems
+                    ? "Items Out of Stock"
+                    : paymentMethod === "khqr"
                     ? `Open Bakong KHQR (${formatPrice(finalTotalUSD)})`
                     : paymentMethod === "abapay"
                     ? `Pay with ABA Pay (${formatPrice(finalTotalUSD)})`

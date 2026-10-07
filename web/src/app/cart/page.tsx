@@ -38,6 +38,9 @@ export default function FullCartPage() {
   };
 
   const netTotalKHR = Math.round(finalTotalUSD * exchangeRate);
+  const hasOutOfStockItems = cart.some(
+    (item) => (item.product.stock ?? 0) <= 0 || item.quantity > (item.product.stock ?? 0)
+  );
 
   if (cart.length === 0) {
     return (
@@ -140,6 +143,17 @@ export default function FullCartPage() {
                     <p className="text-xs font-mono font-bold text-emerald-700 mt-0.5">
                       {formatPrice(item.product.price)}
                     </p>
+                    {Math.max(0, item.product.stock ?? 0) <= 0 ? (
+                      <span className="text-[10px] font-bold text-rose-600 block mt-1">● Out of Stock</span>
+                    ) : item.quantity > Math.max(0, item.product.stock ?? 0) ? (
+                      <span className="text-[10px] font-bold text-rose-600 block mt-1">
+                        ● Exceeds stock ({Math.max(0, item.product.stock ?? 0)} available)
+                      </span>
+                    ) : item.quantity >= Math.max(0, item.product.stock ?? 0) ? (
+                      <span className="text-[10px] text-amber-600 font-medium block mt-1">
+                        Max stock reached ({Math.max(0, item.product.stock ?? 0)} available)
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
@@ -156,8 +170,13 @@ export default function FullCartPage() {
                       {item.quantity}
                     </span>
                     <button
+                      disabled={item.quantity >= Math.max(0, item.product.stock ?? 0)}
                       onClick={() => updateQuantity(item.product.product_id, item.quantity + 1)}
-                      className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-700 shadow-2xs hover:bg-slate-200 cursor-pointer"
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-slate-700 shadow-2xs ${
+                        item.quantity >= Math.max(0, item.product.stock ?? 0)
+                          ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                          : "bg-white hover:bg-slate-200 cursor-pointer"
+                      }`}
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -251,13 +270,24 @@ export default function FullCartPage() {
             </div>
           </div>
 
-          <Link
-            href="/checkout"
-            className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
-          >
-            <span>Proceed to Checkout</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {hasOutOfStockItems ? (
+            <div className="space-y-2">
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center font-medium">
+                Adjust quantities of out-of-stock items to continue
+              </div>
+              <div className="w-full py-3.5 rounded-xl bg-slate-200 text-slate-400 text-xs font-bold text-center cursor-not-allowed">
+                Proceed to Checkout
+              </div>
+            </div>
+          ) : (
+            <Link
+              href="/checkout"
+              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+            >
+              <span>Proceed to Checkout</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
 
           <Link
             href="/shop"

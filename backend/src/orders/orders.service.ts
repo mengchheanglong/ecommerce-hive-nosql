@@ -241,14 +241,40 @@ export class OrdersService {
     }
 
     if (this.db) {
-      const res = await this.db.collection("orders").insertOne(order);
-      // Atomic inventory deduction in products collection
+      // 1. Validate stock availability before accepting order
       if (Array.isArray(order.items)) {
         for (const item of order.items) {
           if (item && item.product_id && item.quantity) {
+            const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
+            if (prod) {
+              const currentStock = prod.stock ?? 0;
+              if (currentStock <= 0) {
+                throw new BadRequestException(
+                  `Item "${prod.name || item.product_id}" is currently out of stock.`
+                );
+              }
+              if (Number(item.quantity) > currentStock) {
+                throw new BadRequestException(
+                  `Insufficient stock for "${prod.name || item.product_id}". Only ${currentStock} units available.`
+                );
+              }
+            }
+          }
+        }
+      }
+
+      const res = await this.db.collection("orders").insertOne(order);
+
+      // 2. Safe inventory deduction (strictly clamped at 0, never negative)
+      if (Array.isArray(order.items)) {
+        for (const item of order.items) {
+          if (item && item.product_id && item.quantity) {
+            const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
+            const currentStock = prod ? (prod.stock ?? 0) : 0;
+            const newStock = Math.max(0, currentStock - Number(item.quantity));
             await this.db.collection("products").updateOne(
               { product_id: item.product_id },
-              { $inc: { stock: -Number(item.quantity) }, $set: { updated_at: new Date() } }
+              { $set: { stock: newStock, updated_at: new Date() } }
             );
           }
         }
