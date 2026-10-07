@@ -1638,6 +1638,17 @@ export function addOrderToStore(order: OrderRecord): OrderRecord {
     store[existingIdx] = { ...store[existingIdx], ...order, updated_at: new Date().toISOString() };
     return store[existingIdx];
   }
+  // Synchronize inventory: deduct stock for purchased items
+  if (Array.isArray(order.items)) {
+    for (const item of order.items) {
+      if (item && item.product_id && item.quantity) {
+        const prod = globalStore.__productsStore?.find((p) => p.product_id === item.product_id);
+        if (prod) {
+          prod.stock = Math.max(0, (prod.stock || 0) - Number(item.quantity));
+        }
+      }
+    }
+  }
   store.unshift(order);
   return order;
 }
@@ -1679,6 +1690,18 @@ export function updateOrderStatusInStore(
           ? "+855 15 777 666"
           : "+855 17 444 333";
       rider.status = "Delivering";
+    }
+  }
+
+  // Restock items if order was cancelled
+  if (status === "Cancelled" && currentOrder.status !== "Cancelled" && Array.isArray(currentOrder.items)) {
+    for (const item of currentOrder.items) {
+      if (item && item.product_id && item.quantity) {
+        const prod = globalStore.__productsStore?.find((p) => p.product_id === item.product_id);
+        if (prod) {
+          prod.stock = (prod.stock || 0) + Number(item.quantity);
+        }
+      }
     }
   }
 

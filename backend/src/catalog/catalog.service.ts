@@ -571,4 +571,29 @@ export class CatalogService implements OnModuleInit {
     this.fallbackProducts = this.fallbackProducts.filter((p) => p.product_id !== productId);
     return { success: this.fallbackProducts.length < initLen };
   }
+
+  async adjustStock(items: Array<{ product_id: string; quantity: number }>) {
+    const results: any[] = [];
+    for (const item of items) {
+      const qty = Number(item.quantity) || 1;
+      if (this.db) {
+        const res = await this.db.collection("products").findOneAndUpdate(
+          { product_id: item.product_id },
+          { $inc: { stock: -qty }, $set: { updated_at: new Date() } },
+          { returnDocument: "after" }
+        );
+        results.push({ product_id: item.product_id, updated: !!res, product: res });
+      } else {
+        const prod = this.fallbackProducts.find((p) => p.product_id === item.product_id);
+        if (prod) {
+          prod.stock = Math.max(0, (prod.stock || 0) - qty);
+          results.push({ product_id: item.product_id, updated: true, stock: prod.stock });
+        } else {
+          results.push({ product_id: item.product_id, updated: false, message: "Product not found" });
+        }
+      }
+    }
+    return { success: true, count: results.length, results };
+  }
 }
+

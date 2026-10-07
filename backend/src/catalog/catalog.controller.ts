@@ -34,6 +34,12 @@ export class CatalogController {
     return this.catalogService.findOne(id);
   }
 
+  @Post("adjust-stock")
+  @ApiOperation({ summary: "Adjust inventory stock for items (used by fulfillment & logistics simulation)" })
+  adjustStock(@Body() body: { items: Array<{ product_id: string; quantity: number }> }) {
+    return this.catalogService.adjustStock(body.items || []);
+  }
+
   @Post()
   @ApiOperation({ summary: "Create a new product with polymorphic document schema in MongoDB" })
   create(@Body() dto: CreateProductDto) {

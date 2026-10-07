@@ -231,6 +231,17 @@ export class OrdersService {
 
     if (this.db) {
       const res = await this.db.collection("orders").insertOne(order);
+      // Atomic inventory deduction in products collection
+      if (Array.isArray(order.items)) {
+        for (const item of order.items) {
+          if (item && item.product_id && item.quantity) {
+            await this.db.collection("products").updateOne(
+              { product_id: item.product_id },
+              { $inc: { stock: -Number(item.quantity) }, $set: { updated_at: new Date() } }
+            );
+          }
+        }
+      }
       return { success: true, insertedId: res.insertedId, order };
     }
     this.fallbackOrders.unshift(order);
@@ -239,15 +250,19 @@ export class OrdersService {
 
   async updateStatus(dto: UpdateOrderStatusDto) {
     let currentStatus: string | undefined;
+    let existingDoc: any = null;
 
     if (this.db) {
-      const existing = await this.db.collection("orders").findOne({ order_id: dto.order_id });
-      if (existing) currentStatus = existing.status;
+      existingDoc = await this.db.collection("orders").findOne({ order_id: dto.order_id });
+      if (existingDoc) currentStatus = existingDoc.status;
     }
 
     if (!currentStatus) {
       const fallback = this.fallbackOrders.find((o) => o.order_id === dto.order_id);
-      if (fallback) currentStatus = fallback.status;
+      if (fallback) {
+        currentStatus = fallback.status;
+        existingDoc = fallback;
+      }
     }
 
     if (currentStatus && currentStatus !== dto.status) {
@@ -262,12 +277,30 @@ export class OrdersService {
     }
 
     const updateFields: any = { status: dto.status, updated_at: new Date() };
+    if (dto.status === "Delivered") {
+      updateFields.delivered_at = new Date();
+    }
+
     if (dto.courier_id) {
       updateFields.assigned_courier_id = dto.courier_id;
       const courier = this.couriers[dto.courier_id];
       if (courier) {
         updateFields.assigned_courier_name = courier.name;
         updateFields.courier_phone = courier.phone;
+      }
+    }
+
+    // Restock if order is cancelled
+    if (dto.status === "Cancelled" && currentStatus !== "Cancelled" && existingDoc && Array.isArray(existingDoc.items)) {
+      if (this.db) {
+        for (const item of existingDoc.items) {
+          if (item && item.product_id && item.quantity) {
+            await this.db.collection("products").updateOne(
+              { product_id: item.product_id },
+              { $inc: { stock: Number(item.quantity) }, $set: { updated_at: new Date() } }
+            );
+          }
+        }
       }
     }
 
