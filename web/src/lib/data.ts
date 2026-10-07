@@ -1,4 +1,15 @@
-import { Product, OrderRecord, CustomerProfile, RiderTelemetry, ReferralNode, HiveQueryMeta } from "@/types";
+import {
+  Product,
+  OrderRecord,
+  CustomerProfile,
+  RiderTelemetry,
+  ReferralNode,
+  HiveQueryMeta,
+  StoreTenant,
+  PlatformKPIs,
+  StoreKPIs,
+  SystemDatastoreStatus,
+} from "@/types";
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -1712,3 +1723,226 @@ export function updateRiderLocation(
   }
   return null;
 }
+
+// ============================================================================
+// Multi-Tenant Store Directory & Platform Administration Datasets
+// ============================================================================
+
+export const STORE_TENANTS: StoreTenant[] = [
+  {
+    id: "STR-001",
+    name: "Mekong Electronics Hub",
+    slug: "mekong-electronics",
+    category: "Electronics & Solar",
+    province: "Phnom Penh",
+    owner: "Vireak Chan",
+    email: "vireak@mekongelectronics.kh",
+    phone: "+855 12 888 777",
+    status: "Active",
+    products_count: 18,
+    orders_count: 420,
+    revenue_usd: 84250.0,
+    joined_date: "2024-03-15",
+    rating: 4.9,
+  },
+  {
+    id: "STR-002",
+    name: "Sovann Silk Studio & Weavers",
+    slug: "sovann-silk",
+    category: "Clothing & Heritage Silk",
+    province: "Phnom Penh",
+    owner: "Chenda Som",
+    email: "chenda@sovannsilk.com",
+    phone: "+855 15 333 444",
+    status: "Active",
+    products_count: 14,
+    orders_count: 310,
+    revenue_usd: 38920.0,
+    joined_date: "2024-05-20",
+    rating: 4.8,
+  },
+  {
+    id: "STR-003",
+    name: "Angkor Artisan & Handicrafts",
+    slug: "angkor-artisan",
+    category: "Handicrafts & Decor",
+    province: "Siem Reap",
+    owner: "Piseth Seng",
+    email: "piseth@angkorartisan.com",
+    phone: "+855 17 222 111",
+    status: "Active",
+    products_count: 22,
+    orders_count: 280,
+    revenue_usd: 29400.0,
+    joined_date: "2024-06-10",
+    rating: 4.9,
+  },
+  {
+    id: "STR-004",
+    name: "Battambang Organic Harvest",
+    slug: "battambang-organic",
+    category: "Food & Groceries",
+    province: "Battambang",
+    owner: "Sokha Meas",
+    email: "sokha@battambangharvest.kh",
+    phone: "+855 77 444 555",
+    status: "Active",
+    products_count: 16,
+    orders_count: 590,
+    revenue_usd: 19850.0,
+    joined_date: "2024-02-01",
+    rating: 4.9,
+  },
+  {
+    id: "STR-005",
+    name: "Kampot Heritage Pepper Co.",
+    slug: "kampot-heritage-pepper",
+    category: "Gourmet Spices & PGI",
+    province: "Kandal",
+    owner: "Bopha Nou",
+    email: "bopha@kampotheritage.com",
+    phone: "+855 89 666 777",
+    status: "Active",
+    products_count: 8,
+    orders_count: 340,
+    revenue_usd: 14780.0,
+    joined_date: "2024-08-12",
+    rating: 4.9,
+  },
+  {
+    id: "STR-006",
+    name: "Phnom Penh Urban Streetwear",
+    slug: "phnom-penh-streetwear",
+    category: "Apparel & Kroma Street",
+    province: "Phnom Penh",
+    owner: "Dara Sam",
+    email: "dara@ppstreetwear.kh",
+    phone: "+855 93 111 222",
+    status: "Active",
+    products_count: 12,
+    orders_count: 180,
+    revenue_usd: 8940.0,
+    joined_date: "2025-01-15",
+    rating: 4.7,
+  },
+  {
+    id: "STR-007",
+    name: "Banteay Meanchey Ceramic Works",
+    slug: "bm-ceramics",
+    category: "Ceramics & Stoneware",
+    province: "Siem Reap",
+    owner: "Sreypov Keo",
+    email: "sreypov@bmceramics.kh",
+    phone: "+855 12 333 999",
+    status: "Pending KYC",
+    products_count: 9,
+    orders_count: 24,
+    revenue_usd: 1250.0,
+    joined_date: "2026-02-01",
+    rating: 4.6,
+  },
+  {
+    id: "STR-008",
+    name: "Cardamom Wild Botanicals",
+    slug: "cardamom-botanicals",
+    category: "Natural Wellness & Teas",
+    province: "Battambang",
+    owner: "Kosal Heng",
+    email: "kosal@cardamombotanicals.kh",
+    phone: "+855 10 555 888",
+    status: "Pending KYC",
+    products_count: 6,
+    orders_count: 15,
+    revenue_usd: 820.0,
+    joined_date: "2026-03-10",
+    rating: 4.8,
+  },
+];
+
+export const PLATFORM_KPIS: PlatformKPIs = {
+  gmvUSD: 76554792.32,
+  totalOrders: 1000000,
+  activeStoresCount: 1248,
+  totalCustomers: 200000,
+  gatewayReliability: {
+    bakongKHQR: 99.4,
+    abaPay: 98.8,
+    cashOnDelivery: 89.2,
+  },
+  polyglotStats: {
+    mongoCatalogsCount: 51,
+    redisActiveCartsCount: 1420,
+    cassandraDailyPings: 13824000,
+    neo4jReferralNodes: 45000,
+    hiveOrdersIngested: 1000000,
+  },
+};
+
+export const SYSTEM_DATASTORES: SystemDatastoreStatus[] = [
+  {
+    name: "MongoDB 8.0",
+    role: "Document Store (OLTP)",
+    type: "NoSQL Flexible JSON",
+    port: 27017,
+    status: "Healthy",
+    latencyMs: 1.8,
+    metrics: "51 products • 200k customer profiles • ACID per doc",
+    iconName: "Database",
+  },
+  {
+    name: "Redis 7-Alpine",
+    role: "Key-Value Store (In-Memory)",
+    type: "RAM Cache & Cart TTL",
+    port: 6379,
+    status: "Healthy",
+    latencyMs: 0.4,
+    metrics: "1,420 active carts • sub-ms session lookup • AOF enabled",
+    iconName: "Zap",
+  },
+  {
+    name: "Apache Cassandra 4.1",
+    role: "Wide-Column Family (Telemetry)",
+    type: "Masterless Peer-to-Peer Ring",
+    port: 9042,
+    status: "Healthy",
+    latencyMs: 2.3,
+    metrics: "160 writes/sec node • 13.8M pings/day • TWCS compaction",
+    iconName: "Radio",
+  },
+  {
+    name: "Neo4j 5.18 Community",
+    role: "Graph Database (Referrals)",
+    type: "Index-Free Adjacency (Cypher)",
+    port: 7687,
+    status: "Healthy",
+    latencyMs: 3.1,
+    metrics: "3-tier viral referral tree • APOC plugin active",
+    iconName: "Share2",
+  },
+  {
+    name: "Apache Hive 3.1 on HDFS",
+    role: "Columnar Data Warehouse (OLAP)",
+    type: "Batch Analytics (ORC / Snappy)",
+    port: 10000,
+    status: "Healthy",
+    latencyMs: 50.8,
+    metrics: "1,000,000 orders • 8.3x speedup vs CSV • 3 partitions",
+    iconName: "Layers",
+  },
+];
+
+export function getStoreTenants(filter?: { province?: string; status?: string; search?: string }): StoreTenant[] {
+  let list = STORE_TENANTS;
+  if (filter?.province && filter.province !== "All") {
+    list = list.filter((s) => s.province.toLowerCase() === filter.province!.toLowerCase());
+  }
+  if (filter?.status && filter.status !== "All") {
+    list = list.filter((s) => s.status.toLowerCase() === filter.status!.toLowerCase());
+  }
+  if (filter?.search) {
+    const q = filter.search.toLowerCase();
+    list = list.filter((s) => s.name.toLowerCase().includes(q) || s.owner.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+  }
+  return list;
+}
+

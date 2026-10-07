@@ -141,3 +141,61 @@ export interface ToastMessage {
   message: string;
   type: "success" | "info" | "error" | "warning";
 }
+
+export interface StoreTenant {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  province: "Phnom Penh" | "Siem Reap" | "Battambang" | "Kandal" | string;
+  owner: string;
+  email: string;
+  phone: string;
+  status: "Active" | "Pending KYC" | "Suspended";
+  products_count: number;
+  orders_count: number;
+  revenue_usd: number;
+  joined_date: string;
+  rating: number;
+  logo?: string;
+}
+
+export interface PlatformKPIs {
+  gmvUSD: number;
+  totalOrders: number;
+  activeStoresCount: number;
+  totalCustomers: number;
+  gatewayReliability: {
+    bakongKHQR: number;
+    abaPay: number;
+    cashOnDelivery: number;
+  };
+  polyglotStats: {
+    mongoCatalogsCount: number;
+    redisActiveCartsCount: number;
+    cassandraDailyPings: number;
+    neo4jReferralNodes: number;
+    hiveOrdersIngested: number;
+  };
+}
+
+export interface StoreKPIs {
+  todaySalesUSD: number;
+  todayOrdersCount: number;
+  availableBalanceUSD: number;
+  avgOrderValueUSD: number;
+  pendingDecisionCount: number;
+  readyToPackCount: number;
+  lowStockItemsCount: number;
+}
+
+export interface SystemDatastoreStatus {
+  name: string;
+  role: string;
+  type: string;
+  port: number;
+  status: "Healthy" | "Degraded" | "Offline";
+  latencyMs: number;
+  metrics: string;
+  iconName: string;
+}

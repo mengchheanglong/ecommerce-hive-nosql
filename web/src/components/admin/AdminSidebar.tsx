@@ -4,32 +4,36 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  PlusCircle,
-  ShoppingCart,
-  TrendingUp,
+  ShieldCheck,
   Store,
+  Truck,
+  Share2,
+  Database,
+  Cpu,
+  Layers,
+  LayoutDashboard,
   ExternalLink,
   ChevronRight,
-  ShieldCheck,
+  Server,
+  Activity,
   ShoppingBag,
 } from "lucide-react";
 
-interface MerchantSidebarProps {
+interface AdminSidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
 }
 
-export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
+export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Store Cockpit", href: "/merchant", icon: LayoutDashboard },
-    { name: "Products & Stock", href: "/merchant/products", icon: Package },
-    { name: "Add New Product", href: "/merchant/products/new", icon: PlusCircle },
-    { name: "Order Fulfillment", href: "/merchant/orders", icon: ShoppingCart },
-    { name: "Store Analytics", href: "/merchant/analytics", icon: TrendingUp },
+    { name: "Platform Cockpit", href: "/admin", icon: LayoutDashboard },
+    { name: "Stores Directory", href: "/admin/stores", icon: Store },
+    { name: "Cassandra Fleet (800 Riders)", href: "/admin/fleet", icon: Truck },
+    { name: "Neo4j Social Graph", href: "/admin/referrals", icon: Share2 },
+    { name: "Hive OLAP Warehouse", href: "/admin/warehouse", icon: Database },
+    { name: "Polyglot System Health", href: "/admin/system", icon: Cpu },
   ];
 
   return (
@@ -48,18 +52,18 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
         }`}
       >
         <div>
-          {/* Logo / Merchant Identity */}
+          {/* Logo / Admin Identity */}
           <div className="h-16 sm:h-18 px-5 flex items-center justify-between border-b border-slate-800/80">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/25">
-                <Store className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-500/25">
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
                 <span className="font-extrabold text-sm tracking-tight text-white block">
-                  Merchant Studio
+                  Platform Admin
                 </span>
-                <span className="text-[11px] text-blue-400 font-medium block">
-                  Mekong Electronics • Phnom Penh
+                <span className="text-[11px] text-purple-400 font-semibold block">
+                  Marketplace HQ • Control Plane
                 </span>
               </div>
             </div>
@@ -68,16 +72,14 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           {/* Navigation Items */}
           <nav className="p-3 space-y-1">
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-2">
-              Store Management
+              Platform Modules
             </div>
 
             {navItems.map((item) => {
               const isActive =
-                item.href === "/merchant"
-                  ? pathname === "/merchant"
-                  : pathname === item.href || (item.href !== "/merchant" && pathname.startsWith(item.href) && !pathname.includes("/new") && item.href !== "/merchant/products/new");
-              const isExact = pathname === item.href;
-              const active = item.href === "/merchant" ? pathname === "/merchant" : pathname.startsWith(item.href);
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(item.href);
               const Icon = item.icon;
 
               return (
@@ -86,16 +88,16 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                    active
-                      ? "bg-blue-600 text-white font-bold shadow-sm shadow-blue-600/30 border border-blue-500"
+                    isActive
+                      ? "bg-purple-600 text-white font-bold shadow-sm shadow-purple-600/30 border border-purple-500"
                       : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <Icon className={`w-4 h-4 ${active ? "text-white" : "text-slate-400"}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
                     <span>{item.name}</span>
                   </div>
-                  {active && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
                 </Link>
               );
             })}
@@ -109,14 +111,14 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           </div>
 
           <Link
-            href="/admin"
-            className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-200 text-xs font-semibold transition-colors border border-purple-800/60"
+            href="/merchant"
+            className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-colors border border-slate-800"
           >
             <div className="flex items-center space-x-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-              <span>Platform Admin HQ</span>
+              <Store className="w-3.5 h-3.5 text-blue-400" />
+              <span>Merchant Portal</span>
             </div>
-            <span className="text-[10px] text-purple-400">HQ Control</span>
+            <span className="text-[10px] text-slate-500">Seller View</span>
           </Link>
 
           <Link
@@ -134,9 +136,9 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
             href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
-            className="w-full flex items-center justify-center space-x-1.5 py-1.5 text-[11px] text-slate-400 hover:text-blue-400 transition-colors"
+            className="w-full flex items-center justify-center space-x-1.5 py-1.5 text-[11px] text-slate-400 hover:text-purple-400 transition-colors"
           >
-            <span>Swagger API</span>
+            <span>Swagger OpenAPI Docs</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
