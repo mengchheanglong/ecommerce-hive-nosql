@@ -560,8 +560,23 @@ export async function fetchReferrals(customerId?: string): Promise<{
     const res = await fetch(`${BACKEND_BASE}/referrals${url}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
+      const network = Array.isArray(data.network)
+        ? data.network
+        : Array.isArray(data.tiers)
+        ? data.tiers.flatMap((t: any) =>
+            (t.members || []).map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              level: t.tier,
+              city: m.city,
+              spend: typeof m.spend === "number" ? m.spend : parseFloat(String(m.spend).replace(/[^0-9.]/g, "")) || 0,
+              earned: typeof m.earned === "number" ? m.earned : parseFloat(String(m.earned).replace(/[^0-9.]/g, "")) || 0,
+              referredBy: data.rootCustomer?.id || "C0457",
+            }))
+          )
+        : INITIAL_REFERRALS;
       return {
-        network: data.network || INITIAL_REFERRALS,
+        network,
         rootCustomer: data.rootCustomer,
         tiers: data.tiers,
         graphStats: {
