@@ -235,6 +235,12 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
       const maplibregl = (mapModule as any).Map ? mapModule : (mapModule as any).default || mapModule;
       maplibreglRef.current = maplibregl;
 
+      // Explicitly configure absolute worker URL to prevent Next.js relative subroute resolution errors
+      const setWorker = (mapModule as any).setWorkerUrl || (maplibregl as any).setWorkerUrl;
+      if (typeof setWorker === "function") {
+        setWorker(`${window.location.origin}/maplibre-gl-worker.mjs`);
+      }
+
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
         style: THEMES[mapTheme],
