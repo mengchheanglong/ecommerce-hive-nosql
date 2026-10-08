@@ -33,7 +33,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { name: "Live Fleet & Map Operations", href: "/admin/fleet", icon: Truck },
     { name: "Big Data & Hive Analytics", href: "/admin/analytics", icon: BarChart3 },
     { name: "Stores Directory", href: "/admin/stores", icon: Store },
-    { name: "Neo4j Social Graph", href: "/admin/referrals", icon: Share2 },
+    { name: "Neo4j Graph Explorer", href: "/admin/referrals", icon: Share2 },
     { name: "Polyglot System Health", href: "/admin/system", icon: Cpu },
   ];
 
