@@ -176,57 +176,57 @@ export default function AdminFleetPage() {
       </div>
 
       {/* Real-time Telemetry Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Synchronized Couriers</p>
-            <p className="text-2xl font-black text-slate-900 font-mono mt-0.5">{vehicles.length}</p>
-            <p className="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Couriers</p>
+            <p className="text-xl font-black text-slate-900 font-mono">{vehicles.length} Active</p>
+            <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live on Phnom Penh Roads</span>
+              <span>Phnom Penh Roads</span>
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-            <Truck className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <Truck className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Distance</p>
-            <p className="text-2xl font-black text-slate-900 font-mono mt-0.5">
+            <p className="text-xl font-black text-slate-900 font-mono">
               {simStats?.totalDistanceKm ? `${Math.round(simStats.totalDistanceKm)} km` : "1,153 km"}
             </p>
-            <p className="text-[10px] text-slate-500 mt-0.5">Traversed across road graph</p>
+            <p className="text-[10px] text-slate-500">Road graph traversed</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
-            <Gauge className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+            <Gauge className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Simulation Status</p>
-            <p className="text-2xl font-black text-purple-700 font-mono mt-0.5 uppercase">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sim Status</p>
+            <p className="text-xl font-black text-purple-700 font-mono uppercase">
               {simState?.status || "RUNNING"}
             </p>
-            <p className="text-[10px] text-purple-600 font-semibold mt-0.5">
-              Speed: {simState?.speed || 10}x Real-Time
+            <p className="text-[10px] text-purple-600 font-semibold">
+              Speed: {simState?.speed || 10}x
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-            <Clock className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <Clock className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cassandra Throughput</p>
-            <p className="text-2xl font-black text-slate-900 font-mono mt-0.5">160 writes/s</p>
-            <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Masterless LSM Ring Active</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cassandra Ring</p>
+            <p className="text-xl font-black text-slate-900 font-mono">160 w/s</p>
+            <p className="text-[10px] text-emerald-600 font-semibold">Port 9042 Active</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <Cpu className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <Cpu className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -241,18 +241,18 @@ export default function AdminFleetPage() {
         onRefresh={loadData}
       />
 
-      {/* Live CQL Ingestion Feed Terminal */}
-      <div className="bg-slate-950 text-emerald-400 p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-3 shadow-inner">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+      {/* Live CQL Ingestion Feed Terminal (Compact) */}
+      <div className="bg-slate-950 text-emerald-400 p-3 sm:p-4 rounded-xl border border-slate-800 font-mono text-[11px] space-y-2 shadow-inner">
+        <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 text-[10px]">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold text-white">Live Cassandra CQL Write Telemetry Stream (Port 9042)</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-bold text-white">Cassandra CQL Write Stream (Port 9042)</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono">TWCS Compaction • TTL 30 Days</span>
+          <span className="text-slate-500">telemetry_ks.rider_gps_pings • TWCS</span>
         </div>
 
-        <div className="space-y-1">
-          {cqlLogs.map((l, i) => (
+        <div className="space-y-0.5">
+          {cqlLogs.slice(0, 3).map((l, i) => (
             <div key={i} className="truncate text-emerald-300">
               {l}
             </div>

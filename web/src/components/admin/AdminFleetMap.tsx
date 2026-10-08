@@ -76,6 +76,7 @@ export function AdminFleetMap({
   const [searchQuery, setSearchQuery] = useState("");
   const [autoFollow, setAutoFollow] = useState(false);
   const [isChangingSim, setIsChangingSim] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { showToast } = useToast();
 
   const selectedVehicle = useMemo(() => {
@@ -301,7 +302,18 @@ export function AdminFleetMap({
     vehicles.forEach((vehicle) => {
       const lat = vehicle.position?.lat;
       const lon = vehicle.position?.lon;
-      if (typeof lat !== "number" || typeof lon !== "number") return;
+      if (
+        typeof lat !== "number" ||
+        typeof lon !== "number" ||
+        isNaN(lat) ||
+        isNaN(lon) ||
+        lat < 10.0 ||
+        lat > 15.0 ||
+        lon < 102.0 ||
+        lon > 108.0
+      ) {
+        return;
+      }
 
       activeIds.add(vehicle.id);
       const isSelected = vehicle.id === selectedVehicleId;
@@ -410,9 +422,13 @@ export function AdminFleetMap({
   };
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl flex flex-col h-[640px] sm:h-[700px]">
+    <div
+      className={`relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-xl flex flex-col transition-all duration-300 ${
+        isExpanded ? "h-[560px]" : "h-[380px] sm:h-[420px]"
+      }`}
+    >
       {/* Top Floating Control Bar */}
-      <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2.5 bg-slate-900/90 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-slate-700/80 shadow-lg text-xs text-white">
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md p-2 sm:p-2.5 rounded-xl border border-slate-700/80 shadow-lg text-xs text-white">
         {/* Left: Simulation Clock & State */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="flex items-center space-x-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 font-mono">
@@ -464,7 +480,7 @@ export function AdminFleetMap({
         </div>
 
         {/* Center / Right: Active Vehicles & Tools */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5">
           <div className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-slate-300">{vehicles.length} Couriers</span>
@@ -472,7 +488,7 @@ export function AdminFleetMap({
 
           <button
             onClick={() => setAutoFollow(!autoFollow)}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 border transition-all cursor-pointer ${
+            className={`px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 border transition-all cursor-pointer ${
               autoFollow
                 ? "bg-sky-500/20 text-sky-300 border-sky-400/50"
                 : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
@@ -483,11 +499,20 @@ export function AdminFleetMap({
           </button>
 
           <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 hover:text-white transition-all cursor-pointer flex items-center space-x-1 text-xs"
+            title={isExpanded ? "Switch to Compact View" : "Expand Height"}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isExpanded ? "Compact" : "Expand"}</span>
+          </button>
+
+          <button
             onClick={handleResetView}
             className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer"
             title="Reset Map to Phnom Penh Overview"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
+            <Compass className="w-3.5 h-3.5" />
           </button>
 
           <a
