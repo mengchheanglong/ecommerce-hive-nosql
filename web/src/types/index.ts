@@ -214,3 +214,60 @@ export interface SystemDatastoreStatus {
   metrics: string;
   iconName: string;
 }
+
+export interface SandboxVehicle {
+  id: string;
+  name: string;
+  type: "truck" | "van" | "motorcycle";
+  status: "idle" | "en_route" | "delivering" | "returning" | "broken_down" | string;
+  driverId: string;
+  driverName?: string;
+  position: { lat: number; lon: number };
+  speed_kmh: number;
+  capacity_kg: number;
+  currentLoad_kg: number;
+  currentRouteId?: string;
+  assignedOrderIds?: string[];
+  routeGeometry?: [number, number][];
+  routeProgress?: number;
+  routeDistanceM?: number;
+  routeDurationS?: number;
+  depotId?: string;
+  battery?: number;
+}
+
+export interface SandboxSimStats {
+  activeVehicles: number;
+  totalOrders: number;
+  deliveredOrders: number;
+  pendingOrders: number;
+  lateOrders: number;
+  avgDeliveryTimeMin: number;
+  totalDistanceKm: number;
+  slaOnTimeDeliveries?: number;
+  slaBreachedDeliveries?: number;
+  slaComplianceRate?: number;
+  atRiskOrdersCount?: number;
+}
+
+export interface SandboxSimState {
+  simulationId: string;
+  simTime: number;
+  speed: number;
+  status: "running" | "paused" | "stopped" | string;
+  vehicles: SandboxVehicle[];
+  orders: any[];
+  warehouses: any[];
+  stats: SandboxSimStats;
+  activeScenarioId?: string;
+  trafficMultiplier?: number;
+}
+
+export interface PathfinderGraphStats {
+  nodes: number;
+  edges: number;
+  status?: string;
+  version?: string;
+  queryLatencyMs?: number;
+}
+

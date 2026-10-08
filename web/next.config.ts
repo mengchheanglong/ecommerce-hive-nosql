@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
         source: "/nest-api/:path*",
         destination: `${backendUrl}/api/:path*`,
       },
+      {
+        source: "/sandbox-api/:path*",
+        destination: "http://127.0.0.1:3001/api/:path*",
+      },
+      {
+        source: "/pathfinder-api/:path*",
+        destination: "http://127.0.0.1:3000/api/:path*",
+      },
     ];
   },
 };

@@ -29,8 +29,8 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   const navItems = [
     { name: "Platform Cockpit", href: "/admin", icon: LayoutDashboard },
+    { name: "Live Fleet & Map Operations", href: "/admin/fleet", icon: Truck },
     { name: "Stores Directory", href: "/admin/stores", icon: Store },
-    { name: "Cassandra Fleet (800 Riders)", href: "/admin/fleet", icon: Truck },
     { name: "Neo4j Social Graph", href: "/admin/referrals", icon: Share2 },
     { name: "Hive OLAP Warehouse", href: "/admin/warehouse", icon: Database },
     { name: "Polyglot System Health", href: "/admin/system", icon: Cpu },
@@ -101,12 +101,52 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 </Link>
               );
             })}
+
+            {/* Direct Link to Sandbox Digital-Twin Control Room */}
+            <div className="pt-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 pb-1.5">
+                Digital-Twin Sandbox
+              </div>
+              <a
+                href="http://localhost:5173"
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-950/60 to-purple-950/60 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white text-xs font-semibold transition-all shadow-sm"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                  <span>3D Control Room</span>
+                </div>
+                <div className="flex items-center space-x-1 text-[10px] font-mono text-sky-400 group-hover:text-sky-200">
+                  <span>:5173</span>
+                  <ExternalLink className="w-3 h-3" />
+                </div>
+              </a>
+            </div>
           </nav>
         </div>
 
-        {/* Bottom Cross-Role Switcher */}
-        <div className="p-4 border-t border-slate-800/80 space-y-2">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1 mb-1">
+        {/* Bottom Cross-Role Switcher & Ecosystem Health */}
+        <div className="p-4 border-t border-slate-800/80 space-y-2.5">
+          {/* Live Ecosystem Nodes Strip */}
+          <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5 text-[10px] font-mono">
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Sandbox Sim</span>
+              </span>
+              <span className="text-emerald-400 font-bold">Port 3001</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>OSM Pathfinder</span>
+              </span>
+              <span className="text-emerald-400 font-bold">Port 3000</span>
+            </div>
+          </div>
+
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">
             Switch Perspective
           </div>
 
@@ -136,7 +176,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
-            className="w-full flex items-center justify-center space-x-1.5 py-1.5 text-[11px] text-slate-400 hover:text-purple-400 transition-colors"
+            className="w-full flex items-center justify-center space-x-1.5 py-1 text-[11px] text-slate-400 hover:text-purple-400 transition-colors"
           >
             <span>Swagger OpenAPI Docs</span>
             <ExternalLink className="w-3 h-3" />
