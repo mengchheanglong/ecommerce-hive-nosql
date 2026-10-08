@@ -203,10 +203,10 @@ export default function OrderDetailPage() {
         {/* Itemized breakdown */}
         <div className="space-y-3 pt-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Order Line Items ({order.items.length})
+            Order Line Items ({(order.items || []).length})
           </h3>
           <div className="border border-slate-200/80 rounded-2xl overflow-hidden divide-y divide-slate-100 text-xs">
-            {order.items.map((it, idx) => (
+            {(order.items || []).map((it, idx) => (
               <div key={idx} className="p-4 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors">
                 <div>
                   <p className="font-bold text-slate-900">{it.name}</p>
@@ -307,7 +307,7 @@ export default function OrderDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {order.items.map((it, i) => (
+                  {(order.items || []).map((it, i) => (
                     <tr key={i}>
                       <td className="p-3">
                         <span className="font-bold text-slate-900 block">{it.name}</span>

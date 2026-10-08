@@ -152,7 +152,7 @@ export default function MerchantOrdersPage() {
                     <td className="p-4 font-semibold text-slate-900">{ord.customer_name}</td>
                     <td className="p-4 text-slate-600">{ord.province}</td>
                     <td className="p-4 text-[11px] text-slate-500 max-w-xs truncate">
-                      {ord.items.map((i) => `${i.name} (x${i.quantity})`).join(", ")}
+                      {(ord.items || []).map((i) => `${i.name} (x${i.quantity})`).join(", ")}
                     </td>
                     <td className="p-4 font-mono font-bold text-slate-900">
                       {formatPrice(ord.total)}

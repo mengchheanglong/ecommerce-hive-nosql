@@ -148,7 +148,7 @@ export default function CustomerOrdersPage() {
                   Items Ordered
                 </span>
                 <div className="divide-y divide-slate-200/60">
-                  {ord.items.map((item, idx) => (
+                  {(ord.items || []).map((item, idx) => (
                     <div key={idx} className="py-1.5 flex justify-between items-center">
                       <span className="font-semibold text-slate-800">
                         {item.name} <span className="text-slate-400 font-normal">x{item.quantity}</span>

@@ -328,10 +328,10 @@ export default function MerchantOrderDetailPage() {
         {/* Items List */}
         <div className="space-y-3 pt-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Line Items ({order.items.length})
+            Line Items ({(order.items || []).length})
           </h3>
           <div className="border border-slate-200/80 rounded-2xl overflow-hidden divide-y divide-slate-100 text-xs">
-            {order.items.map((it, idx) => (
+            {(order.items || []).map((it, idx) => (
               <div key={idx} className="p-4 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors">
                 <div>
                   <p className="font-bold text-slate-900">{it.name}</p>
