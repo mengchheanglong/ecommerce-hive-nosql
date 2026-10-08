@@ -105,6 +105,55 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
     );
   }, [riders, order.assigned_courier_id, order.assigned_courier_name, order.province]);
 
+  const [sandboxVehicle, setSandboxVehicle] = useState<any | null>(null);
+  const [isSandboxConnected, setIsSandboxConnected] = useState(false);
+
+  // Poll Logistics Sandbox backend (port 3001) for direct real-time digital-twin synchronization
+  useEffect(() => {
+    let active = true;
+    async function pollSandboxTelemetry() {
+      try {
+        const res = await fetch("http://localhost:3001/api/vehicles", {
+          signal: AbortSignal.timeout(1500),
+        });
+        if (res.ok) {
+          const vehicles = await res.json();
+          if (active && Array.isArray(vehicles) && vehicles.length > 0) {
+            setIsSandboxConnected(true);
+            const matched =
+              vehicles.find((v: any) => v.assignedOrderIds?.includes(order.order_id)) ||
+              vehicles.find((v: any) => v.driverId === order.assigned_courier_id) ||
+              vehicles.find((v: any) => v.id === order.assigned_courier_id) ||
+              vehicles.find(
+                (v: any) =>
+                  v.driverName &&
+                  order.assigned_courier_name &&
+                  v.driverName.toLowerCase() === order.assigned_courier_name.toLowerCase()
+              ) ||
+              vehicles[0];
+
+            if (matched) {
+              setSandboxVehicle(matched);
+              if (matched.routeGeometry && Array.isArray(matched.routeGeometry) && matched.routeGeometry.length > 1) {
+                setRouteGeometry(matched.routeGeometry);
+              }
+            }
+            return;
+          }
+        }
+      } catch {
+        if (active) setIsSandboxConnected(false);
+      }
+    }
+
+    pollSandboxTelemetry();
+    const interval = setInterval(pollSandboxTelemetry, 1500);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [order.order_id, order.assigned_courier_id, order.assigned_courier_name]);
+
   const destCoords = useMemo(
     () => getDestinationCoords(order.delivery_address, order.province),
     [order.delivery_address, order.province]
@@ -112,11 +161,14 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
 
   const riderCoords = useMemo<[number, number]>(() => {
     if (order.status === "Delivered") return destCoords;
+    if (sandboxVehicle?.position?.lat && sandboxVehicle?.position?.lon) {
+      return [sandboxVehicle.position.lon, sandboxVehicle.position.lat];
+    }
     if (!assignedRider) return DEPOT_COORDS;
     const lat = parseCoord(assignedRider.lat, DEPOT_COORDS[1]);
     const lon = parseCoord(assignedRider.lng, DEPOT_COORDS[0]);
     return [lon, lat];
-  }, [assignedRider, order.status, destCoords]);
+  }, [sandboxVehicle, assignedRider, order.status, destCoords]);
 
   const riderPhone =
     order.courier_phone ||
@@ -540,11 +592,18 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
               <span>{mapTheme === "dark" ? "🌙 Dark" : "🗺️ Streets"}</span>
             </button>
 
-            {/* Cassandra Ingest Metric Badge */}
-            <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
-              <Radio className="w-3 h-3 text-purple-400 animate-pulse" />
-              <span>Port 9042 • Cassandra LSM Live</span>
-            </div>
+            {/* Live Telemetry Source Indicator */}
+            {isSandboxConnected ? (
+              <div className="pointer-events-auto flex items-center space-x-1.5 bg-emerald-950/80 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-emerald-500/50 text-[10px] text-emerald-300 font-mono shadow-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Port 3001 • Sandbox Synced</span>
+              </div>
+            ) : (
+              <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
+                <Radio className="w-3 h-3 text-purple-400 animate-pulse" />
+                <span>Port 9042 • Cassandra LSM Live</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -559,10 +618,10 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
           <div className="min-w-0">
             <div className="flex items-center space-x-1.5">
               <span className="text-xs font-bold text-white truncate">
-                {assignedRider?.name || "Assigned Driver"}
+                {sandboxVehicle?.driverName || assignedRider?.name || "Assigned Driver"}
               </span>
               <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-300">
-                {assignedRider?.id || "DRV-001"}
+                {sandboxVehicle?.driverId || sandboxVehicle?.id || assignedRider?.id || "DRV-001"}
               </span>
             </div>
             <a
@@ -583,7 +642,11 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
               <span>Speed</span>
             </p>
             <p className="font-mono font-bold text-white mt-0.5">
-              {isDelivered ? "0.0 km/h" : assignedRider?.speed || "28.4 km/h"}
+              {isDelivered
+                ? "0.0 km/h"
+                : sandboxVehicle?.speed_kmh !== undefined
+                ? `${sandboxVehicle.speed_kmh.toFixed(1)} km/h`
+                : assignedRider?.speed || "28.4 km/h"}
             </p>
           </div>
           <div className="w-[1px] h-6 bg-slate-800" />
