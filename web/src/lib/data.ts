@@ -1767,6 +1767,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 84250.0,
     joined_date: "2024-03-15",
     rating: 4.9,
+    logo: "https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80",
+    description: "Premier distributor of authorized smartphones, smart wearable tech, ultrabooks, and solar energy inverters across Phnom Penh.",
+    address: "#45 Preah Norodom Blvd, Sangkat Phsar Thmey, Khan Daun Penh, Phnom Penh",
+    delivery_areas: ["Phnom Penh (Same-Day Express)", "Siem Reap (24h)", "Battambang (24-48h)"],
+    badges: ["Official Flagship Distributor", "NBC Bakong Verified", "1-Year Warranty"],
+    opening_hours: "Mon - Sun: 8:00 AM - 8:30 PM",
+    positive_feedback: 99.4,
+    response_time: "< 15 mins",
+    features: ["Authorized Warranty Service", "Genuine Sealed Boxes", "Instant KHQR Checkout"],
+    followers_count: 1420,
   },
   {
     id: "STR-002",
@@ -1783,6 +1794,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 38920.0,
     joined_date: "2024-05-20",
     rating: 4.8,
+    logo: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1400&q=80",
+    description: "Authentic Takeo & Koh Dach master weavers producing pure golden mulberry silk sarongs, traditional Hol Chong Kiet, and modern artisan fashion.",
+    address: "#12 Street 240, Sangkat Chaktomuk, Khan Daun Penh, Phnom Penh",
+    delivery_areas: ["Phnom Penh (Express Delivery)", "Nationwide Shipping"],
+    badges: ["Master Artisan Guild", "PGI Handwoven Silk", "Eco-friendly Dyes"],
+    opening_hours: "Mon - Sat: 9:00 AM - 7:00 PM",
+    positive_feedback: 98.8,
+    response_time: "< 25 mins",
+    features: ["100% Pure Mulberry Silk", "Custom Sizing", "Certificate of Authenticity"],
+    followers_count: 980,
   },
   {
     id: "STR-003",
@@ -1799,6 +1821,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 29400.0,
     joined_date: "2024-06-10",
     rating: 4.9,
+    logo: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
+    description: "Handcrafted sandstone bas-reliefs, lost-wax bronze sculptures, silver betel containers, and lacquerware hand-carved in Siem Reap near Angkor.",
+    address: "#88 Pokambor Ave, Riverside, Krong Siem Reap",
+    delivery_areas: ["Siem Reap (Same-Day)", "Phnom Penh (Next-Day)", "Battambang"],
+    badges: ["UNESCO Heritage Partner", "Direct Artisan Collective", "Fair Trade Certified"],
+    opening_hours: "Mon - Sun: 7:30 AM - 9:00 PM",
+    positive_feedback: 99.1,
+    response_time: "< 20 mins",
+    features: ["Authentic Sandstone & Bronze", "Impact-Resistant Wooden Crate Packing", "Heritage Documentation"],
+    followers_count: 1250,
   },
   {
     id: "STR-004",
@@ -1815,6 +1848,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 19850.0,
     joined_date: "2024-02-01",
     rating: 4.9,
+    logo: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1400&q=80",
+    description: "Award-winning Phka Rumduol jasmine rice, organic sundried mangoes, raw wild honey, and seasonal organic harvests from Battambang's rich soils.",
+    address: "#23 Street 1.5, Sangkat Svay Por, Krong Battambang",
+    delivery_areas: ["Battambang Express", "Phnom Penh Overnight", "Siem Reap"],
+    badges: ["Organic Certified Cambodia", "World Best Rice Winner", "Farm to Table"],
+    opening_hours: "Mon - Sun: 7:00 AM - 6:30 PM",
+    positive_feedback: 99.6,
+    response_time: "< 10 mins",
+    features: ["Vacuum-Packed Freshness", "Pesticide-Free Lab Tested", "Bulk & Family Bags"],
+    followers_count: 2100,
   },
   {
     id: "STR-005",
@@ -1831,6 +1875,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 14780.0,
     joined_date: "2024-08-12",
     rating: 4.9,
+    logo: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=1400&q=80",
+    description: "Protected Geographical Indication (PGI) certified Kampot black, red, and white pepper, alongside Kampong Speu palm sugar and fleur de sel.",
+    address: "#77 National Road 2, Takhmao, Kandal Province",
+    delivery_areas: ["Nationwide Courier Dispatch", "Phnom Penh Express"],
+    badges: ["EU PGI Certified", "KPPA Registered Member", "Gourmet Grade A"],
+    opening_hours: "Mon - Sat: 8:00 AM - 6:00 PM",
+    positive_feedback: 99.5,
+    response_time: "< 15 mins",
+    features: ["Whole Peppercorn Vacuum Foil", "Refillable Ceramic Grinder Packs", "Traceable QR Lot ID"],
+    followers_count: 840,
   },
   {
     id: "STR-006",
@@ -1847,6 +1902,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 8940.0,
     joined_date: "2025-01-15",
     rating: 4.7,
+    logo: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80",
+    description: "Contemporary streetwear fused with traditional Khmer kroma patterns, oversized heavyweight graphic hoodies, and canvas utility crossbody bags.",
+    address: "#31 Street 178, Sangkat Chey Chumneas, Khan Daun Penh, Phnom Penh",
+    delivery_areas: ["Phnom Penh (Same-Day)", "Siem Reap", "Battambang"],
+    badges: ["Local Youth Fashion", "100% Combed Cotton", "Limited Drops"],
+    opening_hours: "Mon - Sun: 10:00 AM - 9:00 PM",
+    positive_feedback: 97.5,
+    response_time: "< 30 mins",
+    features: ["Heavyweight 280 GSM Cotton", "Screenprinted in Phnom Penh", "Unisex Relaxed Fits"],
+    followers_count: 1650,
   },
   {
     id: "STR-007",
@@ -1863,6 +1929,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 1250.0,
     joined_date: "2026-02-01",
     rating: 4.6,
+    logo: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1400&q=80",
+    description: "Wood-fired pottery, celadon glazed tea sets, hand-thrown ceramic bowls, and Khmer clay cooking pots preserving antique terracotta craft.",
+    address: "#10 Charles de Gaulle Blvd, Krong Siem Reap",
+    delivery_areas: ["Siem Reap", "Phnom Penh", "Battambang"],
+    badges: ["Traditional Kiln Fired", "Lead-Free Food Safe", "Artisan Handmade"],
+    opening_hours: "Mon - Sat: 8:00 AM - 6:00 PM",
+    positive_feedback: 96.0,
+    response_time: "< 45 mins",
+    features: ["Natural Clay from Kampong Chhnang", "Microwave & Dishwasher Safe", "Shock-Proof Bubble Wrap"],
+    followers_count: 420,
   },
   {
     id: "STR-008",
@@ -1879,6 +1956,17 @@ export const STORE_TENANTS: StoreTenant[] = [
     revenue_usd: 820.0,
     joined_date: "2026-03-10",
     rating: 4.8,
+    logo: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1512290900672-1f41b9643a60?auto=format&fit=crop&w=1400&q=80",
+    description: "Sustainably wild-harvested teas from the Cardamom Mountains, organic cold-pressed moringa oil, lemongrass muscle balm, and natural herbal remedies.",
+    address: "#14 La He Street, Sangkat Romchek 4, Krong Battambang",
+    delivery_areas: ["Battambang", "Phnom Penh Express", "Siem Reap"],
+    badges: ["Wild Harvested", "Cruelty Free & Vegan", "Zero Chemical Preservatives"],
+    opening_hours: "Mon - Sat: 8:30 AM - 7:00 PM",
+    positive_feedback: 98.2,
+    response_time: "< 35 mins",
+    features: ["Glass Bottle Packaging", "100% Pure Botanical Extracts", "Eco-friendly Community Sourced"],
+    followers_count: 310,
   },
 ];
 
@@ -1968,4 +2056,94 @@ export function getStoreTenants(filter?: { province?: string; status?: string; s
   }
   return list;
 }
+
+export function getStoreByIdOrSlug(idOrSlug: string): StoreTenant | undefined {
+  if (!idOrSlug) return undefined;
+  const q = idOrSlug.trim().toLowerCase();
+  return STORE_TENANTS.find((s) => s.id.toLowerCase() === q || s.slug.toLowerCase() === q);
+}
+
+export function getStoreProducts(storeIdOrSlug: string): Product[] {
+  const store = getStoreByIdOrSlug(storeIdOrSlug);
+  if (!store) return [];
+  const allProducts = getProductsStore();
+
+  // 1. Direct match on store_id or store_slug
+  const directMatches = allProducts.filter(
+    (p) =>
+      (p.store_id && (p.store_id.toLowerCase() === store.id.toLowerCase() || p.store_id.toLowerCase() === store.slug.toLowerCase())) ||
+      (p.store_slug && p.store_slug.toLowerCase() === store.slug.toLowerCase())
+  );
+  if (directMatches.length > 0) return directMatches;
+
+  // 2. Intelligent category mapping so every store showcase is populated
+  switch (store.id) {
+    case "STR-001": // Mekong Electronics Hub
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "electronics" ||
+          p.category_slug?.toLowerCase() === "electronics"
+      );
+    case "STR-002": // Sovann Silk Studio & Weavers
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "fashion & accessories" &&
+          (p.subcategory === "traditional-wear" ||
+            p.subcategory === "womens-clothing" ||
+            /silk|sarong|dress|hol|ikat|sampot/i.test(p.name))
+      );
+    case "STR-003": // Angkor Artisan & Handicrafts
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "arts & culture" ||
+          p.subcategory === "handmade-crafts" ||
+          p.subcategory === "souvenirs-gifts" ||
+          /artisan|handicraft|carving|statue|box|apsara/i.test(p.name)
+      );
+    case "STR-004": // Battambang Organic Harvest
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "food & groceries" &&
+          (p.subcategory === "rice-grains" ||
+            p.subcategory === "fresh-produce" ||
+            p.subcategory === "snacks-dried-fruit" ||
+            /rice|jasmine|mango|fruit|produce|organic/i.test(p.name))
+      );
+    case "STR-005": // Kampot Heritage Pepper Co.
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "food & groceries" &&
+          (p.subcategory === "pantry-spices" ||
+            p.subcategory === "palm-sugar-sweeteners" ||
+            /pepper|salt|sugar|spice|kampot/i.test(p.name))
+      );
+    case "STR-006": // Phnom Penh Urban Streetwear
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "fashion & accessories" &&
+          (p.subcategory === "mens-clothing" ||
+            p.subcategory === "bags-luggage" ||
+            p.subcategory === "shoes" ||
+            /streetwear|tee|hoodie|polo|shirt|bag|backpack/i.test(p.name))
+      );
+    case "STR-007": // Banteay Meanchey Ceramic Works
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "home & living" &&
+          (p.subcategory === "pottery-ceramics" ||
+            p.subcategory === "home-decor" ||
+            /ceramic|pottery|bowl|mug|vase|clay/i.test(p.name))
+      );
+    case "STR-008": // Cardamom Wild Botanicals
+      return allProducts.filter(
+        (p) =>
+          p.category.toLowerCase() === "beauty & wellness" ||
+          (p.category.toLowerCase() === "food & groceries" && p.subcategory === "coffee-tea") ||
+          /tea|balm|oil|moringa|botanical|wellness|skincare/i.test(p.name)
+      );
+    default:
+      return allProducts.slice(0, 8);
+  }
+}
+
 

@@ -40,6 +40,8 @@ export interface Product {
   image?: string;
   images?: string[];
   seller?: SellerInfo;
+  store_id?: string;
+  store_slug?: string;
   frequently_bought_with?: string[];
   rating?: number;
   reviews_count?: number;
@@ -158,6 +160,16 @@ export interface StoreTenant {
   joined_date: string;
   rating: number;
   logo?: string;
+  banner?: string;
+  description?: string;
+  address?: string;
+  delivery_areas?: string[];
+  badges?: string[];
+  opening_hours?: string;
+  positive_feedback?: number;
+  response_time?: string;
+  features?: string[];
+  followers_count?: number;
 }
 
 export interface PlatformKPIs {

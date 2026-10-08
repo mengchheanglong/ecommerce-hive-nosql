@@ -1,4 +1,4 @@
-import { Product, OrderRecord, RiderTelemetry, ReferralNode } from "@/types";
+import { Product, OrderRecord, RiderTelemetry, ReferralNode, StoreTenant } from "@/types";
 import {
   getProductsStore,
   findProductById,
@@ -12,6 +12,9 @@ import {
   getRidersStore,
   addProductReview,
   INITIAL_REFERRALS,
+  getStoreTenants,
+  getStoreByIdOrSlug,
+  getStoreProducts,
 } from "./data";
 
 // Direct proxy to NestJS Microservices Backend (port 4000 via Next.js /nest-api rewrite)
@@ -675,4 +678,20 @@ export async function executeHiveQuery(queryId: string): Promise<any> {
     recordsScanned: 51,
     partitionsPruned: 11,
   };
+}
+
+export async function fetchStoreTenants(filter?: {
+  province?: string;
+  status?: string;
+  search?: string;
+}): Promise<StoreTenant[]> {
+  return getStoreTenants(filter);
+}
+
+export async function fetchStoreByIdOrSlug(idOrSlug: string): Promise<StoreTenant | undefined> {
+  return getStoreByIdOrSlug(idOrSlug);
+}
+
+export async function fetchStoreProducts(storeIdOrSlug: string): Promise<Product[]> {
+  return getStoreProducts(storeIdOrSlug);
 }

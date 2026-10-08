@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { STORE_TENANTS, getStoreTenants } from "@/lib/data";
 import { StoreTenant } from "@/types";
 import { useToast } from "@/context/ToastContext";
@@ -133,8 +134,14 @@ export default function AdminStoresPage() {
                   {/* Store Name & Category */}
                   <td className="py-3.5 px-4">
                     <div className="space-y-0.5">
-                      <span className="font-bold text-slate-900 block">{store.name}</span>
-                      <span className="text-[11px] text-slate-500">{store.category}</span>
+                      <Link
+                        href={`/stores/${store.slug}`}
+                        className="font-bold text-slate-900 hover:text-purple-600 transition-colors inline-flex items-center gap-1 group"
+                      >
+                        <span>{store.name}</span>
+                        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-purple-600 transition-colors" />
+                      </Link>
+                      <span className="text-[11px] text-slate-500 block">{store.category}</span>
                     </div>
                   </td>
 
@@ -187,21 +194,31 @@ export default function AdminStoresPage() {
 
                   {/* Actions */}
                   <td className="py-3.5 px-4 text-right">
-                    {store.status === "Pending KYC" ? (
-                      <button
-                        onClick={() => handleApproveStore(store.id)}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Link
+                        href={`/stores/${store.slug}`}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors inline-flex items-center gap-1 cursor-pointer"
                       >
-                        Approve KYC
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => showToast(`Audit log opened for ${store.name}`, "info")}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors cursor-pointer"
-                      >
-                        Inspect Store
-                      </button>
-                    )}
+                        <span>View</span>
+                        <ExternalLink className="w-3 h-3 text-slate-400" />
+                      </Link>
+
+                      {store.status === "Pending KYC" ? (
+                        <button
+                          onClick={() => handleApproveStore(store.id)}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Approve KYC
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => showToast(`Audit log opened for ${store.name}`, "info")}
+                          className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Audit
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

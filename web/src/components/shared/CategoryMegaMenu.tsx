@@ -106,10 +106,14 @@ export function CategoryMegaMenu() {
 
           <span className="w-px h-4 bg-slate-300 mx-1.5 shrink-0" aria-hidden="true" />
 
-          {/* 3 Shortcut Action Pills */}
+          {/* Shortcut Action Pills */}
           <Link
-            href="/shop"
-            className="inline-flex items-center gap-1.5 h-6.5 px-3 rounded-full text-[12px] font-bold text-white bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md transition-all whitespace-nowrap shadow-xs"
+            href="/stores"
+            className={`inline-flex items-center gap-1.5 h-6.5 px-3 rounded-full text-[12px] font-bold transition-all whitespace-nowrap shadow-xs ${
+              pathname?.startsWith("/stores")
+                ? "text-white bg-slate-900 ring-2 ring-blue-500/50"
+                : "text-white bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md"
+            }`}
           >
             <Store className="w-3.5 h-3.5" />
             <span>Stores</span>

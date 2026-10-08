@@ -241,20 +241,46 @@ export default function ProductDetailPage() {
   const availableStock = Math.max(0, product.stock ?? 0);
   const isOutOfStock = availableStock <= 0;
 
+  // Resolved store slug
+  const storeSlug =
+    product.store_slug ||
+    (product.store_id ? product.store_id.toLowerCase() : null) ||
+    (product.category === "Electronics"
+      ? "mekong-electronics"
+      : product.category === "Fashion & Accessories" || product.category === "Clothing"
+      ? (/streetwear|hoodie|tee/i.test(product.name) ? "phnom-penh-streetwear" : "sovann-silk")
+      : product.category === "Food & Groceries"
+      ? (/pepper|sugar|salt|spice/i.test(product.name) ? "kampot-heritage-pepper" : "battambang-organic")
+      : product.category === "Home & Living"
+      ? "bm-ceramics"
+      : product.category === "Beauty & Wellness"
+      ? "cardamom-botanicals"
+      : "angkor-artisan");
+
   // Seller details (authentic Cambodian sellers)
   const seller = product.seller || {
     name:
-      product.category === "Electronics"
-        ? "Angkor Official Electronics Store"
-        : product.category === "Clothing"
-        ? "Takeo Heritage Weaving Guild"
-        : "Battambang & Kampot Artisans Cooperative",
+      storeSlug === "mekong-electronics"
+        ? "Mekong Electronics Hub"
+        : storeSlug === "sovann-silk"
+        ? "Sovann Silk Studio & Weavers"
+        : storeSlug === "phnom-penh-streetwear"
+        ? "Phnom Penh Urban Streetwear"
+        : storeSlug === "battambang-organic"
+        ? "Battambang Organic Harvest"
+        : storeSlug === "kampot-heritage-pepper"
+        ? "Kampot Heritage Pepper Co."
+        : storeSlug === "bm-ceramics"
+        ? "Banteay Meanchey Ceramic Works"
+        : storeSlug === "cardamom-botanicals"
+        ? "Cardamom Wild Botanicals"
+        : "Angkor Artisan & Handicrafts",
     rating: 4.9,
     reviews_count: 1480,
     positive_feedback: 99.4,
     response_time: "< 15 mins",
     verified: true,
-    store_id: "STORE-KH-08",
+    store_id: storeSlug,
   };
 
   return (
@@ -431,12 +457,21 @@ export default function ProductDetailPage() {
           {/* Seller Profile Card */}
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between text-xs">
             <div className="flex items-center space-x-3">
-              <div className="w-11 h-11 rounded-xl bg-slate-950 text-white flex items-center justify-center font-bold">
+              <Link
+                href={`/stores/${storeSlug}`}
+                className="w-11 h-11 rounded-xl bg-slate-950 text-white flex items-center justify-center font-bold hover:bg-slate-800 transition-colors cursor-pointer"
+                title={`Visit ${seller.name}`}
+              >
                 <Store className="w-5 h-5 text-blue-400" />
-              </div>
+              </Link>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="font-extrabold text-slate-900">{seller.name}</span>
+                  <Link
+                    href={`/stores/${storeSlug}`}
+                    className="font-extrabold text-slate-900 hover:text-blue-600 transition-colors"
+                  >
+                    {seller.name}
+                  </Link>
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 </div>
                 <div className="flex items-center space-x-2 text-[11px] text-slate-500 mt-0.5">
@@ -453,8 +488,8 @@ export default function ProductDetailPage() {
             </div>
 
             <Link
-              href={`/shop?category=${product.category}`}
-              className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-400 text-slate-800 font-semibold text-xs transition-colors shrink-0"
+              href={`/stores/${storeSlug}`}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-blue-600 hover:text-blue-600 text-slate-800 font-semibold text-xs transition-colors shrink-0"
             >
               Visit Store
             </Link>
