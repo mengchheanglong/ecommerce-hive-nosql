@@ -271,3 +271,18 @@ export interface PathfinderGraphStats {
   queryLatencyMs?: number;
 }
 
+
+export interface FleetTelemetrySnapshot {
+  schemaVersion: 1;
+  success: boolean;
+  source: "fixture" | "unavailable";
+  sourceId: string;
+  tenantId: "demo";
+  status: "fixture" | "unavailable";
+  observedAt: null;
+  storage: "none";
+  durable: false;
+  sinkOwner: "none";
+  units: { coordinates: "degrees"; speed: "km/h"; battery: "percent" };
+  riders: RiderTelemetry[];
+}

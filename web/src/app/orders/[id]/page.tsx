@@ -325,7 +325,7 @@ export default function OrderDetailPage() {
             </h3>
             <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1.5 font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Cassandra Stream Active
+              Demo tracking · no observed GPS
             </span>
           </div>
           <LiveOrderTrackingMap order={order} riders={riders} />

@@ -55,7 +55,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "delivery",
     question: "How fast is delivery within Phnom Penh?",
     answer:
-      "Orders placed before 6:00 PM in Phnom Penh are dispatched from our central fulfillment hub via our dedicated fleet of 800 Cassandra-tracked riders within 45 to 60 minutes. You can track your courier's live telemetry, speed, and location on the Order Details page.",
+      "Delivery times and rider positions in this demo are illustrative. No courier device is connected and no real delivery SLA is verified.",
   },
   {
     category: "delivery",
@@ -67,7 +67,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "delivery",
     question: "Can I track my delivery rider in real time?",
     answer:
-      "Yes. On your `/orders/[id]` page, our digital-twin map streams real-time GPS pings from the courier's device powered by Apache Cassandra (recording 160 writes/sec), showing speed, battery level, and estimated time of arrival.",
+      "The order map shows demo fixtures or simulated sandbox positions. It does not receive observed courier GPS or persist device pings; speed, battery and ETA are illustrative.",
   },
 
   // Returns & Buyer Protection
@@ -173,7 +173,7 @@ export default function HelpCenterPage() {
         </h1>
 
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-          Find answers regarding NBC Bakong KHQR payments, Cassandra rider tracking, 7-day hassle-free returns, and Cambodian merchant verification.
+          Find answers regarding NBC Bakong KHQR payments, demo rider illustrations, 7-day hassle-free returns, and Cambodian merchant verification.
         </p>
 
         {/* Global Search Bar */}
@@ -309,7 +309,7 @@ export default function HelpCenterPage() {
                   <tr>
                     <td className="py-2.5 px-3 font-bold text-slate-900">Phnom Penh (Urban)</td>
                     <td className="py-2.5 px-3 text-emerald-700 font-semibold">45 – 60 Mins (Same-Day)</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-500">Cassandra Live GPS</td>
+                    <td className="py-2.5 px-3 font-mono text-slate-500">Fixture GPS illustration</td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold">$1.50 (Free over $35)</td>
                   </tr>
                   <tr>
@@ -327,7 +327,7 @@ export default function HelpCenterPage() {
                   <tr>
                     <td className="py-2.5 px-3 font-bold text-slate-900">Kandal & Suburbs</td>
                     <td className="py-2.5 px-3 text-emerald-700 font-semibold">Same-Day / Next-Day</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-500">Cassandra Fleet Ring</td>
+                    <td className="py-2.5 px-3 font-mono text-slate-500">Fixture fleet</td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold">$2.00</td>
                   </tr>
                 </tbody>

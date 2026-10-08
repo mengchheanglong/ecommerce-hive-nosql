@@ -522,7 +522,7 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
             </div>
             <p className="text-xs text-slate-400 flex items-center space-x-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Real-Time Digital-Twin Stream (Cassandra Telemetry LSM)</span>
+              <span>Demo tracking: simulated positions or fixtures · no observed GPS</span>
             </p>
           </div>
         </div>
@@ -601,7 +601,7 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
             ) : (
               <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
                 <Radio className="w-3 h-3 text-purple-400 animate-pulse" />
-                <span>Port 9042 • Cassandra LSM Live</span>
+                <span>Demo positions · no durable GPS sink</span>
               </div>
             )}
           </div>

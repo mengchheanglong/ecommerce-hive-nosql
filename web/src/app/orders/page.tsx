@@ -45,7 +45,7 @@ export default function CustomerOrdersPage() {
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             My Orders & Delivery Tracking
           </h1>
-          <p className="text-xs text-slate-500">Live order fulfillment updates and Cassandra rider tracking across Cambodia</p>
+          <p className="text-xs text-slate-500">Live order fulfillment updates and demo rider illustrations across Cambodia</p>
         </div>
 
         {/* Status Filter Tabs */}

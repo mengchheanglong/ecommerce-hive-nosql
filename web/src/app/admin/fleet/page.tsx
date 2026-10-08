@@ -6,8 +6,6 @@ import {
   fetchSandboxVehicles,
   fetchSandboxState,
   fetchSandboxStats,
-  sendRiderPing,
-  fetchRiders,
 } from "@/lib/api";
 import { SandboxVehicle, SandboxSimState, SandboxSimStats, RiderTelemetry } from "@/types";
 import { useToast } from "@/context/ToastContext";
@@ -55,12 +53,6 @@ export default function AdminFleetPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { showToast } = useToast();
 
-  const [cqlLogs, setCqlLogs] = useState<string[]>([
-    "[Cassandra LSM] Cluster connected on port 9042. Token partitioner active.",
-    "[Cassandra LSM] Table telemetry_ks.rider_gps_pings initialized (TTL 30 days, TWCS enabled).",
-    "[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, lat, lng, speed, battery) VALUES ('V-01', '10:14:02', 11.5564, 104.9282, '28 km/h', 91%);",
-  ]);
-
   const loadData = useCallback(async () => {
     try {
       const [vehData, stateData, statsData] = await Promise.all([
@@ -69,15 +61,11 @@ export default function AdminFleetPage() {
         fetchSandboxStats(),
       ]);
 
-      if (vehData && vehData.length > 0) {
+      if (vehData) {
         setVehicles(vehData);
       }
-      if (stateData) {
-        setSimState(stateData);
-      }
-      if (statsData) {
-        setSimStats(statsData);
-      }
+      setSimState(stateData);
+      setSimStats(statsData);
     } catch {
       // Retain state
     } finally {
@@ -90,22 +78,6 @@ export default function AdminFleetPage() {
     const interval = setInterval(loadData, 2000);
     return () => clearInterval(interval);
   }, [loadData]);
-
-  // Handle Simulating Cassandra CQL write
-  const handleSimulatePing = async (vehicle: SandboxVehicle) => {
-    const lat = vehicle.position?.lat || 11.5564;
-    const lon = vehicle.position?.lon || 104.9282;
-    const speed = `${Math.round(vehicle.speed_kmh || 25)} km/h`;
-    const battery = vehicle.battery || 88;
-
-    await sendRiderPing(vehicle.driverId || vehicle.id, lat, lon, speed, battery);
-
-    const timeStr = new Date().toTimeString().slice(0, 8);
-    const log = `[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, lat, lng, speed, battery) VALUES ('${vehicle.id}', '${timeStr}', ${lat.toFixed(4)}, ${lon.toFixed(4)}, '${speed}', ${battery}%);`;
-    setCqlLogs((prev) => [log, ...prev.slice(0, 5)]);
-
-    showToast(`Cassandra LSM write committed for ${vehicle.id} (${speed})`, "success");
-  };
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
@@ -145,10 +117,10 @@ export default function AdminFleetPage() {
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2.5">
               <Truck className="w-6 h-6 text-blue-600" />
-              <span>Live Fleet & Road-Network Command Center</span>
+              <span>Simulated Fleet & Road-Network Command Center</span>
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Real-time MapLibre tracking synchronized with Logistics Sandbox (Port 3001) & Cassandra Telemetry Ring (Port 9042)
+              Simulation positions from the logistics sandbox · in-memory history · no observed GPS or Cassandra sink
             </p>
           </div>
 
@@ -195,7 +167,7 @@ export default function AdminFleetPage() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Distance</p>
             <p className="text-xl font-black text-slate-900 font-mono">
-              {simStats?.totalDistanceKm ? `${Math.round(simStats.totalDistanceKm)} km` : "1,153 km"}
+              {simStats ? `${Math.round(simStats.totalDistanceKm)} km` : "Unavailable"}
             </p>
             <p className="text-[10px] text-slate-500">Road graph traversed</p>
           </div>
@@ -208,10 +180,10 @@ export default function AdminFleetPage() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sim Status</p>
             <p className="text-xl font-black text-slate-900 font-mono uppercase">
-              {simState?.status || "RUNNING"}
+              {simState?.status ?? "Unavailable"}
             </p>
             <p className="text-[10px] text-blue-600 font-semibold">
-              Speed: {simState?.speed || 10}x
+              Speed: {simState?.speed ?? "—"}x
             </p>
           </div>
           <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -221,9 +193,9 @@ export default function AdminFleetPage() {
 
         <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cassandra Ring</p>
-            <p className="text-xl font-black text-slate-900 font-mono">160 w/s</p>
-            <p className="text-[10px] text-emerald-600 font-semibold">Port 9042 Active</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Telemetry storage</p>
+            <p className="text-xl font-black text-slate-900 font-mono">Volatile</p>
+            <p className="text-[10px] text-emerald-600 font-semibold">Sandbox memory only</p>
           </div>
           <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
             <Cpu className="w-4 h-4" />
@@ -236,29 +208,9 @@ export default function AdminFleetPage() {
         vehicles={vehicles}
         selectedVehicleId={selectedVehicleId}
         onSelectVehicle={(veh) => setSelectedVehicleId(veh ? veh.id : null)}
-        onSimulatePing={handleSimulatePing}
         simState={simState}
         onRefresh={loadData}
       />
-
-      {/* Live CQL Ingestion Feed Terminal (Compact) */}
-      <div className="bg-slate-950 text-emerald-400 p-3 sm:p-4 rounded-xl border border-slate-800 font-mono text-[11px] space-y-2 shadow-inner">
-        <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 text-[10px]">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold text-white">Cassandra CQL Write Stream (Port 9042)</span>
-          </div>
-          <span className="text-slate-500">telemetry_ks.rider_gps_pings • TWCS</span>
-        </div>
-
-        <div className="space-y-0.5">
-          {cqlLogs.slice(0, 3).map((l, i) => (
-            <div key={i} className="truncate text-emerald-300">
-              {l}
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Vehicle Filter Strip & Roster Grid */}
       <div className="space-y-4">
@@ -353,7 +305,7 @@ export default function AdminFleetPage() {
                     <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex items-center space-x-1.5">
                       <Battery className="w-3.5 h-3.5 text-emerald-600" />
                       <span className="font-semibold text-slate-800">
-                        {vehicle.battery || 88}%
+                        {vehicle.battery ?? "—"}%
                       </span>
                     </div>
                   </div>
@@ -379,16 +331,7 @@ export default function AdminFleetPage() {
                     <span>Track on Map</span>
                   </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSimulatePing(vehicle);
-                    }}
-                    className="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold transition-all flex items-center justify-center cursor-pointer"
-                    title="Send Cassandra Ping"
-                  >
-                    <Radio className="w-3 h-3" />
-                  </button>
+
                 </div>
               </div>
             );

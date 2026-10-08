@@ -16,10 +16,10 @@ export default function MerchantFleetRedirect() {
           Promoted to Platform HQ
         </span>
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-          Cassandra 800-Rider Fleet Telemetry
+          Demo Fleet Telemetry
         </h2>
         <p className="text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
-          The 800-courier live telemetry console and Cassandra LSM ring (160 writes/sec) have been segregated into the dedicated <strong>Platform Administration HQ</strong> to reflect realistic marketplace operations.
+          The fixture fleet console and separate sandbox simulation map are available in the dedicated <strong>Platform Administration HQ</strong> to reflect realistic marketplace operations.
         </p>
       </div>
 

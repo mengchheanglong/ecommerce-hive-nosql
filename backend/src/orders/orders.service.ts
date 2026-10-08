@@ -1,18 +1,11 @@
 import { Injectable, Inject, BadRequestException, NotFoundException } from "@nestjs/common";
 import { Db } from "mongodb";
+import { InventoryService } from "../inventory/inventory.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db) {}
-
-  private validTransitions: Record<string, string[]> = {
-    Pending: ["Preparing", "Out for Delivery", "Cancelled"],
-    Preparing: ["Out for Delivery", "Cancelled"],
-    "Out for Delivery": ["Delivered", "Cancelled"],
-    Delivered: [],
-    Cancelled: [],
-  };
+  constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db, private readonly inventory: InventoryService) {}
 
   private couriers: Record<string, { name: string; phone: string }> = {
     "R-101": { name: "Chan Vuthy", phone: "+855 12 999 888" },
@@ -217,76 +210,16 @@ export class OrdersService {
     return { success: true, source: "fallback", count: this.fallbackOrders.length, orders: this.fallbackOrders };
   }
 
+  private courierFields(id?: string): Record<string, string> {
+    if (!id) return {};
+    const courier = this.couriers[id];
+    return { assigned_courier_id: id, ...(courier ? { assigned_courier_name: courier.name, courier_phone: courier.phone } : {}) };
+  }
+
   async create(dto: CreateOrderDto) {
-    const order: any = {
-      order_id: dto.order_id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-      customer_id: dto.customer_id || "C0457",
-      customer_name: dto.customer_name,
-      items: dto.items,
-      total: Number(dto.total),
-      province: dto.province,
-      payment_method: dto.payment_method,
-      status: dto.status || "Pending",
-      delivery_address: dto.delivery_address,
-      created_at: new Date(),
-    };
-
-    if (dto.assigned_courier_id) {
-      order.assigned_courier_id = dto.assigned_courier_id;
-      const courier = this.couriers[dto.assigned_courier_id];
-      if (courier) {
-        order.assigned_courier_name = courier.name;
-        order.courier_phone = courier.phone;
-      }
-    }
-
-    if (this.db) {
-      // 1. Validate stock availability before accepting order
-      if (Array.isArray(order.items)) {
-        for (const item of order.items) {
-          if (item && item.product_id && item.quantity) {
-            const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
-            if (prod) {
-              const currentStock = prod.stock ?? 0;
-              if (currentStock <= 0) {
-                throw new BadRequestException(
-                  `Item "${prod.name || item.product_id}" is currently out of stock.`
-                );
-              }
-              if (Number(item.quantity) > currentStock) {
-                throw new BadRequestException(
-                  `Insufficient stock for "${prod.name || item.product_id}". Only ${currentStock} units available.`
-                );
-              }
-            }
-          }
-        }
-      }
-
-      const res = await this.db.collection("orders").insertOne(order);
-
-      // 2. Safe inventory deduction (strictly clamped at 0, never negative)
-      if (Array.isArray(order.items)) {
-        for (const item of order.items) {
-          if (item && item.product_id && item.quantity) {
-            const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
-            const currentStock = prod ? (prod.stock ?? 0) : 0;
-            const newStock = Math.max(0, currentStock - Number(item.quantity));
-            await this.db.collection("products").updateOne(
-              { product_id: item.product_id },
-              { $set: { stock: newStock, updated_at: new Date() } }
-            );
-          }
-        }
-      }
-      // Notify logistics sandbox digital twin immediately via webhook
-      this.notifyLogisticsSandbox(order).catch(() => {});
-
-      return { success: true, insertedId: res.insertedId, order };
-    }
-    this.fallbackOrders.unshift(order);
-    this.notifyLogisticsSandbox(order).catch(() => {});
-    return { success: true, order };
+    const result = await this.inventory.reserve(dto, this.courierFields(dto.assigned_courier_id));
+    if (!result.replayed) this.notifyLogisticsSandbox(result.order).catch(() => {});
+    return result;
   }
 
   private async notifyLogisticsSandbox(order: any): Promise<void> {
@@ -303,74 +236,7 @@ export class OrdersService {
   }
 
   async updateStatus(dto: UpdateOrderStatusDto) {
-    let currentStatus: string | undefined;
-    let existingDoc: any = null;
-
-    if (this.db) {
-      existingDoc = await this.db.collection("orders").findOne({ order_id: dto.order_id });
-      if (existingDoc) currentStatus = existingDoc.status;
-    }
-
-    if (!currentStatus) {
-      const fallback = this.fallbackOrders.find((o) => o.order_id === dto.order_id);
-      if (fallback) {
-        currentStatus = fallback.status;
-        existingDoc = fallback;
-      }
-    }
-
-    if (currentStatus && currentStatus !== dto.status) {
-      const allowed = this.validTransitions[currentStatus];
-      if (allowed && !allowed.includes(dto.status)) {
-        throw new BadRequestException(
-          `Invalid fulfillment transition from "${currentStatus}" to "${dto.status}". Allowed next states: ${
-            allowed.join(", ") || "none (terminal state)"
-          }`
-        );
-      }
-    }
-
-    const updateFields: any = { status: dto.status, updated_at: new Date() };
-    if (dto.status === "Delivered") {
-      updateFields.delivered_at = new Date();
-    }
-
-    if (dto.courier_id) {
-      updateFields.assigned_courier_id = dto.courier_id;
-      const courier = this.couriers[dto.courier_id] || {
-        name: `Driver ${dto.courier_id.replace('DRV-', '#')}`,
-        phone: "+855 12 999 888",
-      };
-      updateFields.assigned_courier_name = courier.name;
-      updateFields.courier_phone = courier.phone;
-    }
-
-    // Restock if order is cancelled
-    if (dto.status === "Cancelled" && currentStatus !== "Cancelled" && existingDoc && Array.isArray(existingDoc.items)) {
-      if (this.db) {
-        for (const item of existingDoc.items) {
-          if (item && item.product_id && item.quantity) {
-            await this.db.collection("products").updateOne(
-              { product_id: item.product_id },
-              { $inc: { stock: Number(item.quantity) }, $set: { updated_at: new Date() } }
-            );
-          }
-        }
-      }
-    }
-
-    if (this.db) {
-      await this.db
-        .collection("orders")
-        .updateOne({ order_id: dto.order_id }, { $set: updateFields });
-      return { success: true, order_id: dto.order_id, ...updateFields };
-    }
-
-    const order = this.fallbackOrders.find((o) => o.order_id === dto.order_id);
-    if (order) {
-      Object.assign(order, updateFields);
-    }
-    return { success: true, order_id: dto.order_id, ...updateFields };
+    return this.inventory.transition(dto, this.courierFields(dto.courier_id));
   }
 
   async findOne(orderId: string) {

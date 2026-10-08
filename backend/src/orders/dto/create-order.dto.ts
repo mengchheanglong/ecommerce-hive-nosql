@@ -2,10 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateOrderDto {
-  @ApiPropertyOptional({ example: "ORD-100001" })
-  @IsOptional()
+  @ApiProperty({ example: "ORD-100001", description: "Stable idempotency key: reuse for identical checkout retries" })
+  @IsNotEmpty()
   @IsString()
-  order_id?: string;
+  order_id: string;
 
   @ApiPropertyOptional({ example: "C0457" })
   @IsOptional()

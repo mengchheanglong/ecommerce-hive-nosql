@@ -1,5 +1,12 @@
 # 🛍️ ecommerce-hive-nosql
 
+## Project status: retired e-commerce reference
+
+This project is retained as an e-commerce and data-platform learning reference.
+The final maintenance changes correct checkout inventory, retry handling and telemetry
+claims. No further feature development or warehouse conversion is planned here.
+Warehouse and distribution operations are developed independently in supply-chain-platform.
+
 > A high-scale **polyglot microservices e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 microservices backend**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.1.7-black?style=flat-square&logo=next.js)
@@ -17,7 +24,30 @@
 
 ---
 
+## Current inventory behavior (P0-02)
+
+New orders reserve available stock, shipment consumes the reservation, delivery performs
+no second deduction, and pre-shipment cancellation releases the hold. All changes use one
+MongoDB transaction and an inventory event ledger. Stable order IDs make checkout retries
+idempotent. Offline order mutations fail; the browser no longer reports local fallback writes
+as confirmed orders. Legacy orders require reconciliation before inventory transitions.
+
+MongoDB must run as a replica set. The original standalone Compose command does not satisfy
+this requirement. Use the opt-in `compose.inventory.yaml` overlay described in the
+[inventory policy](docs/inventory-reservations.md). Run `pnpm test:inventory` from `backend`
+for isolated, disposable database tests. This is a reference/demo application; these changes
+do not establish production authorization, tenant isolation or payment verification.
+
 ## 📌 Microservices Architectural Overview
+
+### Current telemetry behavior (P0-03)
+
+`GET /api/riders` returns labelled demo fixtures with no observed GPS, Cassandra driver,
+durable sink or measured throughput. Ping writes return 503 with `stored: false`.
+The UI removes fake CQL streams and write-success controls; unavailable reads clear the
+roster. Simulated road-map positions and volatile history belong to logistics-sandbox.
+See [telemetry policy](docs/telemetry-source.md). The design diagrams and datastore
+selection examples below are lab proposals, not evidence of implemented telemetry scale.
 
 **`ecommerce-hive-nosql`** resolves the scalability, latency, and schema bottlenecks of monolithic databases by decomposing the marketplace into **autonomous microservices** backed by **polyglot persistence**.
 
@@ -63,7 +93,7 @@ The platform organizes its business logic across isolated microservice domains:
 1. **`Catalog Microservice` (`/api/products`):** Powered by **MongoDB** document storage to manage polymorphic product specifications across Electronics, Clothing, and Groceries without schema migration overhead.
 2. **`Cart & Session Microservice`:** Powered by **Redis** key-value caching to deliver sub-millisecond retrieval on every page load with 24-hour automatic TTL expiration.
 3. **`Orders & Fulfillment Microservice` (`/api/orders`):** Orchestrates transactional checkout, Bakong KHQR dynamic payment reconciliation, and delivery state transitions (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`).
-4. **`Telemetry Microservice` (`/api/riders`):** Backed by **Apache Cassandra** to ingest 13.8M location pings per day (160 writes/sec) from 800 riders with `TimeWindowCompactionStrategy` and automated TTL.
+4. **`Telemetry Module` (`/api/riders`):** Returns versioned demo fixtures. GPS ingestion is disabled because no durable sink or Cassandra driver exists. Cassandra schema/scale examples are proposed lab designs.
 5. **`Referral Microservice` (`/api/referrals`):** Backed by **Neo4j** graph database utilizing index-free adjacency to traverse 3-tier deep invitation trees and calculate referral commission payouts in $O(1)$ memory pointer operations.
 6. **`Warehouse Analytics Microservice` (`/api/analytics`):** Orchestrates the **Apache Hive on HDFS** batch analytics pipeline, querying ORC-compressed datasets using dynamic partition pruning and customer bucketing.
 
@@ -75,7 +105,7 @@ The platform organizes its business logic across isolated microservice domains:
 | :--- | :--- | :--- | :--- | :--- |
 | **`catalog-service`** | Product Catalog | **MongoDB** (Document) | High-read, polymorphic specs | Dynamic JSON documents support polymorphic category fields (screens, fabric, expiration) without schema migrations. |
 | **`cart-service`** | Active Carts & Sessions | **Redis** (Key-Value) | Sub-millisecond latency | In-memory key access guarantees < 1ms response latency on every page view with automated 24-hour TTL expiry. |
-| **`telemetry-service`** | Rider GPS Fleet | **Cassandra** (Column-Family)| 160 writes/sec (13.8M/day) | Masterless peer-to-peer ring with LSM sequential commit logs absorbs heavy time-series writes without row locks. |
+| **`telemetry-service`** | Demo Rider Fixtures | **No durable sink** | Seven illustrative rows | Cassandra is a proposed lab schema; measured throughput and device ingestion are not implemented. |
 | **`referral-service`** | Referral Network | **Neo4j** (Graph) | Multi-tier hops (1 to 3) | Index-free adjacency traverses friend-of-a-friend relationships in O(1) memory pointer jumps instead of recursive SQL. |
 | **`warehouse-service`**| Monthly Reporting | **Apache Hive on HDFS** | 2,000,000 orders/month | Columnar ORC compression, partition pruning by month, and bucketing by customer ID for fast aggregations. |
 
@@ -99,7 +129,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 - **Inventory & Stock Management (`/merchant/products`):** Full catalog management data table with category filter, search by SKU/name, and direct MongoDB document deletion.
 - **Create Product Document (`/merchant/products/new`):** Dynamic form supporting category polymorphic specifications (Screen Size and Warranty for Electronics, Size and Colours for Clothing, Net Weight and Expiry for Groceries).
 - **Fulfillment & Order State Machine (`/merchant/orders` & `/merchant/orders/[id]`):** Live order queue with state machine status updates advancing orders from Pending to Delivered.
-- **Fleet Telemetry Command (`/merchant/fleet`):** Real-time Apache Cassandra ingestion stream (160 writes/sec, 13.8M rows/day), live CQL log viewer, and city fleet dispatch filters.
+- **Fleet Telemetry (`/merchant/fleet` → `/admin/fleet`):** Separate simulated road map; the admin cockpit shows labelled fixture riders with city filters. No CQL stream or manual GPS ingestion exists.
 - **Social Referral Network (`/merchant/referrals`):** Neo4j 3-tier deep tree network visualizer calculating multi-tier commission rewards (Tier 1: 5%, Tier 2: 3%, Tier 3: 1%).
 - **Warehouse Analytics Workbench (`/merchant/warehouse`):** Interactive Apache Hive console for analytical queries (D1 through D4), Tez execution time benchmark, and ORC optimization breakdown.
 
@@ -113,7 +143,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   ├── src/
 │   │   ├── catalog/                 # MongoDB Catalog controller, service & DTOs
 │   │   ├── orders/                  # MongoDB Orders & state machine controller & service
-│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service (160 writes/sec)
+│   │   ├── telemetry/               # Versioned rider fixtures; GPS ingestion disabled (no sink)
 │   │   ├── referral/                # Neo4j Graph referral service (3-tier social graph)
 │   │   ├── warehouse/               # Apache Hive reporting service (OLAP batch)
 │   │   ├── database/                # Native MongoDB connection module
@@ -140,7 +170,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   │       ├── merchant/            # Merchant Portal Shell Layout & Overview
 │   │       │   ├── products/        # Inventory Management Table & Create Form (/new)
 │   │       │   ├── orders/          # Fulfillment Queue & State Machine (/orders/[id])
-│   │       │   ├── fleet/           # Cassandra Live Fleet Telemetry (160 writes/sec)
+│   │       │   ├── fleet/           # Demo fleet fixtures and separate sandbox view
 │   │       │   ├── referrals/       # Neo4j 3-Level Referral Reward Network
 │   │       │   └── warehouse/       # Apache Hive OLAP Workbench (Queries D1-D4)
 │   │       └── api/                 # Next.js API Routes (products, orders, riders, referrals, analytics)

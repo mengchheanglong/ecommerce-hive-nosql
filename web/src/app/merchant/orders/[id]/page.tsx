@@ -106,7 +106,7 @@ export default function MerchantOrderDetailPage() {
     return (
       <div className="p-16 text-center text-slate-500 font-medium">
         <div className="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-xs">Loading order document and courier fleet from MongoDB & Cassandra...</p>
+        <p className="text-xs">Loading order document and courier fleet from MongoDB and demo fleet fixtures...</p>
       </div>
     );
   }
@@ -229,7 +229,7 @@ export default function MerchantOrderDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Truck className="w-4 h-4 text-blue-700" />
-                <h4 className="font-extrabold text-slate-900">Cassandra Courier Fleet Dispatch</h4>
+                <h4 className="font-extrabold text-slate-900">Demo Courier Fleet Dispatch</h4>
               </div>
               <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
                 800 Live Couriers Available

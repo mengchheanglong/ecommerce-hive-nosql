@@ -11,7 +11,7 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
   const steps = [
     { key: "Pending", label: "Order Placed", desc: "Logged in MongoDB" },
     { key: "Preparing", label: "Warehouse Prep", desc: "Picking & packing" },
-    { key: "Out for Delivery", label: "Rider Dispatched", desc: "Cassandra GPS active" },
+    { key: "Out for Delivery", label: "Rider Dispatched", desc: "Demo GPS illustration" },
     { key: "Delivered", label: "Delivered", desc: "Confirmed & settled" },
   ];
 

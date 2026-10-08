@@ -604,7 +604,7 @@ export default function ProductDetailPage() {
             <p className="text-slate-600 text-[11px] leading-relaxed">
               Order within <strong className="text-slate-900">3 hrs 42 mins</strong> to receive delivery in{" "}
               <strong className="text-emerald-800">{selectedProvince}</strong> by{" "}
-              <strong className="text-slate-900">Tomorrow, 2:00 PM</strong> via our 800-rider Cassandra fleet.
+              <strong className="text-slate-900">Tomorrow, 2:00 PM</strong> with illustrative demo delivery details.
             </p>
 
             <div className="flex items-center space-x-4 pt-1 text-[11px] text-slate-500 font-medium border-t border-slate-200/60">

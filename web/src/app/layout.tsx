@@ -12,7 +12,7 @@ import { AuthProvider } from "@/context/AuthContext";
 export const metadata: Metadata = {
   title: "Rentify Marketplace — High-Scale Polyglot E-Commerce Platform",
   description:
-    "Production-grade distributed e-commerce architecture powered by MongoDB 8.0, Apache Cassandra, Neo4j, and Apache Hive on HDFS",
+    "Reference marketplace with MongoDB inventory transactions, demo telemetry fixtures and data platform examples",
 };
 
 export default function RootLayout({

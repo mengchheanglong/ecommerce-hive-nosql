@@ -1,5 +1,9 @@
 # AI Agent Instructions: ecommerce-hive-nosql
 
+This is a retired e-commerce reference. Preserve its e-commerce scope. Do not implement
+warehouse/distribution platform features here; those belong to supply-chain-platform.
+Further changes require a specific user request.
+
 ## Project Overview
 - **Project Name:** ecommerce-hive-nosql
 - **Description:** A polyglot persistence data platform and interactive Next.js full-stack marketplace for high-scale e-commerce workloads, combining MongoDB, Apache Cassandra, Redis, Neo4j, and Apache Hive on HDFS, featuring fully separated Customer Storefront and Merchant Operations portals.
@@ -42,7 +46,7 @@
 │   ├── src/
 │   │   ├── catalog/                 # MongoDB Catalog microservice (GET, POST, PUT, DELETE)
 │   │   ├── orders/                  # MongoDB Orders & state machine (GET, GET :id, POST, PUT)
-│   │   ├── telemetry/               # Cassandra Rider GPS telemetry service (160 writes/sec)
+│   │   ├── telemetry/               # Versioned rider fixtures; GPS ingestion disabled (no sink)
 │   │   ├── referral/                # Neo4j Graph referral service (3-tier social graph)
 │   │   ├── warehouse/               # Apache Hive reporting service (OLAP batch)
 │   │   ├── database/                # Native MongoDB connection module
@@ -78,7 +82,7 @@
     │       │   │   └── new/         # Add Product Form with Polymorphic Specs
     │       │   ├── orders/          # Fulfillment Queue & State Machine
     │       │   │   └── [id]/        # Order Fulfillment Inspector
-    │       │   ├── fleet/           # Cassandra Live Fleet Telemetry (160 writes/sec)
+    │       │   ├── fleet/           # Demo fleet fixtures and separate sandbox view
     │       │   ├── referrals/       # Neo4j 3-Level Referral Reward Network
     │       │   └── warehouse/       # Apache Hive OLAP Workbench (Queries D1-D4)
     │       └── api/                 # Next.js API Routes (/api/products, orders, riders, referrals, analytics)

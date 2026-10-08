@@ -82,7 +82,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/merchant/fleet" className="hover:text-slate-900 transition-colors">
-                  Fleet Telemetry (Cassandra)
+                  Demo Fleet Telemetry
                 </Link>
               </li>
               <li>

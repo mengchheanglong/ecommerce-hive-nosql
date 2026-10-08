@@ -7,7 +7,9 @@
     "build": "tsc -b --force",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
-    "dev": "nest start --watch"
+    "dev": "nest start --watch",
+    "test": "pnpm build && node --test tests/inventory.unit.test.cjs tests/web-write-boundary.unit.test.cjs tests/telemetry.unit.test.cjs",
+    "test:inventory": "powershell -NoProfile -File scripts/Test-Inventory.ps1"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

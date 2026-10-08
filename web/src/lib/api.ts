@@ -2,6 +2,7 @@ import {
   Product,
   OrderRecord,
   RiderTelemetry,
+  FleetTelemetrySnapshot,
   ReferralNode,
   StoreTenant,
   SandboxVehicle,
@@ -19,7 +20,6 @@ import {
   findOrderById,
   addOrderToStore,
   updateOrderStatusInStore,
-  getRidersStore,
   addProductReview,
   INITIAL_REFERRALS,
   getStoreTenants,
@@ -156,133 +156,36 @@ export async function fetchProductById(id: string): Promise<Product | null> {
   return findProductById(id) || null;
 }
 
-export async function createProduct(
-  productData: Partial<Product>
-): Promise<{ success: boolean; product?: Product; error?: string }> {
-  // 1. Primary: NestJS Catalog Microservice
+async function mutateCatalog(path: string, method: string, body?: Partial<Product>): Promise<{ success: boolean; product?: Product; error?: string }> {
   try {
-    const res = await fetch(`${BACKEND_BASE}/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(productData),
+    const res = await fetch(`${BACKEND_BASE}${path}`, {
+      method, headers: { "Content-Type": "application/json" },
+      ...(body ? { body: JSON.stringify(body) } : {}),
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.product) {
-        addProductToStore(data.product);
-        return { success: true, product: data.product };
-      }
-      return { success: true, product: data };
-    }
-  } catch (err: any) {
-    // Proceed
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.success !== true) return { success: false, error: data.message || "Catalog mutation was not confirmed" };
+    return data;
+  } catch {
+    return { success: false, error: "Catalog mutation was not confirmed; the backend is unavailable" };
   }
-
-  // 2. Secondary: Next.js API Route
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(productData),
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 3. Fallback: Local synchronized store
-  const newProd: Product = {
-    product_id: productData.product_id || `P${Math.floor(1000 + Math.random() * 9000)}`,
-    name: productData.name || "Untitled Product",
-    category: productData.category || "Electronics",
-    price: Number(productData.price) || 10,
-    stock: productData.stock !== undefined ? Number(productData.stock) : 25,
-    status: productData.status || "active",
-    description: productData.description,
-    screen_size: productData.screen_size,
-    warranty: productData.warranty,
-    size: productData.size,
-    colours: productData.colours,
-    weight: productData.weight,
-    expiry_date: productData.expiry_date,
-    rating: 5.0,
-    reviews_count: 0,
-    reviews: [],
-    created_at: new Date().toISOString(),
-  };
-  addProductToStore(newProd);
-  return { success: true, product: newProd };
 }
 
-export async function updateProduct(
-  productId: string,
-  productData: Partial<Product>
-): Promise<{ success: boolean; product?: Product; error?: string }> {
-  // 1. Primary: NestJS Catalog Microservice
-  try {
-    const res = await fetch(`${BACKEND_BASE}/products/${productId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(productData),
-    });
-    if (res.ok) {
-      updateProductInStore(productId, productData);
-      return await res.json();
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 2. Secondary: Next.js API Route
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/products/${productId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(productData),
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 3. Resilient synchronized store
-  const updated = updateProductInStore(productId, productData);
-  return { success: !!updated, product: updated || undefined };
+export async function createProduct(productData: Partial<Product>): Promise<{ success: boolean; product?: Product; error?: string }> {
+  const result = await mutateCatalog("/products", "POST", productData);
+  if (result.success && result.product) addProductToStore(result.product);
+  return result;
 }
 
-export async function deleteProduct(productId: string): Promise<{ success: boolean }> {
-  // 1. Primary: NestJS Catalog Microservice
-  try {
-    const res = await fetch(`${BACKEND_BASE}/products/${productId}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      deleteProductFromStore(productId);
-      return await res.json();
-    }
-  } catch (err) {
-    // Proceed
-  }
+export async function updateProduct(productId: string, productData: Partial<Product>): Promise<{ success: boolean; product?: Product; error?: string }> {
+  const result = await mutateCatalog(`/products/${productId}`, "PUT", productData);
+  if (result.success && result.product) updateProductInStore(productId, result.product);
+  return result;
+}
 
-  // 2. Secondary: Next.js API Route
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/products?id=${productId}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      deleteProductFromStore(productId);
-      return await res.json();
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  deleteProductFromStore(productId);
-  return { success: true };
+export async function deleteProduct(productId: string): Promise<{ success: boolean; error?: string }> {
+  const result = await mutateCatalog(`/products/${productId}`, "DELETE");
+  if (result.success) deleteProductFromStore(productId);
+  return result;
 }
 
 export async function submitProductReview(
@@ -410,41 +313,10 @@ export async function createOrder(
       };
     }
   } catch (err) {
-    // Proceed to fallback only if backend service is unreachable
+    // Never substitute a local order for an unconfirmed backend write
   }
 
-  // 2. Secondary: Next.js API Route
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/orders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.order) return { success: true, order: data.order };
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 3. Fallback: Local synchronized store
-  const createdOrder: OrderRecord = {
-    order_id: orderPayload.order_id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-    customer_id: orderPayload.customer_id || "C0457",
-    customer_name: orderPayload.customer_name || "Sokha Meas",
-    items: orderPayload.items || [],
-    total: Number(orderPayload.total) || 0,
-    province: orderPayload.province || "Phnom Penh",
-    payment_method: orderPayload.payment_method || "Bakong KHQR",
-    status: orderPayload.status || "Pending",
-    delivery_address: orderPayload.delivery_address,
-    promo_code: orderPayload.promo_code,
-    discountUSD: orderPayload.discountUSD,
-    created_at: new Date().toISOString(),
-  };
-  addOrderToStore(createdOrder);
-  return { success: true, order: createdOrder };
+  return { success: false, error: "Order was not confirmed. Retry with the same order ID when the backend is available." };
 }
 
 export async function updateOrderStatus(
@@ -474,90 +346,42 @@ export async function updateOrderStatus(
     // Proceed
   }
 
-  // 2. Secondary: Next.js API Route
+  return { success: false, error: "Order update was not confirmed. Retry the same status when the backend is available." };
+}
+
+export async function fetchFleetTelemetry(city?: string): Promise<FleetTelemetrySnapshot> {
+  const query = city && city !== "All" ? `?city=${encodeURIComponent(city)}` : "";
   try {
-    const res = await fetch(`${LOCAL_API_BASE}/orders/${orderId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, force, courier_id: courierId }),
-    });
+    const res = await fetch(`${BACKEND_BASE}/riders${query}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
-      return { success: true, order: data.order };
-    } else {
-      const errData = await res.json();
-      if (errData.error) return { success: false, error: errData.error };
+      if (data.schemaVersion === 1 && data.success === true && data.source === "fixture" &&
+          data.status === "fixture" && data.sourceId === "marketplace-demo-riders-v1" &&
+          data.tenantId === "demo" && data.observedAt === null && data.storage === "none" &&
+          data.durable === false && data.sinkOwner === "none" &&
+          data.units?.coordinates === "degrees" && data.units?.speed === "km/h" &&
+          data.units?.battery === "percent" && Array.isArray(data.riders) &&
+          data.riders.every((r: RiderTelemetry) => typeof r.id === "string" && typeof r.name === "string" &&
+            typeof r.city === "string" && typeof r.status === "string" && typeof r.speed === "string" &&
+            Number.isFinite(r.lat) && Number.isFinite(r.lng) && Number.isFinite(r.battery))) return data;
     }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 3. Fallback: Local synchronized store
-  return updateOrderStatusInStore(orderId, status, force, courierId);
+  } catch { /* Unavailable is explicit; do not substitute browser fixtures. */ }
+  return {
+    schemaVersion: 1, success: false, source: "unavailable", sourceId: "marketplace-demo-riders-v1",
+    tenantId: "demo", status: "unavailable", observedAt: null, storage: "none",
+    durable: false, sinkOwner: "none", units: { coordinates: "degrees", speed: "km/h", battery: "percent" }, riders: [],
+  };
 }
 
 export async function fetchRiders(city?: string): Promise<RiderTelemetry[]> {
-  const url = city && city !== "All" ? `?city=${encodeURIComponent(city)}` : "";
-
-  // 1. Primary: NestJS Telemetry Microservice (Cassandra)
-  try {
-    const res = await fetch(`${BACKEND_BASE}/riders${url}`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.riders && Array.isArray(data.riders)) {
-        return data.riders;
-      }
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  // 2. Secondary: Next.js API Route
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/riders${url}`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.riders) return data.riders;
-    }
-  } catch (err) {
-    // Proceed
-  }
-
-  return getRidersStore(city);
+  return (await fetchFleetTelemetry(city)).riders;
 }
 
+/** Compatibility boundary: no GPS writer exists in this application. */
 export async function sendRiderPing(
-  riderId: string,
-  lat: number | string,
-  lng: number | string,
-  speed?: string,
-  battery?: number
-): Promise<{ success: boolean; message?: string }> {
-  try {
-    const res = await fetch(`${BACKEND_BASE}/riders/ping`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rider_id: riderId, lat, lng, speed, battery }),
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    // Fallback
-  }
-
-  try {
-    const res = await fetch(`${LOCAL_API_BASE}/riders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rider_id: riderId, lat, lng, speed, battery }),
-    });
-    if (res.ok) return await res.json();
-  } catch (err) {
-    // Fallback
-  }
-
-  return { success: true, message: `Ping simulated for ${riderId}` };
+  _riderId: string, _lat: number | string, _lng: number | string, _speed?: string, _battery?: number,
+): Promise<{ success: boolean; message: string }> {
+  return { success: false, message: "GPS ingestion is disabled; no persistence sink is configured." };
 }
 
 export async function fetchReferrals(customerId?: string): Promise<{
@@ -909,30 +733,9 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     });
   }
 
-  // 4. Cassandra Telemetry Store (9042)
-  try {
-    const t0 = performance.now();
-    const res = await fetch(`${BACKEND_BASE}/riders`, { cache: "no-store" });
-    const lat = Math.round(performance.now() - t0);
-    const data = res.ok ? await res.json() : null;
-    nodes.push({
-      name: "Apache Cassandra",
-      role: "High-Throughput GPS Telemetry (TWCS)",
-      port: 9042,
-      status: res.ok ? "Healthy" : "Degraded",
-      latencyMs: lat,
-      details: data?.metrics?.ringWrites || "telemetry_ks.rider_gps_pings active",
-    });
-  } catch {
-    nodes.push({
-      name: "Apache Cassandra",
-      role: "High-Throughput GPS Telemetry (TWCS)",
-      port: 9042,
-      status: "Offline",
-      latencyMs: 0,
-      details: "Telemetry stream disconnected",
-    });
-  }
+  // A fixture endpoint is not a Cassandra health probe.
+  nodes.push({ name: "Apache Cassandra", role: "Telemetry sink not configured", port: 9042,
+    status: "Offline", latencyMs: 0, details: "No driver or persistence acknowledgement; riders are demo fixtures" });
 
   // 5. MongoDB Document Store (27017)
   nodes.push({

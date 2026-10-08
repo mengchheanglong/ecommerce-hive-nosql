@@ -40,7 +40,7 @@ export function AdminHeader({ onToggleSidebar, title, subtitle }: AdminHeaderPro
         {/* Datastore Status Chips (from the Blueprint Trust band!) */}
         <div className="hidden 2xl:flex items-center space-x-2 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200/80">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>MongoDB • Redis • Cassandra • Neo4j • Hive Cluster Online</span>
+          <span>Reference marketplace · telemetry fixtures · datastore health varies</span>
         </div>
 
         {/* 3-Role Quick Switcher */}

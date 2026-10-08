@@ -488,7 +488,7 @@ export default function StorefrontHomePage() {
               <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 space-y-1">
                 <Truck className="w-5 h-5 text-blue-600" />
                 <p className="text-[11px] font-bold text-slate-900">800 Riders</p>
-                <p className="text-[9px] text-slate-500">Live Cassandra GPS</p>
+                <p className="text-[9px] text-slate-500">Fixture GPS illustration</p>
               </div>
 
               <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 space-y-1">

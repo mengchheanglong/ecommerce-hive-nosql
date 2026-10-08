@@ -1,4 +1,5 @@
 "use client";
+import { FleetConsole } from "@/components/merchant/FleetConsole";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
@@ -17,7 +18,6 @@ import {
   setSandboxSpeed,
   fetchPathfinderStats,
   fetchEcosystemHealthMatrix,
-  sendRiderPing,
   EcosystemHealthNode,
 } from "@/lib/api";
 import {
@@ -75,14 +75,6 @@ export default function PlatformAdminOverview() {
   const { formatPrice } = useCurrency();
   const { showToast } = useToast();
 
-  // Live Cassandra Telemetry Stream Logs
-  const [radarLogs, setRadarLogs] = useState<string[]>([
-    "[Cassandra LSM] Cluster connected on port 9042. Token partitioner active.",
-    "[Cassandra LSM] KeySpace telemetry_ks: rider_gps_pings (TTL 30 days, TWCS enabled).",
-    "[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, lat, lng, speed, battery) VALUES ('V-01', '13:22:10', 11.5564, 104.9282, '28 km/h', 88%);",
-  ]);
-  const [isPinging, setIsPinging] = useState(false);
-
   // Load all ecosystem state
   const loadAllState = useCallback(async () => {
     try {
@@ -98,7 +90,7 @@ export default function PlatformAdminOverview() {
       if (ordData && ordData.length > 0) setOrders(ordData);
       if (simSt) setSandboxState(simSt);
       if (simStat) setSandboxStats(simStat);
-      if (vehs && vehs.length > 0) setVehicles(vehs);
+      setVehicles(vehs);
       if (pfStats) setPathfinderStats(pfStats);
       if (ecoNodes && ecoNodes.length > 0) setEcosystemNodes(ecoNodes);
     } catch (err) {
@@ -114,22 +106,6 @@ export default function PlatformAdminOverview() {
     const interval = setInterval(loadAllState, 2500);
     return () => clearInterval(interval);
   }, [loadAllState]);
-
-  // Periodic Cassandra write log generation with real vehicle positions
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (vehicles.length > 0) {
-        const v = vehicles[Math.floor(Math.random() * vehicles.length)];
-        const lat = v.position?.lat?.toFixed(4) || "11.5564";
-        const lng = v.position?.lon?.toFixed(4) || "104.9282";
-        const speed = Math.round(v.speed_kmh || 24);
-        const timeStr = new Date().toTimeString().slice(0, 8);
-        const cql = `[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, lat, lng, speed, battery) VALUES ('${v.id}', '${timeStr}', ${lat}, ${lng}, '${speed} km/h', ${v.battery || 90}%);`;
-        setRadarLogs((prev) => [cql, ...prev.slice(0, 4)]);
-      }
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [vehicles]);
 
   // Real GMV calculated from actual MongoDB orders
   const calculatedGMV = useMemo(() => {
@@ -178,24 +154,6 @@ export default function PlatformAdminOverview() {
     setIsSimLoading(false);
   };
 
-  // Handle Manual Cassandra Ping
-  const handleTriggerRadarPing = async () => {
-    setIsPinging(true);
-    const targetVeh = vehicles.length > 0 ? vehicles[0] : null;
-    const vId = targetVeh?.id || "V-01";
-    const lat = targetVeh?.position?.lat || 11.5564;
-    const lng = targetVeh?.position?.lon || 104.9282;
-    const speed = `${Math.round(targetVeh?.speed_kmh || 26)} km/h`;
-    const battery = targetVeh?.battery || 89;
-
-    await sendRiderPing(targetVeh?.driverId || vId, lat, lng, speed, battery);
-    const timeStr = new Date().toTimeString().slice(0, 8);
-    const cql = `[Cassandra LSM] INSERT INTO rider_gps_pings (rider_id, ping_time, lat, lng, speed, battery) VALUES ('${vId}', '${timeStr}', ${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}, '${speed}', ${battery}%);`;
-    setRadarLogs((prev) => [cql, ...prev.slice(0, 4)]);
-    setIsPinging(false);
-    showToast("Cassandra LSM write committed (Port 9042)", "success");
-  };
-
   // Formatted Sim Clock
   const formattedSimTime = useMemo(() => {
     if (!sandboxState?.simTime) return "--:--:--";
@@ -216,7 +174,7 @@ export default function PlatformAdminOverview() {
             Platform Operations & Ecosystem Cockpit
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Governing {orders.length.toLocaleString()}+ orders, 30 active couriers, OSM road-network routing, and 5 specialized NoSQL datastores.
+            Reference marketplace, separate sandbox simulation and datastore design examples.
           </p>
         </div>
 
@@ -293,20 +251,20 @@ export default function PlatformAdminOverview() {
         {/* Active Couriers on Road */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Live Courier Fleet</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Simulated Courier Fleet</span>
             <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Truck className="w-4 h-4" />
             </div>
           </div>
           <div>
             <span className="text-2xl font-black text-slate-900 tracking-tight">
-              {vehicles.length || 30} Couriers
+              {vehicles.length} Simulated Couriers
             </span>
             <div className="flex items-center space-x-1.5 text-[11px] text-indigo-600 font-semibold mt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Synced with Sandbox</span>
+              <span>{vehicles.length ? "Sandbox positions" : "No sandbox positions available"}</span>
               <span className="text-slate-400">•</span>
-              <span className="text-slate-500">160 writes/s ring</span>
+              <span className="text-slate-500">Volatile history</span>
             </div>
           </div>
         </div>
@@ -517,55 +475,7 @@ export default function PlatformAdminOverview() {
         </div>
       </div>
 
-      {/* BAND 3: Live Cassandra LSM Stream & Telemetry Radar Feed */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Radio className="w-5 h-5 text-blue-600" />
-              <span>Cassandra 4.1 Masterless Telemetry Ring (Port 9042)</span>
-            </h3>
-            <p className="text-xs text-slate-500">
-              Live LSM writes streaming from 30 simulated couriers moving on Phnom Penh road network
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleTriggerRadarPing}
-              disabled={isPinging}
-              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center space-x-1"
-            >
-              <Radio className="w-3.5 h-3.5" />
-              <span>{isPinging ? "Writing..." : "Simulate CQL Ping"}</span>
-            </button>
-            <Link
-              href="/admin/fleet"
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1"
-            >
-              <span>Inspect Full Radar</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Live CQL Write Terminal */}
-        <div className="bg-slate-950 text-slate-300 p-4 rounded-xl font-mono text-xs space-y-1.5 overflow-hidden border border-slate-800">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-[11px] text-slate-400">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-bold">telemetry_ks.rider_gps_pings Ingest</span>
-            </div>
-            <span>Throughput: 160 writes/sec node capacity</span>
-          </div>
-
-          {radarLogs.map((log, i) => (
-            <div key={i} className="truncate text-slate-300 hover:text-white">
-              {log}
-            </div>
-          ))}
-        </div>
-      </div>
+      <FleetConsole />
 
       {/* BAND 4: Real Orders Stream from MongoDB (ACID Book) */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">

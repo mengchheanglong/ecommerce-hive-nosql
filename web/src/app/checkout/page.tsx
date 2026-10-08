@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 export default function CheckoutPage() {
+  const checkoutAttempt = useRef<{ fingerprint: string; orderId: string } | null>(null);
   const router = useRouter();
   const {
     cart,
@@ -141,7 +142,7 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-    const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+    let orderId = checkoutAttempt.current?.orderId || `ORD-${crypto.randomUUID()}`;
 
     const orderPayload = {
       order_id: orderId,
@@ -154,7 +155,7 @@ export default function CheckoutPage() {
         price: i.product.price,
         category: i.product.category,
       })),
-      total: finalTotalUSD,
+      total: Number(finalTotalUSD.toFixed(2)),
       province: currentAddress?.city || "Phnom Penh",
       payment_method: payMethodName,
       status: "Preparing",
@@ -163,6 +164,10 @@ export default function CheckoutPage() {
       discountUSD: discountUSD > 0 ? discountUSD : undefined,
     };
 
+    const fingerprint = JSON.stringify({ ...orderPayload, order_id: undefined });
+    if (checkoutAttempt.current && checkoutAttempt.current.fingerprint !== fingerprint) orderId = `ORD-${crypto.randomUUID()}`;
+    checkoutAttempt.current = { fingerprint, orderId };
+    orderPayload.order_id = orderId;
     const res = await createOrder(orderPayload);
     setIsSubmitting(false);
 

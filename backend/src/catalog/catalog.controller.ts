@@ -35,7 +35,7 @@ export class CatalogController {
   }
 
   @Post("adjust-stock")
-  @ApiOperation({ summary: "Adjust inventory stock for items (used by fulfillment & logistics simulation)" })
+  @ApiOperation({ summary: "Disabled: stock changes belong to the order reservation lifecycle" })
   adjustStock(@Body() body: { items: Array<{ product_id: string; quantity: number }> }) {
     return this.catalogService.adjustStock(body.items || []);
   }

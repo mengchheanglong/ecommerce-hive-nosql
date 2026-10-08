@@ -31,7 +31,6 @@ interface AdminFleetMapProps {
   vehicles: SandboxVehicle[];
   selectedVehicleId?: string | null;
   onSelectVehicle?: (vehicle: SandboxVehicle | null) => void;
-  onSimulatePing?: (vehicle: SandboxVehicle) => void;
   simState?: SandboxSimState | null;
   onRefresh?: () => void;
 }
@@ -60,7 +59,6 @@ export function AdminFleetMap({
   vehicles,
   selectedVehicleId,
   onSelectVehicle,
-  onSimulatePing,
   simState,
   onRefresh,
 }: AdminFleetMapProps) {
@@ -605,15 +603,6 @@ export function AdminFleetMap({
                 <span>Fly To</span>
               </button>
 
-              {onSimulatePing && (
-                <button
-                  onClick={() => onSimulatePing(selectedVehicle)}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer shadow-xs"
-                >
-                  <Radio className="w-3.5 h-3.5" />
-                  <span>Cassandra Ping</span>
-                </button>
-              )}
 
               <button
                 onClick={() => onSelectVehicle && onSelectVehicle(null)}

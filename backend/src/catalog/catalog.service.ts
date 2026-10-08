@@ -1,10 +1,12 @@
-import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
+import { Injectable, Inject, OnModuleInit, BadRequestException, ConflictException, ServiceUnavailableException, NotFoundException } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
 import { Db } from "mongodb";
+import { InventoryService, moneyMinor } from "../inventory/inventory.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 
 @Injectable()
 export class CatalogService implements OnModuleInit {
-  constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db) {}
+  constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db, private readonly inventory: InventoryService) {}
 
   private fallbackProducts: any[] = [
     // ELECTRONICS
@@ -503,11 +505,16 @@ export class CatalogService implements OnModuleInit {
   }
 
   async create(dto: CreateProductDto) {
+    await this.inventory.ensureReady();
+    if (!Number.isSafeInteger(dto.stock ?? 50) || (dto.stock ?? 50) < 0) throw new BadRequestException("Stock must be a nonnegative safe integer");
+    moneyMinor(dto.price);
+    if (dto.product_id !== undefined && (typeof dto.product_id !== "string" || !dto.product_id.trim())) throw new BadRequestException("Product ID must be a nonempty string");
     const product: any = {
-      product_id: dto.product_id || `P${Math.floor(1000 + Math.random() * 9000)}`,
+      product_id: dto.product_id || `P-${randomUUID()}`,
       name: dto.name,
       category: dto.category,
       price: Number(dto.price),
+      price_minor: moneyMinor(dto.price),
       status: dto.status || "active",
       screen_size: dto.screen_size,
       warranty: dto.warranty,
@@ -526,6 +533,7 @@ export class CatalogService implements OnModuleInit {
       subcategory: dto.subcategory,
       subcategory_name: dto.subcategory_name,
       stock: dto.stock ?? 50,
+      reserved_stock: 0,
       image: dto.image,
       description: dto.description,
       frequently_bought_with: dto.frequently_bought_with || [],
@@ -536,70 +544,32 @@ export class CatalogService implements OnModuleInit {
       const res = await this.db.collection("products").insertOne(product);
       return { success: true, insertedId: res.insertedId, product };
     }
-    this.fallbackProducts.push(product as any);
-    return { success: true, product };
+    throw new ServiceUnavailableException("Catalog writes require MongoDB");
   }
 
   async update(productId: string, dto: Partial<CreateProductDto>) {
-    if (this.db) {
-      const res = await this.db
-        .collection("products")
-        .updateOne({ product_id: productId }, { $set: { ...dto, updated_at: new Date() } });
-      const updated = await this.db.collection("products").findOne({ product_id: productId });
-      return { success: res.matchedCount > 0, product: updated };
-    }
-
-    const idx = this.fallbackProducts.findIndex((p) => p.product_id === productId);
-    if (idx >= 0) {
-      this.fallbackProducts[idx] = {
-        ...this.fallbackProducts[idx],
-        ...dto,
-        updated_at: new Date(),
-      };
-      return { success: true, product: this.fallbackProducts[idx] };
-    }
-    return { success: false, message: "Product not found" };
+    await this.inventory.ensureReady();
+    // Allow only catalog metadata; counters and identity cannot bypass reservations.
+    const allowed = new Set(["name", "category", "price", "status", "screen_size", "warranty", "size", "colours", "weight", "expiry_date", "dimensions", "material", "volume", "skin_type", "artisan", "origin_province", "category_slug", "category_aliases", "subcategory", "subcategory_name", "image", "images", "description", "frequently_bought_with", "reviews", "rating", "reviews_count", "seller", "store_id", "store_slug"]);
+    if (Object.keys(dto).some(key => !allowed.has(key))) throw new BadRequestException("Inventory counters and product identity cannot be edited through catalog updates");
+    if (dto.price !== undefined) moneyMinor(dto.price);
+    const product = await this.db.collection("products").findOneAndUpdate(
+      { product_id: productId }, { $set: { ...dto, ...(dto.price !== undefined ? { price_minor: moneyMinor(dto.price) } : {}), updated_at: new Date() } }, { returnDocument: "after" });
+    if (!product) throw new NotFoundException("Product not found");
+    return { success: true, product };
   }
 
   async delete(productId: string) {
-    if (this.db) {
-      const res = await this.db.collection("products").deleteOne({ product_id: productId });
-      return { success: res.deletedCount > 0 };
+    await this.inventory.ensureReady();
+    const result = await this.db.collection("products").deleteOne({ product_id: productId, $or: [{ reserved_stock: 0 }, { reserved_stock: { $exists: false } }] });
+    if (!result.deletedCount) {
+      if (!await this.db.collection("products").findOne({ product_id: productId })) throw new NotFoundException("Product not found");
+      throw new ConflictException("A product with active reservations cannot be deleted");
     }
-
-    const initLen = this.fallbackProducts.length;
-    this.fallbackProducts = this.fallbackProducts.filter((p) => p.product_id !== productId);
-    return { success: this.fallbackProducts.length < initLen };
+    return { success: true };
   }
 
-  async adjustStock(items: Array<{ product_id: string; quantity: number }>) {
-    const results: any[] = [];
-    for (const item of items) {
-      const qty = Number(item.quantity) || 1;
-      if (this.db) {
-        const prod = await this.db.collection("products").findOne({ product_id: item.product_id });
-        if (prod) {
-          const newStock = Math.max(0, (prod.stock ?? 0) - qty);
-          const res = await this.db.collection("products").findOneAndUpdate(
-            { product_id: item.product_id },
-            { $set: { stock: newStock, updated_at: new Date() } },
-            { returnDocument: "after" }
-          );
-          results.push({ product_id: item.product_id, updated: true, stock: newStock, product: res });
-        } else {
-          results.push({ product_id: item.product_id, updated: false, message: "Product not found" });
-        }
-      } else {
-        const prod = this.fallbackProducts.find((p) => p.product_id === item.product_id);
-        if (prod) {
-          prod.stock = Math.max(0, (prod.stock || 0) - qty);
-          results.push({ product_id: item.product_id, updated: true, stock: prod.stock });
-        } else {
-          results.push({ product_id: item.product_id, updated: false, message: "Product not found" });
-        }
-      }
-    }
-    return { success: true, count: results.length, results };
+  async adjustStock(_items: Array<{ product_id: string; quantity: number }>) {
+    throw new ConflictException("Unscoped stock adjustment is disabled; use the order reservation lifecycle");
   }
 }
-
