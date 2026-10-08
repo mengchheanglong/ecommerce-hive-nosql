@@ -7,7 +7,7 @@ export class OrdersService {
   constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db) {}
 
   private validTransitions: Record<string, string[]> = {
-    Pending: ["Preparing", "Cancelled"],
+    Pending: ["Preparing", "Out for Delivery", "Cancelled"],
     Preparing: ["Out for Delivery", "Cancelled"],
     "Out for Delivery": ["Delivered", "Cancelled"],
     Delivered: [],
@@ -337,11 +337,12 @@ export class OrdersService {
 
     if (dto.courier_id) {
       updateFields.assigned_courier_id = dto.courier_id;
-      const courier = this.couriers[dto.courier_id];
-      if (courier) {
-        updateFields.assigned_courier_name = courier.name;
-        updateFields.courier_phone = courier.phone;
-      }
+      const courier = this.couriers[dto.courier_id] || {
+        name: `Driver ${dto.courier_id.replace('DRV-', '#')}`,
+        phone: "+855 12 999 888",
+      };
+      updateFields.assigned_courier_name = courier.name;
+      updateFields.courier_phone = courier.phone;
     }
 
     // Restock if order is cancelled

@@ -7,6 +7,7 @@ import { OrderRecord, RiderTelemetry } from "@/types";
 import { fetchOrderById, fetchRiders } from "@/lib/api";
 import { useCurrency } from "@/context/CurrencyContext";
 import { OrderTimeline } from "@/components/customer/OrderTimeline";
+import { LiveOrderTrackingMap } from "@/components/customer/LiveOrderTrackingMap";
 import { Modal } from "@/components/shared/Modal";
 import {
   Package,
@@ -161,56 +162,19 @@ export default function OrderDetailPage() {
           <OrderTimeline status={order.status} />
         </div>
 
-        {/* Assigned Courier Card (if Out for Delivery or Delivered) */}
-        {(order.status === "Out for Delivery" || order.status === "Delivered") && (() => {
-          const assignedRider =
-            riders.find((r) => r.id === order.assigned_courier_id) ||
-            riders.find((r) => r.name.toLowerCase() === (order.assigned_courier_name || "").toLowerCase()) ||
-            riders.find((r) => r.city.toLowerCase() === order.province.toLowerCase()) ||
-            riders[0];
-          const riderPhone =
-            order.courier_phone ||
-            (assignedRider?.city === "Siem Reap"
-              ? "+855 15 777 666"
-              : assignedRider?.city === "Battambang"
-              ? "+855 17 444 333"
-              : "+855 12 999 888");
-
-          if (!assignedRider) return null;
-
-          return (
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-xs font-bold text-slate-900">
-                      Assigned Courier: Rider {assignedRider.name} ({assignedRider.id})
-                    </span>
-                    <span className="px-1.5 py-0.2 bg-blue-100 text-blue-800 text-[9px] font-bold rounded">
-                      Cassandra Telemetry
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 flex items-center space-x-1 mt-0.5">
-                    <Radio className="w-3 h-3 text-blue-600 animate-pulse" />
-                    <span>
-                      Speed: {assignedRider.speed} • Battery: {assignedRider.battery}% • Hub: {assignedRider.city} ({assignedRider.lat}, {assignedRider.lng})
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <a
-                href={`tel:${riderPhone.replace(/\s+/g, "")}`}
-                className="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 flex items-center space-x-1 hover:bg-slate-50 transition-colors shadow-2xs self-end sm:self-auto cursor-pointer"
-              >
-                <Phone className="w-3 h-3 text-blue-600" />
-                <span>Call Rider ({riderPhone})</span>
-              </a>
-            </div>
-          );
-        })()}
+        {/* Live Interactive Digital-Twin Map & Real-Time Telemetry */}
+        <div className="space-y-2 pt-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Live Digital-Twin Route & Fleet Telemetry
+            </h3>
+            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1.5 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Cassandra Stream Active
+            </span>
+          </div>
+          <LiveOrderTrackingMap order={order} riders={riders} />
+        </div>
 
         {/* Delivery Destination & Settlement */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
