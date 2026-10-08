@@ -8,9 +8,22 @@ import { fetchOrderById, fetchRiders, updateOrderStatus } from "@/lib/api";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
+import dynamic from "next/dynamic";
 import { OrderTimeline } from "@/components/customer/OrderTimeline";
-import { LiveOrderTrackingMap } from "@/components/customer/LiveOrderTrackingMap";
 import { Modal } from "@/components/shared/Modal";
+
+const LiveOrderTrackingMap = dynamic(
+  () => import("@/components/customer/LiveOrderTrackingMap").then((m) => m.LiveOrderTrackingMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-slate-950 rounded-3xl border border-slate-800 h-[420px] flex flex-col items-center justify-center text-slate-400 font-mono text-xs gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+        <span>Connecting to Digital-Twin Telemetry Map...</span>
+      </div>
+    ),
+  }
+);
 import {
   Package,
   ArrowLeft,

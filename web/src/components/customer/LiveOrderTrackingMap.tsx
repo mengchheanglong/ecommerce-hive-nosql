@@ -26,6 +26,34 @@ interface LiveOrderTrackingMapProps {
 
 const DEPOT_COORDS: [number, number] = [104.9223, 11.5680]; // Central Market Depot [lon, lat]
 
+// Instant-loading CARTO Dark Matter raster style (zero external font/sprite latency)
+const CARTO_DARK_STYLE: any = {
+  version: 8,
+  sources: {
+    "carto-dark": {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    },
+  },
+  layers: [
+    {
+      id: "carto-dark-layer",
+      type: "raster",
+      source: "carto-dark",
+      minzoom: 0,
+      maxzoom: 20,
+    },
+  ],
+};
+
 function getDestinationCoords(address?: string, province?: string): [number, number] {
   const addr = (address || "").toLowerCase();
   if (addr.includes("boeung tumpun") || addr.includes("meanchey") || addr.includes("271")) {
@@ -102,11 +130,12 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
   );
 
   const riderCoords = useMemo<[number, number]>(() => {
+    if (order.status === "Delivered") return destCoords;
     if (!assignedRider) return DEPOT_COORDS;
     const lat = parseCoord(assignedRider.lat, DEPOT_COORDS[1]);
     const lon = parseCoord(assignedRider.lng, DEPOT_COORDS[0]);
     return [lon, lat];
-  }, [assignedRider]);
+  }, [assignedRider, order.status, destCoords]);
 
   const riderPhone =
     order.courier_phone ||
@@ -137,10 +166,14 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
           const data = await res.json();
           if (active && data.path && Array.isArray(data.path) && data.path.length > 0) {
             setRouteGeometry(data.path);
+            return;
           }
         }
-      } catch {
-        // Fallback straight-line segment if osm-pathfinder unavailable
+      } catch (err) {
+        console.warn("Could not query osm-pathfinder route, using direct vector:", err);
+      }
+      if (active) {
+        setRouteGeometry([DEPOT_COORDS, destCoords]);
       }
     }
 
@@ -155,29 +188,36 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
     if (!mapContainerRef.current) return;
 
     let mapInstance: any = null;
+    let isDisposed = false;
 
     import("maplibre-gl").then((mapModule) => {
-      if (!mapContainerRef.current) return;
+      if (isDisposed || !mapContainerRef.current) return;
       const maplibregl = (mapModule as any).Map ? mapModule : (mapModule as any).default || mapModule;
 
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+        style: CARTO_DARK_STYLE,
         center: [
           (DEPOT_COORDS[0] + destCoords[0]) / 2,
           (DEPOT_COORDS[1] + destCoords[1]) / 2,
         ],
         zoom: 13,
-        pitch: 40,
-        bearing: 15,
+        pitch: 35,
+        bearing: 10,
         attributionControl: false,
       });
 
-      map.on("load", () => {
-        mapInstance = map;
-        mapRef.current = map;
+      mapInstance = map;
+      mapRef.current = map;
+
+      const setupElements = () => {
+        if (isDisposed) return;
         setMapLoaded(true);
-        map.resize();
+        try {
+          map.resize();
+        } catch {}
+
+        if (courierMarkerRef.current) return;
 
         // 1. Central Depot Pin
         const depotEl = document.createElement("div");
@@ -244,23 +284,34 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
         courierMarkerRef.current = courierMarker;
 
         // Auto-fit bounds around Depot, Courier, and Destination
-        const bounds = new maplibregl.LngLatBounds();
-        bounds.extend(DEPOT_COORDS);
-        bounds.extend(destCoords);
-        bounds.extend(riderCoords);
-        map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
-      });
+        try {
+          const bounds = new maplibregl.LngLatBounds();
+          bounds.extend(DEPOT_COORDS);
+          bounds.extend(destCoords);
+          bounds.extend(riderCoords);
+          map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
+        } catch {}
+      };
+
+      map.on("load", setupElements);
+      if (map.loaded()) {
+        setupElements();
+      }
+
+      // Fallback timer: ensure overlay is dismissed and UI elements exist within 600ms
+      const safetyTimer = setTimeout(() => {
+        if (!isDisposed) {
+          setupElements();
+        }
+      }, 600);
 
       map.on("error", (e: any) => {
-        console.warn("MapLibre tile/style notice:", e);
+        console.warn("MapLibre tile notice:", e);
       });
-
-      const resizeTimer = setTimeout(() => {
-        if (map) map.resize();
-      }, 300);
     });
 
     return () => {
+      isDisposed = true;
       if (mapInstance) {
         mapInstance.remove();
         mapRef.current = null;
@@ -282,48 +333,58 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
 
     const map = mapRef.current;
 
-    const geojsonData: any = {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "LineString",
-        coordinates: routeGeometry,
-      },
+    const applyRoute = () => {
+      if (!map.isStyleLoaded()) return;
+
+      const geojsonData: any = {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates: routeGeometry,
+        },
+      };
+
+      if (map.getSource("osm-route")) {
+        map.getSource("osm-route").setData(geojsonData);
+      } else {
+        map.addSource("osm-route", {
+          type: "geojson",
+          data: geojsonData,
+        });
+
+        // Outer glow line
+        map.addLayer({
+          id: "osm-route-glow",
+          type: "line",
+          source: "osm-route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "#38bdf8",
+            "line-width": 8,
+            "line-opacity": 0.4,
+          },
+        });
+
+        // Core crisp delivery line
+        map.addLayer({
+          id: "osm-route-core",
+          type: "line",
+          source: "osm-route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "#0284c7",
+            "line-width": 4,
+            "line-opacity": 0.9,
+          },
+        });
+      }
     };
 
-    if (map.getSource("osm-route")) {
-      map.getSource("osm-route").setData(geojsonData);
+    if (map.isStyleLoaded()) {
+      applyRoute();
     } else {
-      map.addSource("osm-route", {
-        type: "geojson",
-        data: geojsonData,
-      });
-
-      // Outer glow line
-      map.addLayer({
-        id: "osm-route-glow",
-        type: "line",
-        source: "osm-route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "#38bdf8",
-          "line-width": 8,
-          "line-opacity": 0.4,
-        },
-      });
-
-      // Core crisp delivery line
-      map.addLayer({
-        id: "osm-route-core",
-        type: "line",
-        source: "osm-route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "#0284c7",
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-      });
+      map.once("style.load", applyRoute);
     }
   }, [mapLoaded, routeGeometry]);
 
