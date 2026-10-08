@@ -27,8 +27,8 @@ const IMAGE_MAP = {
   P3320: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80", // Bamboo Fiber Lounge Set
   P3321: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80", // UV Sun Hoodie UPF 50+
   P3323: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80", // Hand-Loomed Cotton Krama Scarf
-  P3324: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80", // Printed Cotton Midi Dress
-  P3325: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80", // Khmer Hol Silk Sarong Wrap
+  P3324: "https://images.unsplash.com/photo-1669201161823-ef6e2e42d56a?auto=format&fit=crop&w=800&q=80", // Hand-Block Printed Cambodian Cotton Midi Dress
+  P3325: "https://images.unsplash.com/photo-1748141951488-9c9fb9603daf?auto=format&fit=crop&w=800&q=80", // Handcrafted Khmer Hol Silk Sarong Wrap (Heritage Weave)
 
   // Electronics
   P2210: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80", // Ultra Smartphone Pro Max 5G

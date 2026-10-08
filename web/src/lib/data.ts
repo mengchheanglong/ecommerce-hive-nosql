@@ -1085,7 +1085,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 40,
     "rating": 4.8,
     "reviews_count": 29,
-    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1669201161823-ef6e2e42d56a?auto=format&fit=crop&w=800&q=80",
     "size": "Free Size (Adjustable Wrap)",
     "colours": [
       "Indigo Blue",
@@ -1111,7 +1111,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 25,
     "rating": 5,
     "reviews_count": 41,
-    "image": "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1748141951488-9c9fb9603daf?auto=format&fit=crop&w=800&q=80",
     "size": "200cm x 100cm",
     "colours": [
       "Royal Gold & Crimson",
