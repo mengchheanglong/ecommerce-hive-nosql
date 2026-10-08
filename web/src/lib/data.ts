@@ -57,7 +57,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 140,
     "rating": 5,
     "reviews_count": 184,
-    "image": "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=800&q=80",
     "weight": "250g Glass Jar",
     "expiry_date": "2028-04-15",
     "description": "Protected Geographical Indication (PGI) certified Kampot peppercorns with intense floral and minty aroma.",
@@ -130,7 +130,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 115,
     "rating": 4.9,
     "reviews_count": 67,
-    "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?auto=format&fit=crop&w=800&q=80",
     "weight": "300g Ceramic Crock",
     "expiry_date": "2029-01-01",
     "description": "Hand-skimmed delicate salt crystals from solar salt evaporation ponds along the Gulf of Thailand coastline."
@@ -153,7 +153,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 180,
     "rating": 4.8,
     "reviews_count": 121,
-    "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80",
     "weight": "500g Eco Palm Container",
     "expiry_date": "2027-09-20",
     "description": "PGI certified natural unrefined golden palm sugar syrup granulated traditionally over wood fires."
@@ -176,7 +176,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 85,
     "rating": 4.7,
     "reviews_count": 54,
-    "image": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80",
     "weight": "150g Biodegradable Box",
     "expiry_date": "2027-11-30",
     "description": "Refreshing immune-supporting herbal infusion crafted with whole sun-dried lemongrass stalks."
@@ -199,7 +199,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 130,
     "rating": 4.9,
     "reviews_count": 165,
-    "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1524593689594-aae2f26b75ab?auto=format&fit=crop&w=800&q=80",
     "weight": "400g Foil Seal Tub",
     "expiry_date": "2027-07-15",
     "description": "Premium jumbo M23 cashew nuts grown in Kampong Cham, slow-roasted with skin on for deep crunch."
@@ -291,7 +291,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 110,
     "rating": 4.9,
     "reviews_count": 73,
-    "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&q=80",
     "weight": "500ml Glass Bottle",
     "expiry_date": "2028-12-31",
     "description": "First press anchovy extract naturally fermented in wooden barrels for 12 months in coastal Koh Kong."
@@ -499,7 +499,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 200,
     "rating": 4.8,
     "reviews_count": 140,
-    "image": "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&w=800&q=80",
     "size": "170cm x 65cm",
     "colours": [
       "Red Check",
@@ -524,7 +524,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 45,
     "rating": 4.8,
     "reviews_count": 124,
-    "image": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80",
     "screen_size": "6.7 inch OLED 120Hz",
     "warranty": "1 Year Official Distributor",
     "description": "Flagship AMOLED display with high-efficiency 5G modem, AI computational photography, and 65W fast charge.",
@@ -665,7 +665,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 110,
     "rating": 4.9,
     "reviews_count": 145,
-    "image": "https://images.unsplash.com/photo-1609592424364-77be1c028ba4?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80",
     "screen_size": "Smart Digital Power Display",
     "warranty": "6 Months Replacement",
     "description": "65W USB-C Power Delivery charges laptops and smartphones simultaneously with airline-approved capacity."
@@ -772,7 +772,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 95,
     "rating": 4.8,
     "reviews_count": 53,
-    "image": "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1584269600519-112d071b35e6?auto=format&fit=crop&w=800&q=80",
     "description": "Handcrafted from aged reclaimed coconut palm wood with smooth natural oil polish; safe for non-stick cookware."
   },
   {
@@ -793,7 +793,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 75,
     "rating": 4.9,
     "reviews_count": 88,
-    "image": "https://images.unsplash.com/photo-1608248597359-715a0c3258c7?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80",
     "description": "Nutrient-dense antioxidant botanical face serum with cold-pressed moringa seed oil and vitamin E."
   },
   {
@@ -835,7 +835,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 110,
     "rating": 4.7,
     "reviews_count": 65,
-    "image": "https://images.unsplash.com/photo-1607006314392-42173160e1d8?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80",
     "description": "Cold-process handmade body bars infused with healing turmeric powder, raw forest honey and soothing rice bran oil."
   },
   {
@@ -856,7 +856,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 25,
     "rating": 5,
     "reviews_count": 36,
-    "image": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
     "description": "Exquisite hand-hammered repoussé silver-plated keepsake box fashioned in traditional elephant and mythical motifs."
   },
   {
@@ -898,7 +898,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 30,
     "rating": 4.8,
     "reviews_count": 19,
-    "image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80",
     "description": "Multi-layered natural tree resin lacquerware tray with gold-leaf inlay highlights, ideal for ceremonies or dining."
   },
   {
@@ -940,7 +940,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 35,
     "rating": 4.8,
     "reviews_count": 24,
-    "image": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
     "description": "Authentic Cambodian rustic rice winnowing basket (Chhngier) hand-smoked over coconut husks for deep honey hue."
   },
   {
@@ -1024,7 +1024,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 55,
     "rating": 4.9,
     "reviews_count": 42,
-    "image": "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
     "description": "Solid aged sugar palm wood mortar and pestle, perfectly balanced for crushing Kampot pepper, garlic, and fresh kroeung."
   },
   {
@@ -1044,7 +1044,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 120,
     "rating": 4.9,
     "reviews_count": 88,
-    "image": "https://images.unsplash.com/photo-1608248597359-5975d95d1238?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1547793549-70faf88838c8?auto=format&fit=crop&w=800&q=80",
     "description": "Aromatic blend of cardamoms, star anise, clove and peppermint oil in traditional engraved brass casing for instant clarity."
   },
   {
@@ -1158,7 +1158,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 50,
     "rating": 4.9,
     "reviews_count": 32,
-    "image": "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
     "description": "Original sunrise reflection over Angkor Wat lotus pond painted by Siem Reap visual artists on archival handmade paper."
   },
   {
