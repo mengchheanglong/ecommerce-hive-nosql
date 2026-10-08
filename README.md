@@ -7,7 +7,7 @@ The final maintenance changes correct checkout inventory, retry handling and tel
 claims. No further feature development or warehouse conversion is planned here.
 Warehouse and distribution operations are developed independently in supply-chain-platform.
 
-> A high-scale **polyglot microservices e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 microservices backend**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
+> A high-scale **polyglot persistence e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 backend API**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.1.7-black?style=flat-square&logo=next.js)
 ![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=flat-square&logo=nestjs)
@@ -38,7 +38,7 @@ this requirement. Use the opt-in `compose.inventory.yaml` overlay described in t
 for isolated, disposable database tests. This is a reference/demo application; these changes
 do not establish production authorization, tenant isolation or payment verification.
 
-## 📌 Microservices Architectural Overview
+## 📌 System Architecture & Polyglot Persistence
 
 ### Current telemetry behavior (P0-03)
 
@@ -49,7 +49,7 @@ roster. Simulated road-map positions and volatile history belong to logistics-sa
 See [telemetry policy](docs/telemetry-source.md). The design diagrams and datastore
 selection examples below are lab proposals, not evidence of implemented telemetry scale.
 
-**`ecommerce-hive-nosql`** resolves the scalability, latency, and schema bottlenecks of monolithic databases by decomposing the marketplace into **autonomous microservices** backed by **polyglot persistence**.
+**`ecommerce-hive-nosql`** resolves the scalability, latency, and schema bottlenecks of single monolithic databases by adopting a **domain-modular architecture** backed by **polyglot persistence**.
 
 Each operational domain communicates with the optimal distributed datastore for its specific read/write characteristics, while large-scale batch analytics are processed by an Apache Hive columnar data warehouse on HDFS.
 
@@ -61,15 +61,15 @@ Each operational domain communicates with the optimal distributed datastore for 
                                                      │ (HTTP & Proxy Rewrites)
                                                      ▼
                               ┌──────────────────────────────────────────────┐
-                              │     NestJS Enterprise Microservices API      │
+                              │        NestJS Enterprise Backend API         │
                               │   Swagger OpenAPI Explorer (/api/docs:4000)   │
                               └──────┬─────────────┬─────────────┬───────────┘
                                      │             │             │
         ┌────────────────────────────┼─────────────┴─────────────┼────────────────────────────┐
         ▼                            ▼                           ▼                            ▼
 ┌──────────────┐             ┌──────────────┐            ┌──────────────┐             ┌──────────────┐
-│Catalog &     │             │Cart & Session│            │Telemetry Svc │             │Referral Svc  │
-│Orders Svc    │             │Microservice  │            │Microservice  │             │Microservice  │
+│Catalog &     │             │Cart & Session│            │Telemetry     │             │Referral      │
+│Orders Module │             │Module        │            │Module        │             │Module        │
 ├──────────────┤             ├──────────────┤            ├──────────────┤             ├──────────────┤
 │ MongoDB 8.0  │             │ Redis 7.x    │            │ Cassandra    │             │ Neo4j 5.x    │
 │ Products &   │             │ In-Memory    │            │ 160 pings/s  │             │ 3-Level Graph│
@@ -86,22 +86,22 @@ Each operational domain communicates with the optimal distributed datastore for 
 
 ---
 
-## 🧩 Microservices Domain Boundaries
+## 🧩 Domain Modules & Architecture Boundaries
 
-The platform organizes its business logic across isolated microservice domains:
+The platform organizes its business logic across modular domain services:
 
-1. **`Catalog Microservice` (`/api/products`):** Powered by **MongoDB** document storage to manage polymorphic product specifications across Electronics, Clothing, and Groceries without schema migration overhead.
-2. **`Cart & Session Microservice`:** Powered by **Redis** key-value caching to deliver sub-millisecond retrieval on every page load with 24-hour automatic TTL expiration.
-3. **`Orders & Fulfillment Microservice` (`/api/orders`):** Orchestrates transactional checkout, Bakong KHQR dynamic payment reconciliation, and delivery state transitions (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`).
+1. **`Catalog Module` (`/api/products`):** Powered by **MongoDB** document storage to manage polymorphic product specifications across Electronics, Clothing, and Groceries without schema migration overhead.
+2. **`Cart & Session Module`:** Powered by **Redis** key-value caching to deliver sub-millisecond retrieval on every page load with 24-hour automatic TTL expiration.
+3. **`Orders & Fulfillment Module` (`/api/orders`):** Orchestrates transactional checkout, Bakong KHQR dynamic payment reconciliation, and delivery state transitions (`Pending` → `Preparing` → `Out for Delivery` → `Delivered`).
 4. **`Telemetry Module` (`/api/riders`):** Returns versioned demo fixtures. GPS ingestion is disabled because no durable sink or Cassandra driver exists. Cassandra schema/scale examples are proposed lab designs.
-5. **`Referral Microservice` (`/api/referrals`):** Backed by **Neo4j** graph database utilizing index-free adjacency to traverse 3-tier deep invitation trees and calculate referral commission payouts in $O(1)$ memory pointer operations.
-6. **`Warehouse Analytics Microservice` (`/api/analytics`):** Orchestrates the **Apache Hive on HDFS** batch analytics pipeline, querying ORC-compressed datasets using dynamic partition pruning and customer bucketing.
+5. **`Referral Module` (`/api/referrals`):** Backed by **Neo4j** graph database utilizing index-free adjacency to traverse 3-tier deep invitation trees and calculate referral commission payouts in $O(1)$ memory pointer operations.
+6. **`Warehouse Analytics Module` (`/api/analytics`):** Orchestrates the **Apache Hive on HDFS** batch analytics pipeline, querying ORC-compressed datasets using dynamic partition pruning and customer bucketing.
 
 ---
 
 ## 🏛️ Polyglot Database Selection Matrix
 
-| Microservice Domain | Data Domain | Selected Datastore | Scale & Workload | Architectural Justification |
+| Domain Service | Data Domain | Selected Datastore | Scale & Workload | Architectural Justification |
 | :--- | :--- | :--- | :--- | :--- |
 | **`catalog-service`** | Product Catalog | **MongoDB** (Document) | High-read, polymorphic specs | Dynamic JSON documents support polymorphic category fields (screens, fabric, expiration) without schema migrations. |
 | **`cart-service`** | Active Carts & Sessions | **Redis** (Key-Value) | Sub-millisecond latency | In-memory key access guarantees < 1ms response latency on every page view with automated 24-hour TTL expiry. |
@@ -139,7 +139,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 
 ```
 .
-├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
+├── backend/                         # Enterprise NestJS Backend API (Port 4000)
 │   ├── src/
 │   │   ├── catalog/                 # MongoDB Catalog controller, service & DTOs
 │   │   ├── orders/                  # MongoDB Orders & state machine controller & service
@@ -185,7 +185,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 ├── hive/                            # Apache Hive Warehouse DDL, ETL & Queries
 ├── docker-compose.yml               # Multi-container orchestration (Mongo, Redis, Cassandra, Neo4j, Web)
 ├── docs/                            # Deep-dive Architecture & Design Guides
-│   ├── architecture.md              # System Architecture & Microservices Flow
+│   ├── architecture.md              # System Architecture & Polyglot Data Flow
 │   ├── cap-theorem-analysis.md      # Multi-DC Partition Analysis (AP vs CP)
 │   ├── hive-warehouse-design.md     # Hive Partitioning, Bucketing & ORC
 │   └── nosql-database-design.md     # NoSQL Engine Selection Rationale
@@ -198,7 +198,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 
 ## 🚀 Quick Start
 
-### 1. Run the NestJS Microservices Backend
+### 1. Run the NestJS Backend API
 ```powershell
 cd backend
 pnpm install
@@ -222,7 +222,7 @@ docker compose up -d
 ```
 Spins up the **entire production stack in containers** with automated MongoDB seeding:
 - **Customer Storefront & Merchant Portal:** [http://localhost:3001](http://localhost:3001)
-- **NestJS Microservices API:** [http://localhost:4000](http://localhost:4000)
+- **NestJS Backend API:** [http://localhost:4000](http://localhost:4000)
 - **Swagger OpenAPI Documentation:** [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
 - **MongoDB 8.0:** `localhost:27017` (auto-seeded with 51 authentic Cambodian products, customers, and orders)
 - **Redis 7:** `localhost:6379`

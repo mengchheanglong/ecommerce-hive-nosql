@@ -42,9 +42,9 @@ Further changes require a specific user request.
 │   └── scripts/
 │       ├── seed-products.js         # Insert sample products
 │       └── crud-operations.js       # Full CRUD demo script
-├── backend/                         # Enterprise NestJS Microservices Backend (Port 4000)
+├── backend/                         # Enterprise NestJS Backend API (Port 4000)
 │   ├── src/
-│   │   ├── catalog/                 # MongoDB Catalog microservice (GET, POST, PUT, DELETE)
+│   │   ├── catalog/                 # MongoDB Catalog module (GET, POST, PUT, DELETE)
 │   │   ├── orders/                  # MongoDB Orders & state machine (GET, GET :id, POST, PUT)
 │   │   ├── telemetry/               # Versioned rider fixtures; GPS ingestion disabled (no sink)
 │   │   ├── referral/                # Neo4j Graph referral service (3-tier social graph)

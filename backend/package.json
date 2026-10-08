@@ -1,7 +1,7 @@
 {
   "name": "marketplace-backend",
   "version": "1.0.0",
-  "description": "NestJS Enterprise Microservices Backend for Polyglot E-Commerce Platform",
+  "description": "NestJS Enterprise Backend API for Polyglot E-Commerce Platform",
   "private": true,
   "scripts": {
     "build": "tsc -b --force",
