@@ -484,7 +484,6 @@ export default function StoreProfilePage() {
                       <button
                         onClick={() => {
                           addToCart(p, 1);
-                          showToast(`Added ${p.name} to cart`, "success");
                         }}
                         className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition-colors shadow-xs flex items-center gap-1 cursor-pointer"
                       >

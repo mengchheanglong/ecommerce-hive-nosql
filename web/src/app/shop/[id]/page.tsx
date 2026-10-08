@@ -56,7 +56,7 @@ export default function ProductDetailPage() {
   const [bundleIncludeItem1, setBundleIncludeItem1] = useState(true);
   const [bundleIncludeItem2, setBundleIncludeItem2] = useState(true);
 
-  const { addToCart, applyPromoCode } = useCart();
+  const { addToCart, applyPromoCode, setIsCartDrawerOpen } = useCart();
   const { formatPrice } = useCurrency();
   const { showToast } = useToast();
   const { selectedProvince } = useLocation();
@@ -332,7 +332,7 @@ export default function ProductDetailPage() {
     applyPromoCode("BUNDLE10");
 
     setFbtAdded(true);
-    showToast("Bundle added to cart with 10% bundle savings applied!", "success");
+    setIsCartDrawerOpen(true);
     setTimeout(() => setFbtAdded(false), 2000);
   };
 
@@ -340,7 +340,7 @@ export default function ProductDetailPage() {
     if (!product) return;
     addToCart(product, qty);
     setJustAdded(true);
-    showToast(`Added ${qty}x ${product.name} to cart`, "success");
+    setIsCartDrawerOpen(true);
     setTimeout(() => setJustAdded(false), 1500);
   };
 

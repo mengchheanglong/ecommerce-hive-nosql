@@ -35,7 +35,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isFreeShipping, setIsFreeShipping] = useState<boolean>(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-  const { showToast } = useToast();
+  const { showToast, clearToasts } = useToast();
+
+  const handleSetIsCartDrawerOpen = (open: boolean) => {
+    if (open) {
+      clearToasts();
+    }
+    setIsCartDrawerOpen(open);
+  };
 
   useEffect(() => {
     try {
@@ -90,11 +97,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...next[index],
           quantity: clampedQty,
         };
-        showToast(`Updated ${product.name} quantity in cart to ${clampedQty}`, "success");
+        // If drawer is closed, provide feedback; if open, the user is already viewing the drawer
+        if (!isCartDrawerOpen) {
+          showToast(`Updated ${product.name} quantity to ${clampedQty}`, "success");
+        }
         return next;
       }
       const initialQty = Math.min(maxStock, Math.max(1, quantity));
-      showToast(`Added ${initialQty}x ${product.name} to cart`, "success");
+      if (!isCartDrawerOpen) {
+        showToast(`Added ${initialQty}x ${product.name} to cart`, "success");
+      }
       return [...prev, { product, quantity: initialQty }];
     });
   };
@@ -102,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = (productId: string) => {
     setCart((prev) => {
       const removed = prev.find((item) => item.product.product_id === productId);
-      if (removed) {
+      if (removed && !isCartDrawerOpen) {
         showToast(`Removed ${removed.product.name} from cart`, "info");
       }
       return prev.filter((item) => item.product.product_id !== productId);
@@ -209,7 +221,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removePromoCode,
         finalTotalUSD,
         isCartDrawerOpen,
-        setIsCartDrawerOpen,
+        setIsCartDrawerOpen: handleSetIsCartDrawerOpen,
       }}
     >
       {children}

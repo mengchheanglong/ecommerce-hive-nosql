@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useToast } from "@/context/ToastContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { ShoppingBag, X, Plus, Minus, ArrowRight, Trash2, Tag, ShieldCheck } from "lucide-react";
 
@@ -23,8 +24,15 @@ export function CartDrawer() {
     removePromoCode,
     finalTotalUSD,
   } = useCart();
+  const { clearToasts } = useToast();
   const { formatPrice } = useCurrency();
   const [inputCode, setInputCode] = useState("");
+
+  useEffect(() => {
+    if (isCartDrawerOpen) {
+      clearToasts();
+    }
+  }, [isCartDrawerOpen, clearToasts]);
 
   if (!isCartDrawerOpen) return null;
 
