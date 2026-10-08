@@ -26,33 +26,8 @@ interface LiveOrderTrackingMapProps {
 
 const DEPOT_COORDS: [number, number] = [104.9223, 11.5680]; // Central Market Depot [lon, lat]
 
-// Instant-loading CARTO Dark Matter raster style (zero external font/sprite latency)
-const CARTO_DARK_STYLE: any = {
-  version: 8,
-  sources: {
-    "carto-dark": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    },
-  },
-  layers: [
-    {
-      id: "carto-dark-layer",
-      type: "raster",
-      source: "carto-dark",
-      minzoom: 0,
-      maxzoom: 20,
-    },
-  ],
-};
+// OpenFreeMap Dark style: completely free, open-source vector basemap with zero API keys or watermarks
+const OPENFREEMAP_DARK_STYLE = "https://tiles.openfreemap.org/styles/dark";
 
 function getDestinationCoords(address?: string, province?: string): [number, number] {
   const addr = (address || "").toLowerCase();
@@ -196,7 +171,7 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
 
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: CARTO_DARK_STYLE,
+        style: OPENFREEMAP_DARK_STYLE,
         center: [
           (DEPOT_COORDS[0] + destCoords[0]) / 2,
           (DEPOT_COORDS[1] + destCoords[1]) / 2,
@@ -385,6 +360,11 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
       applyRoute();
     } else {
       map.once("style.load", applyRoute);
+      map.on("styledata", () => {
+        if (map.isStyleLoaded() && !map.getSource("osm-route")) {
+          applyRoute();
+        }
+      });
     }
   }, [mapLoaded, routeGeometry]);
 
