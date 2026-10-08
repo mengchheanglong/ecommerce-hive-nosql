@@ -65,7 +65,7 @@ export default function AdminStoresPage() {
 
         <button
           onClick={() => showToast("Tenant onboarding portal link generated", "info")}
-          className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center space-x-2 shadow-sm transition-all cursor-pointer"
+          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center space-x-2 shadow-sm transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Invite New Store</span>
@@ -81,7 +81,7 @@ export default function AdminStoresPage() {
             placeholder="Search stores, owners, categories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none transition-all"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all"
           />
         </div>
 
@@ -136,10 +136,10 @@ export default function AdminStoresPage() {
                     <div className="space-y-0.5">
                       <Link
                         href={`/stores/${store.slug}`}
-                        className="font-bold text-slate-900 hover:text-purple-600 transition-colors inline-flex items-center gap-1 group"
+                        className="font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center gap-1 group"
                       >
                         <span>{store.name}</span>
-                        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-purple-600 transition-colors" />
+                        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
                       </Link>
                       <span className="text-[11px] text-slate-500 block">{store.category}</span>
                     </div>
@@ -213,7 +213,7 @@ export default function AdminStoresPage() {
                       ) : (
                         <button
                           onClick={() => showToast(`Audit log opened for ${store.name}`, "info")}
-                          className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold text-[11px] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-[11px] transition-colors cursor-pointer"
                         >
                           Audit
                         </button>

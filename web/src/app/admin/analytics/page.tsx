@@ -86,7 +86,7 @@ export default function AdminAnalyticsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2.5">
-              <BarChart3 className="w-6 h-6 text-purple-600" />
+              <BarChart3 className="w-6 h-6 text-blue-600" />
               <span>Platform & Big Data OLAP Analytics</span>
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -116,7 +116,7 @@ export default function AdminAnalyticsPage() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-purple-600 text-white font-bold shadow-xs"
+                  ? "bg-blue-600 text-white font-bold shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -173,15 +173,15 @@ export default function AdminAnalyticsPage() {
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-500">
             <span className="text-[10px] font-bold uppercase tracking-wider">Tez DAG Speedup</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
               <Zap className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <span className="text-2xl font-black text-purple-700 font-mono tracking-tight">
+            <span className="text-2xl font-black text-slate-900 font-mono tracking-tight">
               {metrics.speedupMultiplier}x Faster
             </span>
-            <div className="flex items-center space-x-1 text-[11px] text-purple-600 font-semibold mt-0.5">
+            <div className="flex items-center space-x-1 text-[11px] text-indigo-600 font-semibold mt-0.5">
               <span>{metrics.queryLatencyMs}ms vs {metrics.csvLatencyMs}ms</span>
               <span className="text-slate-400">•</span>
               <span className="text-slate-500">Vectorized</span>
@@ -218,11 +218,11 @@ export default function AdminAnalyticsPage() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <MapPin className="w-5 h-5 text-blue-600" />
                   <span>Provincial Revenue & Geographic Market Share</span>
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Aggregated from 1M records via HiveQL: <code className="font-mono text-purple-700 bg-purple-50 px-1 py-0.5 rounded">SELECT province, SUM(total) GROUP BY province</code>
+                  Aggregated from 1M records via HiveQL: <code className="font-mono text-blue-700 bg-blue-50 px-1 py-0.5 rounded">SELECT province, SUM(total) GROUP BY province</code>
                 </p>
               </div>
               <span className="text-xs font-mono text-slate-500 font-bold">Cambodia Core Ring</span>
@@ -244,14 +244,14 @@ export default function AdminAnalyticsPage() {
                         <span className="font-extrabold text-slate-900">
                           ${(prov.revenue / 1000000).toFixed(2)}M USD
                         </span>
-                        <span className="text-purple-600 font-bold w-12 text-right">{prov.share}</span>
+                        <span className="text-blue-600 font-bold w-12 text-right">{prov.share}</span>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
                     <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-purple-600 to-sky-500 h-full rounded-full transition-all duration-500"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(pct * 1.5, 100)}%` }}
                       />
                     </div>
@@ -273,12 +273,12 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="space-y-4 pt-4">
-                <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200/80 space-y-1">
+                <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200/80 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-900">High-Tier Basket ({orderTiers.highTier.label})</span>
-                    <span className="font-mono font-black text-purple-700 text-sm">{orderTiers.highTier.percentage}</span>
+                    <span className="text-xs font-bold text-blue-900">High-Tier Basket ({orderTiers.highTier.label})</span>
+                    <span className="font-mono font-black text-blue-700 text-sm">{orderTiers.highTier.percentage}</span>
                   </div>
-                  <p className="text-[11px] text-purple-700">
+                  <p className="text-[11px] text-blue-700">
                     {orderTiers.highTier.count.toLocaleString()} high-margin transactions
                   </p>
                 </div>
@@ -310,25 +310,25 @@ export default function AdminAnalyticsPage() {
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                <Users className="w-5 h-5 text-purple-600" />
+                <Users className="w-5 h-5 text-blue-600" />
                 <span>Customer Lifetime Value (LTV) & VIP Leaderboard</span>
               </h3>
               <p className="text-xs text-slate-500">
                 Clustered by 8 customer hash buckets to eliminate shuffle sorting skew
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-purple-600">Top Spenders</span>
+            <span className="text-xs font-mono font-bold text-slate-700">Top Spenders</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
             {topCustomers.map((cust: any) => (
               <div
                 key={cust.name}
-                className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-purple-300 transition-all space-y-2"
+                className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-300 transition-all space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold font-mono text-purple-600">#{cust.rank}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                  <span className="text-xs font-bold font-mono text-blue-600">#{cust.rank}</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200/60">
                     {cust.tier}
                   </span>
                 </div>
@@ -354,7 +354,7 @@ export default function AdminAnalyticsPage() {
           {/* 5-Stage Big Data Architecture Pipeline */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-5">
             <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-100">
-              <Layers className="w-5 h-5 text-purple-600" />
+              <Layers className="w-5 h-5 text-blue-600" />
               <h3 className="text-base font-bold text-slate-900">
                 Apache Hive 3.1 & HDFS Optimization Pipeline
               </h3>
@@ -362,7 +362,7 @@ export default function AdminAnalyticsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5">
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                   Stage 1
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 mt-2">HDFS CSV Staging</h4>
@@ -372,7 +372,7 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                   Stage 2
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 mt-2">orders_raw Table</h4>
@@ -382,7 +382,7 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                   Stage 3
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 mt-2">Partition & Bucket</h4>
@@ -392,7 +392,7 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                   Stage 4
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 mt-2">Columnar ORC</h4>
@@ -402,7 +402,7 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                   Stage 5
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 mt-2">Tez BI Reporting</h4>

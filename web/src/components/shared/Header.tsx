@@ -169,10 +169,10 @@ export function Header() {
               <span className="text-slate-700">|</span>
               <Link
                 href="/admin"
-                className="flex items-center space-x-1 text-purple-400 hover:text-purple-300 transition-colors font-semibold"
+                className="flex items-center space-x-1 text-slate-300 hover:text-white transition-colors font-semibold"
                 title="Platform Administration HQ"
               >
-                <ShieldCheck className="w-3 h-3" />
+                <ShieldCheck className="w-3 h-3 text-blue-400" />
                 <span>Platform Admin</span>
               </Link>
             </div>
@@ -269,10 +269,10 @@ export function Header() {
               </Link>
               <Link
                 href="/admin"
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all cursor-pointer"
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer border border-slate-200/80"
                 title="Platform Administration HQ"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 <span>Admin</span>
               </Link>
             </div>
@@ -501,10 +501,10 @@ export function Header() {
                       <Link
                         href="/admin"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-purple-600 font-medium"
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium"
                       >
-                        <ShieldCheck className="w-4 h-4 text-purple-600" />
-                        <span className="font-bold text-purple-600">Platform Admin HQ</span>
+                        <ShieldCheck className="w-4 h-4 text-blue-600" />
+                        <span className="font-bold text-slate-900">Platform Admin HQ</span>
                       </Link>
                     </div>
 

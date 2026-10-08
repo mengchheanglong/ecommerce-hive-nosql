@@ -84,7 +84,7 @@ export default function AdminSystemPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2.5">
-              <Cpu className="w-6 h-6 text-purple-600" />
+              <Cpu className="w-6 h-6 text-blue-600" />
               <span>Polyglot Persistence & Digital-Twin Health Matrix</span>
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -98,7 +98,7 @@ export default function AdminSystemPage() {
               disabled={isRefreshing}
               className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs border border-slate-200 flex items-center space-x-1.5 transition-all shadow-xs cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-purple-600" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
               <span>Probe Latencies</span>
             </button>
 
@@ -120,7 +120,7 @@ export default function AdminSystemPage() {
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Server className="w-5 h-5 text-purple-600" />
+              <Server className="w-5 h-5 text-blue-600" />
               <span>Live Infrastructure Health Matrix (8 Active Microservices & Databases)</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -143,13 +143,13 @@ export default function AdminSystemPage() {
           }))).map((node) => (
             <div
               key={node.name}
-              className="bg-slate-50 rounded-2xl p-4 border border-slate-200/70 hover:border-purple-300 transition-all flex flex-col justify-between space-y-3"
+              className="bg-slate-50 rounded-2xl p-4 border border-slate-200/70 hover:border-blue-300 transition-all flex flex-col justify-between space-y-3"
             >
               <div>
                 <div className="flex items-start justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900">{node.name}</h4>
-                    <p className="text-[11px] text-purple-600 font-semibold mt-0.5">{node.role}</p>
+                    <p className="text-[11px] text-blue-600 font-semibold mt-0.5">{node.role}</p>
                   </div>
                   <span
                     className={`inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -192,7 +192,7 @@ export default function AdminSystemPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <ShieldCheck className="w-5 h-5 text-purple-600" />
+              <ShieldCheck className="w-5 h-5 text-blue-600" />
               <span>CAP Theorem: Multi-Datacenter Network Partition Analysis</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -257,7 +257,7 @@ export default function AdminSystemPage() {
           {/* Customer Wallet: CP System */}
           <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-black uppercase tracking-wider text-indigo-800 bg-indigo-50 border border-indigo-200/80 px-2.5 py-0.5 rounded-full">
                 CP System (Consistency + Partition Tolerance)
               </span>
               <span className="text-xs font-bold text-slate-900">Prepaid Wallet Service</span>
@@ -268,7 +268,7 @@ export default function AdminSystemPage() {
             </p>
 
             <div className="p-3 rounded-xl bg-white border border-slate-200 text-[11px] space-y-1 text-slate-700">
-              <div className="font-semibold text-purple-900">Why CP is mandatory (Double-Spending Risk):</div>
+              <div className="font-semibold text-indigo-950 font-bold">Why CP is mandatory (Double-Spending Risk):</div>
               <p>
                 If we chose Availability (AP), a customer with $50 could spend $50 in Phnom Penh and simultaneously spend $50 in Siem Reap during the split, stealing $50 from KhmerCart.
               </p>

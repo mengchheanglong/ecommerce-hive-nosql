@@ -96,7 +96,7 @@ export function AdminFleetMap({
       case "broken_down":
         return "#ef4444"; // Red
       default:
-        return "#8b5cf6"; // Purple
+        return "#2563eb"; // Corporate Blue
     }
   };
 
@@ -519,7 +519,7 @@ export function AdminFleetMap({
             href="http://localhost:5173"
             target="_blank"
             rel="noreferrer"
-            className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all shadow-sm"
+            className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-xs"
           >
             <span>3D Sandbox</span>
             <ExternalLink className="w-3 h-3" />
@@ -552,7 +552,7 @@ export function AdminFleetMap({
                   <span
                     className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono tracking-wider"
                     style={{
-                      background: `${getVehicleColor(selectedVehicle.status)}20`,
+                  background: `${getVehicleColor(selectedVehicle.status)}20`,
                       color: getVehicleColor(selectedVehicle.status),
                       border: `1px solid ${getVehicleColor(selectedVehicle.status)}50`,
                     }}
@@ -583,7 +583,7 @@ export function AdminFleetMap({
               </div>
               <div className="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
                 <span className="text-[10px] text-slate-500 block uppercase">Orders</span>
-                <span className="font-bold text-purple-400">
+                <span className="font-bold text-indigo-400">
                   {selectedVehicle.assignedOrderIds?.length || 0} Assigned
                 </span>
               </div>
@@ -608,7 +608,7 @@ export function AdminFleetMap({
               {onSimulatePing && (
                 <button
                   onClick={() => onSimulatePing(selectedVehicle)}
-                  className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer shadow-xs"
                 >
                   <Radio className="w-3.5 h-3.5" />
                   <span>Cassandra Ping</span>

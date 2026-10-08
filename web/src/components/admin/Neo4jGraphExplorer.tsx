@@ -318,11 +318,11 @@ RETURN h.name, d.name, v.driver, z.label;`,
       case "tier2":
         return "#3b82f6"; // Blue
       case "tier3":
-        return "#8b5cf6"; // Purple
+        return "#6366f1"; // Indigo
       case "hub":
         return "#f59e0b"; // Amber
       case "depot":
-        return "#8b5cf6"; // Purple
+        return "#6366f1"; // Indigo
       case "store":
         return "#10b981"; // Emerald
       case "courier":
@@ -339,7 +339,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
       {/* Header & Perspective Switcher */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-purple-600 mb-1">
+          <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 mb-1">
             <Share2 className="w-4 h-4" />
             <span>Neo4j 5.x Graph Database • Bolt Protocol (Port 7687)</span>
           </div>
@@ -360,7 +360,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
             }}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer ${
               perspective === "social"
-                ? "bg-purple-600 text-white font-bold shadow-xs"
+                ? "bg-blue-600 text-white font-bold shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -374,7 +374,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
             }}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer ${
               perspective === "logistics"
-                ? "bg-purple-600 text-white font-bold shadow-xs"
+                ? "bg-blue-600 text-white font-bold shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -398,8 +398,8 @@ RETURN h.name, d.name, v.driver, z.label;`,
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
             Hop Traversal Latency
           </span>
-          <p className="text-lg font-black text-purple-700 font-mono">1.2 ms</p>
-          <p className="text-[10px] text-purple-600 font-semibold">121x faster than recursive SQL</p>
+          <p className="text-lg font-black text-blue-700 font-mono">1.2 ms</p>
+          <p className="text-[10px] text-blue-600 font-semibold">121x faster than recursive SQL</p>
         </div>
 
         <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-1">
@@ -480,7 +480,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
                 </marker>
                 <marker id="arrow-selected" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#a855f7" />
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
                 </marker>
               </defs>
               <rect width="100%" height="100%" fill="url(#graph-grid)" />
@@ -502,7 +502,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
                       y1={src.y}
                       x2={tgt.x}
                       y2={tgt.y}
-                      stroke={isConnected ? "#a855f7" : "#334155"}
+                      stroke={isConnected ? "#3b82f6" : "#334155"}
                       strokeWidth={isConnected ? 2.5 : 1.5}
                       strokeDasharray={isConnected ? "none" : "4 2"}
                       markerEnd={isConnected ? "url(#arrow-selected)" : "url(#arrow)"}
@@ -516,13 +516,13 @@ RETURN h.name, d.name, v.driver, z.label;`,
                       height={16}
                       rx={4}
                       fill="#0f172a"
-                      stroke={isConnected ? "#a855f7" : "#334155"}
+                      stroke={isConnected ? "#3b82f6" : "#334155"}
                       strokeWidth={0.8}
                     />
                     <text
                       x={midX}
                       y={midY + 3}
-                      fill={isConnected ? "#d8b4fe" : "#94a3b8"}
+                      fill={isConnected ? "#93c5fd" : "#94a3b8"}
                       fontSize="9"
                       fontFamily="monospace"
                       textAnchor="middle"
@@ -609,7 +609,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
-                <Info className="w-4 h-4 text-purple-600" />
+                <Info className="w-4 h-4 text-blue-600" />
                 <h3 className="text-sm font-bold text-slate-900">Node Property Sheet</h3>
               </div>
               <span
@@ -672,7 +672,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-purple-50 text-purple-900 border border-purple-200/80 text-[11px] space-y-1">
+          <div className="p-3 rounded-xl bg-blue-50/70 text-blue-900 border border-blue-200/80 text-[11px] space-y-1">
             <span className="font-bold block">Pointer Topology:</span>
             <p className="leading-relaxed">
               Neo4j stores this node record with direct 64-bit pointers to incoming & outgoing relationships, skipping B-Tree index lookup.
@@ -687,7 +687,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
         <div className="lg:col-span-2 bg-slate-950 text-emerald-400 p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-3 shadow-inner">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
             <div className="flex items-center space-x-2">
-              <Terminal className="w-4 h-4 text-purple-400" />
+              <Terminal className="w-4 h-4 text-sky-400" />
               <span className="font-bold text-white">Neo4j Bolt Cypher Query Console</span>
             </div>
 
@@ -699,7 +699,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
                   onClick={() => setActiveQueryIndex(idx)}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                     activeQueryIndex === idx
-                      ? "bg-purple-600 text-white"
+                      ? "bg-blue-600 text-white"
                       : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
                   }`}
                 >
@@ -733,7 +733,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
             <button
               onClick={handleRunCypher}
               disabled={isExecuting}
-              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all shadow-xs cursor-pointer flex items-center space-x-1.5"
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-xs cursor-pointer flex items-center space-x-1.5"
             >
               <Zap className="w-3.5 h-3.5 text-amber-300" />
               <span>{isExecuting ? "Traversing..." : "Run Traversal Benchmark"}</span>
@@ -745,7 +745,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
           <div className="pb-3 border-b border-slate-100">
             <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-purple-600" />
+              <Cpu className="w-4 h-4 text-blue-600" />
               <span>CAP / Index-Free Performance Advantage</span>
             </h3>
             <p className="text-xs text-slate-500">Graph database vs SQL joins on 3-tier deep traversals</p>
@@ -774,7 +774,7 @@ RETURN h.name, d.name, v.driver, z.label;`,
               </p>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-purple-50 text-purple-800 font-bold text-center text-xs">
+            <div className="p-2.5 rounded-lg bg-blue-50 text-blue-900 border border-blue-200/80 font-bold text-center text-xs">
               🚀 121x Faster Traversal for Multi-Hop Queries
             </div>
           </div>

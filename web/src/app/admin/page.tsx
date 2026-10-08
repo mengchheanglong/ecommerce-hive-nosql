@@ -208,7 +208,7 @@ export default function PlatformAdminOverview() {
       {/* Welcome & Ecosystem Command Plane Hero Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-purple-600 mb-1">
+          <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 mb-1">
             <ShieldCheck className="w-4 h-4" />
             <span>Marketplace Control Plane • Multi-Service Digital-Twin HQ</span>
           </div>
@@ -223,9 +223,9 @@ export default function PlatformAdminOverview() {
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Link
             href="/admin/analytics"
-            className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all"
           >
-            <BarChart3 className="w-3.5 h-3.5 text-purple-200" />
+            <BarChart3 className="w-3.5 h-3.5 text-blue-100" />
             <span>Big Data Analytics</span>
           </Link>
           <Link
@@ -241,7 +241,7 @@ export default function PlatformAdminOverview() {
             rel="noreferrer"
             className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-1.5 shadow-xs transition-all border border-slate-200"
           >
-            <Compass className="w-3.5 h-3.5 text-purple-600" />
+            <Compass className="w-3.5 h-3.5 text-slate-700" />
             <span>3D Sandbox</span>
             <ExternalLink className="w-3 h-3 text-slate-400" />
           </a>
@@ -294,7 +294,7 @@ export default function PlatformAdminOverview() {
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between text-slate-500">
             <span className="text-xs font-bold uppercase tracking-wider">Live Courier Fleet</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Truck className="w-4 h-4" />
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function PlatformAdminOverview() {
             <span className="text-2xl font-black text-slate-900 tracking-tight">
               {vehicles.length || 30} Couriers
             </span>
-            <div className="flex items-center space-x-1.5 text-[11px] text-purple-600 font-semibold mt-1">
+            <div className="flex items-center space-x-1.5 text-[11px] text-indigo-600 font-semibold mt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>Synced with Sandbox</span>
               <span className="text-slate-400">•</span>
@@ -456,7 +456,7 @@ export default function PlatformAdminOverview() {
         <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center">
                 <Navigation className="w-5 h-5" />
               </div>
               <div>
@@ -470,7 +470,7 @@ export default function PlatformAdminOverview() {
               </div>
             </div>
 
-            <span className="text-[11px] font-mono text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded-md border border-purple-800">
+            <span className="text-[11px] font-mono text-sky-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-700">
               v0.1.0 Online
             </span>
           </div>
@@ -490,7 +490,7 @@ export default function PlatformAdminOverview() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 Directed Road Edges
               </span>
-              <span className="text-xl font-black text-purple-300 font-mono">
+              <span className="text-xl font-black text-sky-300 font-mono">
                 {pathfinderStats?.edges || 224} Segments
               </span>
               <p className="text-[10px] text-slate-500">bidirectional routing graph</p>
@@ -522,7 +522,7 @@ export default function PlatformAdminOverview() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Radio className="w-5 h-5 text-purple-600" />
+              <Radio className="w-5 h-5 text-blue-600" />
               <span>Cassandra 4.1 Masterless Telemetry Ring (Port 9042)</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -534,14 +534,14 @@ export default function PlatformAdminOverview() {
             <button
               onClick={handleTriggerRadarPing}
               disabled={isPinging}
-              className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center space-x-1"
+              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center space-x-1"
             >
               <Radio className="w-3.5 h-3.5" />
               <span>{isPinging ? "Writing..." : "Simulate CQL Ping"}</span>
             </button>
             <Link
               href="/admin/fleet"
-              className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center space-x-1"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1"
             >
               <span>Inspect Full Radar</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -550,7 +550,7 @@ export default function PlatformAdminOverview() {
         </div>
 
         {/* Live CQL Write Terminal */}
-        <div className="bg-slate-950 text-purple-300 p-4 rounded-xl font-mono text-xs space-y-1.5 overflow-hidden">
+        <div className="bg-slate-950 text-slate-300 p-4 rounded-xl font-mono text-xs space-y-1.5 overflow-hidden border border-slate-800">
           <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-[11px] text-slate-400">
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -572,7 +572,7 @@ export default function PlatformAdminOverview() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <ShoppingCart className="w-5 h-5 text-purple-600" />
+              <ShoppingCart className="w-5 h-5 text-blue-600" />
               <span>Real Orders Ingestion Stream (MongoDB)</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -624,7 +624,7 @@ export default function PlatformAdminOverview() {
                   <td className="py-3 px-3 text-right">
                     <Link
                       href={`/orders/${order.order_id}`}
-                      className="inline-flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-bold text-xs"
+                      className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-bold text-xs"
                     >
                       <span>Track Live Map</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -642,7 +642,7 @@ export default function PlatformAdminOverview() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Server className="w-5 h-5 text-purple-600" />
+              <Server className="w-5 h-5 text-blue-600" />
               <span>Polyglot Datastore & Microservice Architecture Status</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -651,7 +651,7 @@ export default function PlatformAdminOverview() {
           </div>
           <Link
             href="/admin/system"
-            className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center space-x-1"
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1"
           >
             <span>Inspect System Details</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -662,7 +662,7 @@ export default function PlatformAdminOverview() {
           {ecosystemNodes.map((node) => (
             <div
               key={node.name}
-              className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-purple-300 transition-all space-y-2"
+              className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-300 transition-all space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900 truncate">{node.name}</span>
@@ -681,7 +681,7 @@ export default function PlatformAdminOverview() {
                   <span>{node.status}</span>
                 </span>
               </div>
-              <div className="text-[11px] text-purple-600 font-semibold font-mono">
+              <div className="text-[11px] text-blue-600 font-semibold font-mono">
                 Port {node.port} • {node.latencyMs}ms latency
               </div>
               <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">

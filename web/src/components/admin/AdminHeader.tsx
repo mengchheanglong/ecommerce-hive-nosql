@@ -26,7 +26,7 @@ export function AdminHeader({ onToggleSidebar, title, subtitle }: AdminHeaderPro
             <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               {title || "Platform Administration HQ"}
             </h1>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-900 text-white border border-slate-800 shadow-2xs">
               Super Admin
             </span>
           </div>
@@ -62,7 +62,7 @@ export function AdminHeader({ onToggleSidebar, title, subtitle }: AdminHeaderPro
             <span className="hidden sm:inline">Merchant</span>
           </Link>
           <span
-            className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-600 text-white font-bold shadow-xs cursor-default"
+            className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-slate-900 text-white font-bold shadow-xs cursor-default"
             title="Current: Platform Admin Console"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-white" />
@@ -77,7 +77,7 @@ export function AdminHeader({ onToggleSidebar, title, subtitle }: AdminHeaderPro
           rel="noreferrer"
           className="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-xs font-mono font-semibold transition-all"
         >
-          <Server className="w-3.5 h-3.5 text-purple-600" />
+          <Server className="w-3.5 h-3.5 text-blue-600" />
           <span>Swagger API</span>
           <ExternalLink className="w-3 h-3 text-slate-400" />
         </a>

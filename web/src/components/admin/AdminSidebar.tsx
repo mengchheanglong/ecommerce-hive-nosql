@@ -56,15 +56,15 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           {/* Logo / Admin Identity */}
           <div className="h-16 sm:h-18 px-5 flex items-center justify-between border-b border-slate-800/80">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-500/25">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm shadow-blue-600/25">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
                 <span className="font-extrabold text-sm tracking-tight text-white block">
                   Platform Admin
                 </span>
-                <span className="text-[11px] text-purple-400 font-semibold block">
-                  Marketplace HQ • Control Plane
+                <span className="text-[11px] text-slate-400 font-semibold block">
+                  Enterprise HQ • Control Plane
                 </span>
               </div>
             </div>
@@ -90,7 +90,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   onClick={onClose}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                     isActive
-                      ? "bg-purple-600 text-white font-bold shadow-sm shadow-purple-600/30 border border-purple-500"
+                      ? "bg-blue-600 text-white font-bold shadow-xs shadow-blue-600/30 border border-blue-500"
                       : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
                   }`}
                 >
@@ -112,7 +112,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 href="http://localhost:5173"
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-950/60 to-purple-950/60 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white text-xs font-semibold transition-all shadow-sm"
+                className="group flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-sky-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all shadow-xs"
               >
                 <div className="flex items-center space-x-2.5">
                   <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
@@ -177,7 +177,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             href="http://localhost:4000/api/docs"
             target="_blank"
             rel="noreferrer"
-            className="w-full flex items-center justify-center space-x-1.5 py-1 text-[11px] text-slate-400 hover:text-purple-400 transition-colors"
+            className="w-full flex items-center justify-center space-x-1.5 py-1 text-[11px] text-slate-400 hover:text-blue-400 transition-colors"
           >
             <span>Swagger OpenAPI Docs</span>
             <ExternalLink className="w-3 h-3" />
