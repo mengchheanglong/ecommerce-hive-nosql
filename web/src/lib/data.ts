@@ -107,7 +107,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 70,
     "rating": 4.9,
     "reviews_count": 89,
-    "image": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&q=80",
     "weight": "500ml Sealed Glass Bottle",
     "expiry_date": "2028-06-15",
     "description": "Harvested sustainably by community foragers in the Cardamom Mountains, unprocessed and unfiltered."
@@ -153,7 +153,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 180,
     "rating": 4.8,
     "reviews_count": 121,
-    "image": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1571951526378-bdf707fce400?auto=format&fit=crop&w=800&q=80",
     "weight": "500g Eco Palm Container",
     "expiry_date": "2027-09-20",
     "description": "PGI certified natural unrefined golden palm sugar syrup granulated traditionally over wood fires."
@@ -199,7 +199,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 130,
     "rating": 4.9,
     "reviews_count": 165,
-    "image": "https://images.unsplash.com/photo-1524593689594-aae2f26b75ab?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1641718085818-2f0432d84fe4?auto=format&fit=crop&w=800&q=80",
     "weight": "400g Foil Seal Tub",
     "expiry_date": "2027-07-15",
     "description": "Premium jumbo M23 cashew nuts grown in Kampong Cham, slow-roasted with skin on for deep crunch."
@@ -291,7 +291,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 110,
     "rating": 4.9,
     "reviews_count": 73,
-    "image": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
     "weight": "500ml Glass Bottle",
     "expiry_date": "2028-12-31",
     "description": "First press anchovy extract naturally fermented in wooden barrels for 12 months in coastal Koh Kong."
@@ -314,7 +314,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 120,
     "rating": 4.6,
     "reviews_count": 67,
-    "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80",
     "size": "L",
     "colours": [
       "Navy Blue",
@@ -341,7 +341,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 60,
     "rating": 4.9,
     "reviews_count": 94,
-    "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=800&q=80",
     "size": "Free Size (180x60cm)",
     "colours": [
       "Crimson Red",
@@ -395,7 +395,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 90,
     "rating": 4.7,
     "reviews_count": 58,
-    "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80",
     "size": "M",
     "colours": [
       "Palm Leaf Green",
@@ -421,7 +421,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 55,
     "rating": 4.8,
     "reviews_count": 83,
-    "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
     "size": "22 Litres (16\" Laptop Compartment)",
     "colours": [
       "Matte Black",
@@ -447,7 +447,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 35,
     "rating": 4.9,
     "reviews_count": 46,
-    "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80",
     "size": "EU 42 (US 9)",
     "colours": [
       "Cognac Brown",
@@ -499,7 +499,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 200,
     "rating": 4.8,
     "reviews_count": 140,
-    "image": "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80",
     "size": "170cm x 65cm",
     "colours": [
       "Red Check",
@@ -524,7 +524,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 45,
     "rating": 4.8,
     "reviews_count": 124,
-    "image": "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80",
     "screen_size": "6.7 inch OLED 120Hz",
     "warranty": "1 Year Official Distributor",
     "description": "Flagship AMOLED display with high-efficiency 5G modem, AI computational photography, and 65W fast charge.",
@@ -567,7 +567,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 80,
     "rating": 4.7,
     "reviews_count": 89,
-    "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&q=80",
     "screen_size": "Touch Sensor Interface",
     "warranty": "6 Months Replacement",
     "description": "Active noise cancellation up to 42dB with transparency mode and water-resistant nano-coating.",
@@ -602,7 +602,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 18,
     "rating": 4.9,
     "reviews_count": 53,
-    "image": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=800&q=80",
     "screen_size": "34 inch 1500R Curved 4K",
     "warranty": "2 Years Manufacturer",
     "description": "Immersive panoramic display with 99% sRGB color accuracy, USB-C 90W power delivery, and built-in KVM switch."
@@ -623,7 +623,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 65,
     "rating": 4.6,
     "reviews_count": 72,
-    "image": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
     "screen_size": "1.43 inch AMOLED Sapphire",
     "warranty": "1 Year Official Distributor",
     "description": "Multi-band GPS tracking, continuous SpO2 heart-rate telemetry, and 14-day battery life."
@@ -644,7 +644,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 50,
     "rating": 4.8,
     "reviews_count": 64,
-    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80",
     "screen_size": "75% Compact Layout",
     "warranty": "1 Year Warranty",
     "description": "Factory-lubed linear switches with sound-dampening silicone gasket and RGB backlighting."
@@ -665,7 +665,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 110,
     "rating": 4.9,
     "reviews_count": 145,
-    "image": "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=800&q=80",
     "screen_size": "Smart Digital Power Display",
     "warranty": "6 Months Replacement",
     "description": "65W USB-C Power Delivery charges laptops and smartphones simultaneously with airline-approved capacity."
@@ -686,7 +686,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 14,
     "rating": 4.8,
     "reviews_count": 29,
-    "image": "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80",
     "screen_size": "4K 60fps 3-Axis Gimbal",
     "warranty": "1 Year Manufacturer",
     "description": "Under 249g ultra-lightweight drone with obstacle avoidance and 31-minute flight time."
@@ -709,7 +709,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 40,
     "rating": 4.8,
     "reviews_count": 32,
-    "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80",
     "description": "Naturally fired red earthenware teapot with 4 companion cups crafted using century-old Kampong Chhnang heritage methods."
   },
   {
@@ -730,7 +730,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 65,
     "rating": 4.7,
     "reviews_count": 48,
-    "image": "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
     "description": "Hand-thrown stoneware bowls with crackled celadon glaze and relief carved lotus rim, microwave and dishwasher safe."
   },
   {
@@ -751,7 +751,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 50,
     "rating": 4.9,
     "reviews_count": 61,
-    "image": "https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=800&q=80",
     "description": "Eco-friendly nested organizer baskets woven from Tonle Sap lake water hyacinth fibers with sturdy wire frame."
   },
   {
@@ -793,7 +793,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 75,
     "rating": 4.9,
     "reviews_count": 88,
-    "image": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80",
     "description": "Nutrient-dense antioxidant botanical face serum with cold-pressed moringa seed oil and vitamin E."
   },
   {
@@ -877,7 +877,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 20,
     "rating": 4.9,
     "reviews_count": 27,
-    "image": "https://images.unsplash.com/photo-1599837565318-67429bde7162?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1786452950558-61c6a0ad7574?auto=format&fit=crop&w=800&q=80",
     "description": "Authentic sandstone wall sculpture depicting celestial Apsara dancers carved by Siem Reap artisan apprentices."
   },
   {
@@ -898,7 +898,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 30,
     "rating": 4.8,
     "reviews_count": 19,
-    "image": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1699005005912-3e73a2836eae?auto=format&fit=crop&w=800&q=80",
     "description": "Multi-layered natural tree resin lacquerware tray with gold-leaf inlay highlights, ideal for ceremonies or dining."
   },
   {
@@ -940,7 +940,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 35,
     "rating": 4.8,
     "reviews_count": 24,
-    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
     "description": "Authentic Cambodian rustic rice winnowing basket (Chhngier) hand-smoked over coconut husks for deep honey hue."
   },
   {
@@ -1003,7 +1003,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 25,
     "rating": 4.8,
     "reviews_count": 15,
-    "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80",
     "description": "Organic pendant lampshade casting warm ambient lattice shadows, crafted by Siem Reap village basket-makers."
   },
   {
@@ -1024,7 +1024,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 55,
     "rating": 4.9,
     "reviews_count": 42,
-    "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1710490834507-54098e66c8bd?auto=format&fit=crop&w=800&q=80",
     "description": "Solid aged sugar palm wood mortar and pestle, perfectly balanced for crushing Kampot pepper, garlic, and fresh kroeung."
   },
   {
@@ -1064,7 +1064,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 65,
     "rating": 4.8,
     "reviews_count": 36,
-    "image": "https://images.unsplash.com/photo-1519735777090-ec97162dc266?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
     "description": "Exfoliating solar fleur de sel infused with organic cold-pressed coconut oil and zesty Kaffir lime leaf essential oil."
   },
   {
@@ -1085,7 +1085,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 40,
     "rating": 4.8,
     "reviews_count": 29,
-    "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80",
     "size": "Free Size (Adjustable Wrap)",
     "colours": [
       "Indigo Blue",
@@ -1137,7 +1137,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 12,
     "rating": 5,
     "reviews_count": 18,
-    "image": "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1771074152960-13f11090d921?auto=format&fit=crop&w=800&q=80",
     "description": "Framed raw golden silk tapestry depicting scenes from the Reamker epic, woven with indigenous yellow silkworm threads."
   },
   {
@@ -1158,7 +1158,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 50,
     "rating": 4.9,
     "reviews_count": 32,
-    "image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1770848125591-2e97455bf21d?auto=format&fit=crop&w=800&q=80",
     "description": "Original sunrise reflection over Angkor Wat lotus pond painted by Siem Reap visual artists on archival handmade paper."
   },
   {
@@ -1177,7 +1177,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 40,
     "rating": 4.7,
     "reviews_count": 38,
-    "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=800&q=80",
     "screen_size": "Dual-Band AX3000",
     "warranty": "2 Years Replacement",
     "description": "Covers up to 3,000 sq ft with low-latency beamforming antennas."
@@ -1200,7 +1200,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     "stock": 100,
     "rating": 4.7,
     "reviews_count": 61,
-    "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80",
+    "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
     "size": "XL",
     "colours": [
       "Glacier Blue",

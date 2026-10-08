@@ -4,67 +4,67 @@ const { MongoClient } = require('mongodb');
 
 const IMAGE_MAP = {
   // Food & Groceries
-  P0874: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80", // Jasmine Rice
+  P0874: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80", // Jasmine Fragrant Rice
   P0875: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=800&q=80", // Kampot Black Pepper
   P0876: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&w=800&q=80", // Mondulkiri Arabica Coffee
-  P0877: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80", // Wild Forest Honey
-  P0878: "https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?auto=format&fit=crop&w=800&q=80", // Kampot Fleur de Sel
-  P0879: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80", // Kampong Speu Palm Sugar
+  P0877: "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&q=80", // Wild Forest Honey with Comb
+  P0878: "https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?auto=format&fit=crop&w=800&q=80", // Kampot Fleur de Sel (Sea Salt)
+  P0879: "https://images.unsplash.com/photo-1571951526378-bdf707fce400?auto=format&fit=crop&w=800&q=80", // Artisanal Palm Sugar in Ceramic Bowl
   P0880: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80", // Lemongrass Herbal Tea
-  P0881: "https://images.unsplash.com/photo-1524593689594-aae2f26b75ab?auto=format&fit=crop&w=800&q=80", // Roasted Cashews
+  P0881: "https://images.unsplash.com/photo-1641718085818-2f0432d84fe4?auto=format&fit=crop&w=800&q=80", // Roasted Cashews in Ceramic Bowl
   P0882: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=800&q=80", // Fresh Green Oranges
   P0883: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=80", // Golden Mangoes
-  P0884: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80", // Hydroponic Asian Greens
-  P0888: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&q=80", // Artisanal Fish Sauce
+  P0884: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80", // Bok Choy & Asian Greens
+  P0888: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80", // Artisanal Fish Sauce Bottle
 
   // Fashion & Accessories
-  P3314: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80", // Linen Casual Shirt
-  P3315: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=800&q=80", // Takeo Silk Scarf
+  P3314: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80", // Folded Linen Casual Shirt
+  P3315: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=800&q=80", // Takeo Silk Scarf
   P3316: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80", // Everyday Stretch Chinos
-  P3317: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80", // Cotton Resort Shirt
-  P3318: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80", // Commuter Backpack 22L
-  P3319: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80", // Heritage Leather Loafers
+  P3317: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80", // Cotton Resort Short-Sleeve Shirt
+  P3318: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80", // Commuter Backpack 22L
+  P3319: "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80", // Heritage Leather Loafers
   P3320: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80", // Bamboo Fiber Lounge Set
-  P3321: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80", // UV Sun Hoodie UPF 50+
-  P3323: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&w=800&q=80", // Hand-Loomed Cotton Krama
-  P3324: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80", // Printed Cotton Midi Dress
-  P3325: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80", // Khmer Hol Silk Sarong
+  P3321: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80", // UV Sun Hoodie UPF 50+
+  P3323: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80", // Hand-Loomed Cotton Krama Scarf
+  P3324: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80", // Printed Cotton Midi Dress
+  P3325: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80", // Khmer Hol Silk Sarong Wrap
 
   // Electronics
-  P2210: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80", // Ultra Smartphone 5G
-  P2211: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80", // Wireless Earbuds Pro
-  P2212: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80", // Curved 4K Ultra-Wide Monitor
-  P2213: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80", // Smartwatch GPS Sapphire
-  P2214: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80", // Mechanical Gaming Keyboard
-  P2215: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80", // 65W 20,000mAh Power Bank
-  P2216: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80", // Wi-Fi 6 Mesh Router
-  P2217: "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=800&q=80", // Compact 4K Foldable Drone
+  P2210: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80", // Ultra Smartphone Pro Max 5G
+  P2211: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&q=80", // Noise-Cancelling Wireless Earbuds Pro
+  P2212: "https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=800&q=80", // Curved 4K Ultra-Wide Monitor 34"
+  P2213: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80", // Fitness Smartwatch GPS Sapphire
+  P2214: "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80", // Mechanical Gaming Keyboard RGB
+  P2215: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=800&q=80", // Ultra Fast-Charging Power Bank 65W
+  P2216: "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=800&q=80", // Dual-Band Wi-Fi 6 Mesh Router
+  P2217: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", // Compact 4K Foldable Drone
 
   // Home & Living
-  P4001: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80", // Terracotta Teapot Set
-  P4002: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80", // Glazed Ceramic Rice Bowls
-  P4003: "https://images.unsplash.com/photo-1544457070-4cd773b4d71e?auto=format&fit=crop&w=800&q=80", // Water Hyacinth Storage Baskets
-  P4004: "https://images.unsplash.com/photo-1584269600519-112d071b35e6?auto=format&fit=crop&w=800&q=80", // Coconut Wood Cooking Utensils
-  P4005: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=800&q=80", // Silk Cushion Covers
-  P4006: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80", // Woven Bamboo Winnowing Wall Art
+  P4001: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80", // Terracotta Teapot Set
+  P4002: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80", // Glazed Ceramic Rice Bowls Set
+  P4003: "https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=800&q=80", // Water Hyacinth Woven Storage Baskets
+  P4004: "https://images.unsplash.com/photo-1584269600519-112d071b35e6?auto=format&fit=crop&w=800&q=80", // Coconut Wood Cooking Utensils Set
+  P4005: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=800&q=80", // Silk Cushion Covers Pair
+  P4006: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80", // Woven Bamboo Winnowing Wall Art
   P4007: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80", // Lemongrass & Jasmine Soy Candle
   P4008: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80", // Terracotta Relief Planter Pot
-  P4009: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80", // Bamboo Lantern Lampshade
-  P4010: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80", // Palm Wood Mortar & Pestle
+  P4009: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80", // Bamboo Lantern Lampshade
+  P4010: "https://images.unsplash.com/photo-1710490834507-54098e66c8bd?auto=format&fit=crop&w=800&q=80", // Palm Wood Mortar & Pestle
 
   // Beauty & Wellness
-  P5001: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80", // Moringa Face Oil 30ml
+  P5001: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80", // Moringa Face Oil 30ml Dropper
   P5002: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80", // Virgin Coconut Oil 250ml
-  P5003: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80", // Turmeric & Wild Honey Soap
-  P5004: "https://images.unsplash.com/photo-1547793549-70faf88838c8?auto=format&fit=crop&w=800&q=80", // Khmer Herbal Balm & Inhaler
-  P5005: "https://images.unsplash.com/photo-1519735777090-ec97162dc266?auto=format&fit=crop&w=800&q=80", // Kampot Sea Salt Body Scrub
+  P5003: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80", // Turmeric & Wild Honey Herbal Soap
+  P5004: "https://images.unsplash.com/photo-1547793549-70faf88838c8?auto=format&fit=crop&w=800&q=80", // Khmer Herbal Balm & Inhaler Duo
+  P5005: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80", // Kampot Sea Salt Body Scrub Jar
 
   // Arts & Culture
   P6001: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80", // Silver Betel Box
-  P6002: "https://images.unsplash.com/photo-1599837565318-67429bde7162?auto=format&fit=crop&w=800&q=80", // Carved Stone Apsara Sculpture
-  P6003: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80", // Lacquerware Serving Platter
-  P6004: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80", // Golden Silk Wall Tapestry
-  P6005: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80"  // Angkor Wat Watercolor Art Print
+  P6002: "https://images.unsplash.com/photo-1786452950558-61c6a0ad7574?auto=format&fit=crop&w=800&q=80", // Carved Stone Apsara Sculpture
+  P6003: "https://images.unsplash.com/photo-1699005005912-3e73a2836eae?auto=format&fit=crop&w=800&q=80", // Lacquerware Serving Platter
+  P6004: "https://images.unsplash.com/photo-1771074152960-13f11090d921?auto=format&fit=crop&w=800&q=80", // Golden Silk Heritage Wall Tapestry
+  P6005: "https://images.unsplash.com/photo-1770848125591-2e97455bf21d?auto=format&fit=crop&w=800&q=80"  // Angkor Wat Watercolor Art Print
 };
 
 async function main() {
