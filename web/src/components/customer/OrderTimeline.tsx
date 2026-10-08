@@ -31,6 +31,40 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
     }
   };
 
+  if (status === "Cancelled") {
+    return (
+      <div className="w-full py-3 px-4 rounded-2xl bg-rose-50 border border-rose-200/80 flex items-center justify-between text-xs">
+        <div className="flex items-center space-x-2.5 text-rose-800">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div>
+            <span className="font-bold block text-rose-900">Order Cancelled</span>
+            <span className="text-[11px] text-rose-600">Fulfillment halted • Refund settlement released</span>
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
+          Cancelled
+        </span>
+      </div>
+    );
+  }
+
+  if (status === "Return Requested" || status === "Returned") {
+    return (
+      <div className="w-full py-3 px-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs">
+        <div className="flex items-center space-x-2.5 text-amber-900">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+          <div>
+            <span className="font-bold block text-amber-900">Return & Refund Under Review</span>
+            <span className="text-[11px] text-amber-700">7-Day Guarantee active • Merchant review guaranteed within 24 hours</span>
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+          Review In Progress
+        </span>
+      </div>
+    );
+  }
+
   const currentIndex = getStepIndex(status);
 
   return (

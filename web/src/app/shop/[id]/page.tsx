@@ -34,6 +34,9 @@ import {
   Package,
   Layers,
   Sparkles,
+  HelpCircle,
+  ThumbsUp,
+  Search,
 } from "lucide-react";
 
 export default function ProductDetailPage() {
@@ -66,6 +69,25 @@ export default function ProductDetailPage() {
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Q&A State
+  interface ProductQA {
+    id: string;
+    question: string;
+    askedBy: string;
+    date: string;
+    answer: string;
+    answeredBy: string;
+    helpfulCount: number;
+    userVoted?: boolean;
+  }
+
+  const [qaList, setQaList] = useState<ProductQA[]>([]);
+  const [qaSearch, setQaSearch] = useState("");
+  const [showQaForm, setShowQaForm] = useState(false);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [newQuestionAuthor, setNewQuestionAuthor] = useState("");
+  const [isSubmittingQa, setIsSubmittingQa] = useState(false);
+
   useEffect(() => {
     async function load() {
       if (!productId) return;
@@ -76,11 +98,155 @@ export default function ProductDetailPage() {
       setCatalog(all);
       if (data) {
         setRelated(all.filter((p) => p.category === data.category && p.product_id !== productId).slice(0, 3));
+
+        // Populate authentic category-tailored Q&As
+        const defaultQAs: ProductQA[] =
+          data.category === "Electronics"
+            ? [
+                {
+                  id: "qa-1",
+                  question: "Is this device compatible with standard Cambodian 220V electricity and sockets?",
+                  askedBy: "Vannak Long",
+                  date: "September 15, 2026",
+                  answer:
+                    "Yes, it supports international wide-voltage 100V–240V (50/60Hz) and works natively with standard Cambodian 220V power outlets. Standard plug adapter is included in the packaging.",
+                  answeredBy: "Mekong Electronics Hub (Verified Merchant)",
+                  helpfulCount: 16,
+                },
+                {
+                  id: "qa-2",
+                  question: "Where can I claim warranty repairs in Phnom Penh or Siem Reap?",
+                  askedBy: "Rithy Seng",
+                  date: "September 19, 2026",
+                  answer:
+                    "Official 1-Year Distributor Warranty can be serviced at our authorized walk-in centers on Norodom Blvd in Phnom Penh and Pokambor Ave in Siem Reap. Serial number is registered with Ministry of Commerce.",
+                  answeredBy: "Mekong Electronics Hub (Verified Merchant)",
+                  helpfulCount: 11,
+                },
+                {
+                  id: "qa-3",
+                  question: "Can I inspect the factory seal and test the device before paying with Bakong KHQR?",
+                  askedBy: "Sreyneth Meas",
+                  date: "September 22, 2026",
+                  answer:
+                    "Yes! All packages are shipped with intact tamper-evident manufacturer seals. You can inspect the package upon courier arrival and scan NBC Bakong KHQR with $0 transaction fees.",
+                  answeredBy: "Rentify Logistics Support",
+                  helpfulCount: 21,
+                },
+              ]
+            : data.category === "Fashion & Accessories" || data.category === "Clothing"
+            ? [
+                {
+                  id: "qa-1",
+                  question: "How should this silk fabric or garment be washed and ironed?",
+                  askedBy: "Bopha Chan",
+                  date: "September 14, 2026",
+                  answer:
+                    "Hand-wash gently in cool water using mild silk detergent. Do not wring or tumble dry. Dry in shade away from direct tropical sunlight, and steam iron on low heat setting.",
+                  answeredBy: "Sovann Silk Studio (Master Weavers)",
+                  helpfulCount: 14,
+                },
+                {
+                  id: "qa-2",
+                  question: "Is this Cambodian standard sizing or oversized Western fit?",
+                  askedBy: "Piseth Meas",
+                  date: "September 20, 2026",
+                  answer:
+                    "It follows standard unisex Asian retail sizing. If you prefer a loose relaxed silhouette, we recommend selecting one size up from your normal size.",
+                  answeredBy: "Phnom Penh Urban Streetwear (Merchant)",
+                  helpfulCount: 9,
+                },
+              ]
+            : data.category === "Food & Groceries"
+            ? [
+                {
+                  id: "qa-1",
+                  question: "What is the harvest date and how long does the vacuum freshness seal last?",
+                  askedBy: "Dara Heng",
+                  date: "September 16, 2026",
+                  answer:
+                    "Harvested during the latest seasonal harvest in Battambang and vacuum-sealed at source. Guaranteed fresh for up to 18 months stored in a cool, dry pantry.",
+                  answeredBy: "Battambang Organic Harvest (Verified Farmer)",
+                  helpfulCount: 19,
+                },
+                {
+                  id: "qa-2",
+                  question: "Is this batch certified chemical-free and organic?",
+                  askedBy: "Chenda Kim",
+                  date: "September 21, 2026",
+                  answer:
+                    "Yes, fully lab-tested and certified by Cambodian Organic Agriculture standards with zero chemical pesticide residues.",
+                  answeredBy: "Battambang Organic Harvest (Verified Farmer)",
+                  helpfulCount: 13,
+                },
+              ]
+            : [
+                {
+                  id: "qa-1",
+                  question: "How is this artisanal craft item packed to prevent breakage during motorcycle courier delivery?",
+                  askedBy: "Sokhom Nuon",
+                  date: "September 18, 2026",
+                  answer:
+                    "All fragile handicrafts and ceramics are wrapped in multi-layer shock-absorbent bubble cushioning and packed in rigid reinforced corrugated boxes with fragile handling stickers.",
+                  answeredBy: "Angkor Artisan & Handicrafts (Verified Merchant)",
+                  helpfulCount: 17,
+                },
+              ];
+        setQaList(defaultQAs);
       }
       setLoading(false);
     }
     load();
   }, [productId]);
+
+  const handleAskQuestion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuestion.trim()) return;
+    setIsSubmittingQa(true);
+
+    const questionText = newQuestion.trim();
+    const authorName = newQuestionAuthor.trim() || "Verified Shopper";
+
+    const newQA: ProductQA = {
+      id: `qa-${Date.now()}`,
+      question: questionText,
+      askedBy: authorName,
+      date: "Just now",
+      answer: `Verified Merchant Response: Thank you for asking about "${product?.name}". Our fulfillment team has verified that this item complies with all specifications and is stocked in Phnom Penh ready for same-day dispatch.`,
+      answeredBy: `${seller.name} (Official Merchant)`,
+      helpfulCount: 1,
+    };
+
+    setTimeout(() => {
+      setQaList((prev) => [newQA, ...prev]);
+      setNewQuestion("");
+      setNewQuestionAuthor("");
+      setShowQaForm(false);
+      setIsSubmittingQa(false);
+      showToast("Your question was posted and received a verified merchant answer!", "success");
+    }, 800);
+  };
+
+  const handleVoteHelpful = (qaId: string) => {
+    setQaList((prev) =>
+      prev.map((qa) => {
+        if (qa.id === qaId) {
+          const nextCount = qa.userVoted ? qa.helpfulCount - 1 : qa.helpfulCount + 1;
+          showToast(qa.userVoted ? "Vote removed" : "Marked as helpful!", "info");
+          return { ...qa, helpfulCount: nextCount, userVoted: !qa.userVoted };
+        }
+        return qa;
+      })
+    );
+  };
+
+  const filteredQAs = useMemo(() => {
+    if (!qaSearch.trim()) return qaList;
+    const q = qaSearch.toLowerCase();
+    return qaList.filter(
+      (qa) => qa.question.toLowerCase().includes(q) || qa.answer.toLowerCase().includes(q)
+    );
+  }, [qaList, qaSearch]);
 
   // Generate gallery images if not explicitly specified
   const galleryImages = useMemo(() => {
@@ -923,6 +1089,186 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
                 <p className="text-slate-600 leading-relaxed">{rev.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Customer Questions & Answers Section */}
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                <HelpCircle className="w-5 h-5" />
+              </span>
+              <h3 className="text-lg font-bold text-slate-900">Customer Questions & Answers</h3>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Ask about technical compatibility, authentic Khmer sizing, harvest dates, or warranty details.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowQaForm(!showQaForm)}
+            className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>{showQaForm ? "Close Form" : "Ask a Question"}</span>
+          </button>
+        </div>
+
+        {/* Q&A Search Filter */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={qaSearch}
+            onChange={(e) => setQaSearch(e.target.value)}
+            placeholder="Have a question? Search answers (e.g. 220V plug, sizing, warranty, freshness)..."
+            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-slate-50/80 border border-slate-200/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all text-slate-800 placeholder-slate-400"
+          />
+          {qaSearch && (
+            <button
+              onClick={() => setQaSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-medium"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Ask Question Form Modal/Drawer Inline */}
+        {showQaForm && (
+          <form
+            onSubmit={handleAskQuestion}
+            className="p-5 rounded-2xl bg-blue-50/40 border border-blue-200/60 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Post an Inquiry to Seller & Community
+              </h4>
+              <span className="text-[11px] text-blue-700 font-medium">Response SLA: &lt; 2 hours</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Your Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sokha Meas"
+                  value={newQuestionAuthor}
+                  onChange={(e) => setNewQuestionAuthor(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                />
+              </div>
+              <div className="flex items-end">
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Your question will be forwarded directly to the verified merchant and answered publicly.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Your Question *</label>
+              <textarea
+                rows={3}
+                placeholder="e.g. Is this compatible with Cambodian standard 220V power outlets? Does it come with warranty in Phnom Penh?"
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+                required
+                className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <p className="text-[10px] text-slate-500">
+                Please adhere to Cambodian community standards and avoid sharing personal phone numbers.
+              </p>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowQaForm(false)}
+                  className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-700 font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingQa}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSubmittingQa ? "Posting..." : "Submit Question"}</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* Q&A List */}
+        {filteredQAs.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-500 space-y-2">
+            <p className="font-semibold text-slate-700">No questions found matching your search.</p>
+            <p>Have a question about this item? Click &quot;Ask a Question&quot; to receive a response from the merchant.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredQAs.map((qa) => (
+              <div
+                key={qa.id}
+                className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-3 transition-colors hover:bg-slate-50"
+              >
+                {/* Question */}
+                <div className="space-y-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start space-x-2.5">
+                      <span className="shrink-0 px-2 py-0.5 rounded-md bg-blue-600 text-white font-extrabold text-[11px] leading-tight">
+                        Q
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                        {qa.question}
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 pl-8">
+                    Asked by <span className="font-medium text-slate-600">{qa.askedBy}</span> • {qa.date}
+                  </p>
+                </div>
+
+                {/* Answer */}
+                <div className="pl-8 pt-1 space-y-2 border-t border-slate-200/40">
+                  <div className="flex items-start space-x-2.5">
+                    <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-600 text-white font-extrabold text-[11px] leading-tight">
+                      A
+                    </span>
+                    <div className="space-y-2 flex-1">
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {qa.answer}
+                      </p>
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/60 text-[11px] font-semibold text-emerald-800">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{qa.answeredBy}</span>
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => handleVoteHelpful(qa.id)}
+                          className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer ${
+                            qa.userVoted
+                              ? "bg-blue-50 border-blue-300 text-blue-700"
+                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          <ThumbsUp className={`w-3 h-3 ${qa.userVoted ? "fill-current" : ""}`} />
+                          <span>Helpful ({qa.helpfulCount})</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

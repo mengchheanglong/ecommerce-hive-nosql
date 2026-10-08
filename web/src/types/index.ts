@@ -83,6 +83,9 @@ export interface OrderRecord {
   assigned_courier_id?: string;
   assigned_courier_name?: string;
   courier_phone?: string;
+  cancellation_reason?: string;
+  return_reason?: string;
+  return_status?: "Pending" | "Approved" | "Refunded" | "Rejected" | string;
   created_at: string;
   updated_at?: string;
 }

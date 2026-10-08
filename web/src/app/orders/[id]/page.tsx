@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { OrderRecord, RiderTelemetry } from "@/types";
-import { fetchOrderById, fetchRiders } from "@/lib/api";
+import { fetchOrderById, fetchRiders, updateOrderStatus } from "@/lib/api";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/context/ToastContext";
 import { OrderTimeline } from "@/components/customer/OrderTimeline";
 import { LiveOrderTrackingMap } from "@/components/customer/LiveOrderTrackingMap";
 import { Modal } from "@/components/shared/Modal";
@@ -24,16 +26,94 @@ import {
   QrCode,
   Download,
   Building2,
+  RotateCcw,
+  XCircle,
+  ShieldAlert,
+  ShoppingBag,
+  AlertTriangle,
+  HelpCircle,
 } from "lucide-react";
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const orderId = params?.id as string;
   const [order, setOrder] = useState<OrderRecord | null>(null);
   const [riders, setRiders] = useState<RiderTelemetry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+
+  const [cancelReason, setCancelReason] = useState("Found better price / alternative");
+  const [cancelNotes, setCancelNotes] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const [returnReason, setReturnReason] = useState("Damaged or defective on arrival");
+  const [returnNotes, setReturnNotes] = useState("");
+  const [refundSettlement, setRefundSettlement] = useState("Bakong KHQR (Original Account)");
+  const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+
   const { formatPrice } = useCurrency();
+  const { addToCart, setIsCartDrawerOpen } = useCart();
+  const { showToast } = useToast();
+
+  const handleBuyAgain = () => {
+    if (!order || !order.items || order.items.length === 0) return;
+    order.items.forEach((item) => {
+      addToCart(
+        {
+          product_id: item.product_id,
+          name: item.name,
+          category: item.category || "General",
+          price: item.price,
+          status: "active",
+        },
+        item.quantity
+      );
+    });
+    showToast(`Added ${order.items.length} item(s) from Order #${order.order_id} to cart!`, "success");
+    setIsCartDrawerOpen(true);
+  };
+
+  const handleConfirmCancel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+    setIsCancelling(true);
+    const res = await updateOrderStatus(order.order_id, "Cancelled", true);
+    setIsCancelling(false);
+    if (res.success) {
+      setOrder((prev) => (prev ? { ...prev, status: "Cancelled", cancellation_reason: cancelReason } : prev));
+      setIsCancelModalOpen(false);
+      showToast(`Order #${order.order_id} has been cancelled. Refund initiated to Bakong.`, "info");
+    } else {
+      showToast(res.error || "Failed to cancel order", "error");
+    }
+  };
+
+  const handleConfirmReturn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+    setIsSubmittingReturn(true);
+    const res = await updateOrderStatus(order.order_id, "Return Requested", true);
+    setIsSubmittingReturn(false);
+    if (res.success) {
+      setOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "Return Requested",
+              return_reason: returnReason,
+              return_status: "Pending",
+            }
+          : prev
+      );
+      setIsReturnModalOpen(false);
+      showToast(`Return request submitted for Order #${order.order_id}. Review within 24h.`, "success");
+    } else {
+      showToast(res.error || "Failed to submit return request", "error");
+    }
+  };
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -104,16 +184,76 @@ export default function OrderDetailPage() {
           <span className="text-slate-900 font-bold">{order.order_id}</span>
         </div>
 
-        <button
-          onClick={() => setIsReceiptModalOpen(true)}
-          className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer border border-slate-200"
-        >
-          <Printer className="w-3.5 h-3.5 text-slate-600" />
-          <span>View Tax Receipt</span>
-        </button>
+        <div className="flex items-center space-x-2 flex-wrap gap-y-1.5">
+          {/* Buy Again Button */}
+          <button
+            onClick={handleBuyAgain}
+            className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-xs active:scale-95"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Buy Again</span>
+          </button>
+
+          {/* Cancel Order Button (if Pending or Preparing) */}
+          {(order.status === "Pending" || order.status === "Preparing") && (
+            <button
+              onClick={() => setIsCancelModalOpen(true)}
+              className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer border border-rose-200"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              <span>Cancel Order</span>
+            </button>
+          )}
+
+          {/* Return / Refund Button (if Delivered and not already requested) */}
+          {order.status === "Delivered" && order.return_status !== "Pending" && (
+            <button
+              onClick={() => setIsReturnModalOpen(true)}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer border border-amber-200"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Request Return / Refund</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsReceiptModalOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer border border-slate-200"
+          >
+            <Printer className="w-3.5 h-3.5 text-slate-600" />
+            <span>View Tax Receipt</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
+        {/* Cancellation Notice Banner */}
+        {order.status === "Cancelled" && (
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs flex items-start gap-3">
+            <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-extrabold text-rose-900 block text-sm">Order Cancelled</span>
+              <p className="text-rose-700">
+                Reason: <strong>{order.cancellation_reason || "Customer request"}</strong>. Refund settlement of{" "}
+                <strong>{formatPrice(order.total)}</strong> has been processed to your payment account.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Return Requested Notice Banner */}
+        {(order.status === "Return Requested" || order.return_status === "Pending") && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-extrabold text-amber-900 block text-sm">Return & Refund Request Under Review</span>
+              <p className="text-amber-800">
+                Our merchant support team is reviewing your claim under Rentify's 7-Day Guarantee. A courier pickup or direct refund will be confirmed within 24 hours.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl bg-slate-950 text-white flex items-center justify-center font-bold">
@@ -130,6 +270,8 @@ export default function OrderDetailPage() {
                       ? "bg-blue-50 text-blue-700 border border-blue-200"
                       : order.status === "Preparing"
                       ? "bg-amber-50 text-amber-700 border border-amber-200"
+                      : order.status === "Cancelled"
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
                       : "bg-slate-100 text-slate-700 border border-slate-200"
                   }`}
                 >
@@ -220,7 +362,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        <div className="pt-4 flex justify-between items-center border-t border-slate-100">
+        <div className="pt-4 flex justify-between items-center border-t border-slate-100 flex-wrap gap-3">
           <Link
             href="/orders"
             className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors"
@@ -229,13 +371,23 @@ export default function OrderDetailPage() {
             <span>Back to All Orders</span>
           </Link>
 
-          <button
-            onClick={() => setIsReceiptModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
-          >
-            <Printer className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Print Tax Receipt</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleBuyAgain}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Buy Again</span>
+            </button>
+
+            <button
+              onClick={() => setIsReceiptModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
+            >
+              <Printer className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Print Tax Receipt</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -373,6 +525,181 @@ export default function OrderDetailPage() {
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Self-Service Order Cancellation Modal */}
+      {isCancelModalOpen && (
+        <Modal
+          isOpen={isCancelModalOpen}
+          onClose={() => setIsCancelModalOpen(false)}
+          title={`Cancel Order #${order.order_id}`}
+          maxWidth="max-w-md"
+        >
+          <form onSubmit={handleConfirmCancel} className="space-y-4 text-xs">
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block">Are you sure you want to cancel?</span>
+                <p className="text-[11px] text-rose-700">
+                  Once cancelled, line items will be returned to merchant inventory, and a full refund of {formatPrice(order.total)} will be released.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Please select a reason for cancellation:
+              </label>
+              <select
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer"
+              >
+                <option value="Found better price / alternative">Found better price / alternative</option>
+                <option value="Ordered by mistake / duplicate order">Ordered by mistake / duplicate order</option>
+                <option value="Need to change delivery address">Need to change delivery address</option>
+                <option value="Estimated delivery time too long">Estimated delivery time too long</option>
+                <option value="Payment / billing method change">Payment / billing method change</option>
+                <option value="Other reason">Other reason</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Additional notes (Optional):
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Provide any feedback for the merchant..."
+                value={cancelNotes}
+                onChange={(e) => setCancelNotes(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setIsCancelModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 font-semibold cursor-pointer"
+              >
+                Keep Order
+              </button>
+              <button
+                type="submit"
+                disabled={isCancelling}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                <span>{isCancelling ? "Cancelling..." : "Confirm Cancellation"}</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Return & Refund Request Modal */}
+      {isReturnModalOpen && (
+        <Modal
+          isOpen={isReturnModalOpen}
+          onClose={() => setIsReturnModalOpen(false)}
+          title={`Request Return / Refund for #${order.order_id}`}
+          maxWidth="max-w-lg"
+        >
+          <form onSubmit={handleConfirmReturn} className="space-y-4 text-xs">
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block">Rentify 7-Day Buyer Protection</span>
+                <p className="text-[11px] text-amber-800">
+                  All purchases are eligible for hassle-free returns within 7 calendar days of delivery. Items must be in original condition with tags and packaging.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Reason for Return:
+              </label>
+              <select
+                value={returnReason}
+                onChange={(e) => setReturnReason(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              >
+                <option value="Damaged or defective on arrival">Damaged or defective on arrival</option>
+                <option value="Item does not match website description">Item does not match website description</option>
+                <option value="Wrong item or variant delivered">Wrong item or variant delivered</option>
+                <option value="Missing parts or accessories">Missing parts or accessories</option>
+                <option value="Quality not as expected">Quality not as expected</option>
+                <option value="Changed mind / No longer needed">Changed mind / No longer needed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Preferred Refund Method:
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRefundSettlement("Bakong KHQR (Original Account)")}
+                  className={`p-2.5 rounded-xl border text-left font-semibold transition-all cursor-pointer ${
+                    refundSettlement === "Bakong KHQR (Original Account)"
+                      ? "border-blue-600 bg-blue-50/60 text-blue-900"
+                      : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  <span className="block font-bold">NBC Bakong KHQR</span>
+                  <span className="text-[10px] text-slate-500">Refund to original bank account</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRefundSettlement("Rentify Wallet Loyalty Credit")}
+                  className={`p-2.5 rounded-xl border text-left font-semibold transition-all cursor-pointer ${
+                    refundSettlement === "Rentify Wallet Loyalty Credit"
+                      ? "border-blue-600 bg-blue-50/60 text-blue-900"
+                      : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  <span className="block font-bold">Wallet Credit</span>
+                  <span className="text-[10px] text-slate-500">Instant credit + 5% bonus</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                Issue Description & Photo Evidence:
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Describe what went wrong or details about the item's condition..."
+                value={returnNotes}
+                onChange={(e) => setReturnNotes(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setIsReturnModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 font-semibold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingReturn}
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>{isSubmittingReturn ? "Submitting..." : "Submit Return Claim"}</span>
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

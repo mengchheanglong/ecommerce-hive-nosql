@@ -48,6 +48,16 @@ export function Footer() {
                   Customer Profile & Addresses
                 </Link>
               </li>
+              <li>
+                <Link href="/stores" className="hover:text-slate-900 transition-colors">
+                  Merchant Stores Directory
+                </Link>
+              </li>
+              <li>
+                <Link href="/help" className="hover:text-slate-900 transition-colors text-blue-600 font-bold">
+                  Help Center & Buyer Protection
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -31,6 +31,7 @@ import {
   Percent,
   Globe,
   Check,
+  HelpCircle,
   LogOut,
 } from "lucide-react";
 import { CategoryMegaMenu } from "./CategoryMegaMenu";
@@ -482,6 +483,14 @@ export function Header() {
                         <span>Saved Wishlist ({wishlistCount})</span>
                       </Link>
                       <Link
+                        href="/help"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium"
+                      >
+                        <HelpCircle className="w-4 h-4 text-slate-400" />
+                        <span>Help Center & Support</span>
+                      </Link>
+                      <Link
                         href="/merchant"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium border-t border-slate-100 mt-1 pt-2"
@@ -604,6 +613,13 @@ export function Header() {
               className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800"
             >
               My Account
+            </Link>
+            <Link
+              href="/help"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 col-span-2 text-center text-blue-600 font-bold"
+            >
+              Help Center & Support
             </Link>
           </div>
         </div>
