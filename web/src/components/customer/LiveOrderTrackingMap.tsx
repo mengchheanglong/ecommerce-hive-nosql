@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { OrderRecord, RiderTelemetry } from "@/types";
 import {
   Truck,
@@ -26,8 +26,11 @@ interface LiveOrderTrackingMapProps {
 
 const DEPOT_COORDS: [number, number] = [104.9223, 11.5680]; // Central Market Depot [lon, lat]
 
-// OpenFreeMap Dark style: completely free, open-source vector basemap with zero API keys or watermarks
-const OPENFREEMAP_DARK_STYLE = "https://tiles.openfreemap.org/styles/dark";
+// High-definition vector basemaps (clean road graphs, zero watermarks, zero API keys required)
+const THEMES = {
+  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  liberty: "https://tiles.openfreemap.org/styles/liberty",
+};
 
 function getDestinationCoords(address?: string, province?: string): [number, number] {
   const addr = (address || "").toLowerCase();
@@ -85,9 +88,12 @@ function calculateDistanceKm(lon1: number, lat1: number, lon2: number, lat2: num
 export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const maplibreglRef = useRef<any>(null);
   const courierMarkerRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapTheme, setMapTheme] = useState<"dark" | "liberty">("dark");
   const [routeGeometry, setRouteGeometry] = useState<[number, number][] | null>(null);
+  const routeGeometryRef = useRef<[number, number][] | null>(null);
 
   // Match the assigned courier
   const assignedRider = useMemo(() => {
@@ -158,6 +164,65 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
     };
   }, [destCoords]);
 
+  // Keep route ref in sync for event listeners
+  useEffect(() => {
+    routeGeometryRef.current = routeGeometry;
+  }, [routeGeometry]);
+
+  // Robust route polyline layer applier
+  const applyRouteToMap = useCallback((map: any, geom: [number, number][] | null) => {
+    if (!map || !geom || geom.length < 2) return;
+    if (!map.isStyleLoaded()) return;
+
+    const geojsonData: any = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: geom,
+      },
+    };
+
+    try {
+      if (map.getSource("osm-route")) {
+        map.getSource("osm-route").setData(geojsonData);
+      } else {
+        map.addSource("osm-route", {
+          type: "geojson",
+          data: geojsonData,
+        });
+
+        // Glowing cyan outer halo
+        map.addLayer({
+          id: "osm-route-glow",
+          type: "line",
+          source: "osm-route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "#38bdf8",
+            "line-width": 8,
+            "line-opacity": 0.5,
+          },
+        });
+
+        // Sharp electric cyan delivery core
+        map.addLayer({
+          id: "osm-route-core",
+          type: "line",
+          source: "osm-route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "#0ea5e9",
+            "line-width": 4,
+            "line-opacity": 1.0,
+          },
+        });
+      }
+    } catch (err) {
+      console.warn("Could not render osm-route layer:", err);
+    }
+  }, []);
+
   // Initialize MapLibre GL map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -168,10 +233,11 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
     import("maplibre-gl").then((mapModule) => {
       if (isDisposed || !mapContainerRef.current) return;
       const maplibregl = (mapModule as any).Map ? mapModule : (mapModule as any).default || mapModule;
+      maplibreglRef.current = maplibregl;
 
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: OPENFREEMAP_DARK_STYLE,
+        style: THEMES[mapTheme],
         center: [
           (DEPOT_COORDS[0] + destCoords[0]) / 2,
           (DEPOT_COORDS[1] + destCoords[1]) / 2,
@@ -192,96 +258,109 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
           map.resize();
         } catch {}
 
-        if (courierMarkerRef.current) return;
+        if (!courierMarkerRef.current) {
+          // 1. Central Depot Pin
+          const depotEl = document.createElement("div");
+          depotEl.className = "flex items-center justify-center cursor-pointer";
+          depotEl.innerHTML = `
+            <div style="background: #0f172a; border: 2px solid #10b981; border-radius: 9999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16,185,129,0.4);">
+              <span style="font-size: 16px;">🏢</span>
+            </div>
+          `;
+          new maplibregl.Marker({ element: depotEl })
+            .setLngLat(DEPOT_COORDS)
+            .setPopup(
+              new maplibregl.Popup({ offset: 25 }).setHTML(`
+                <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
+                  <b style="color: #0f172a;">Rentify Central Depot</b><br/>
+                  <span style="color: #64748b;">Phnom Penh Hub (Origin)</span>
+                </div>
+              `)
+            )
+            .addTo(map);
 
-        // 1. Central Depot Pin
-        const depotEl = document.createElement("div");
-        depotEl.className = "flex items-center justify-center cursor-pointer";
-        depotEl.innerHTML = `
-          <div style="background: #0f172a; border: 2px solid #10b981; border-radius: 9999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16,185,129,0.4);">
-            <span style="font-size: 16px;">🏢</span>
-          </div>
-        `;
-        new maplibregl.Marker({ element: depotEl })
-          .setLngLat(DEPOT_COORDS)
-          .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(`
-              <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
-                <b style="color: #0f172a;">Rentify Central Depot</b><br/>
-                <span style="color: #64748b;">Phnom Penh Hub (Origin)</span>
-              </div>
-            `)
-          )
-          .addTo(map);
+          // 2. Customer Destination Pin
+          const destEl = document.createElement("div");
+          destEl.className = "flex items-center justify-center cursor-pointer";
+          destEl.innerHTML = `
+            <div style="background: #f43f5e; border: 2px solid #ffffff; border-radius: 9999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(244,63,94,0.5);">
+              <span style="font-size: 16px;">📍</span>
+            </div>
+          `;
+          new maplibregl.Marker({ element: destEl })
+            .setLngLat(destCoords)
+            .setPopup(
+              new maplibregl.Popup({ offset: 25 }).setHTML(`
+                <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
+                  <b style="color: #0f172a;">Delivery Destination</b><br/>
+                  <span style="color: #64748b;">${order.delivery_address || "Customer Address"}</span>
+                </div>
+              `)
+            )
+            .addTo(map);
 
-        // 2. Customer Destination Pin
-        const destEl = document.createElement("div");
-        destEl.className = "flex items-center justify-center cursor-pointer";
-        destEl.innerHTML = `
-          <div style="background: #f43f5e; border: 2px solid #ffffff; border-radius: 9999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(244,63,94,0.5);">
-            <span style="font-size: 16px;">📍</span>
-          </div>
-        `;
-        new maplibregl.Marker({ element: destEl })
-          .setLngLat(destCoords)
-          .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(`
-              <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
-                <b style="color: #0f172a;">Delivery Destination</b><br/>
-                <span style="color: #64748b;">${order.delivery_address || "Customer Address"}</span>
-              </div>
-            `)
-          )
-          .addTo(map);
+          // 3. Live Courier Marker (Pulsing Radar Beacon)
+          const courierEl = document.createElement("div");
+          courierEl.className = "flex items-center justify-center cursor-pointer relative";
+          courierEl.innerHTML = `
+            <div style="position: absolute; width: 44px; height: 44px; border-radius: 9999px; background: rgba(59,130,246,0.25); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="position: relative; background: #2563eb; border: 2px solid #ffffff; border-radius: 9999px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(37,99,235,0.6); z-index: 10;">
+              <span style="font-size: 15px;">🚚</span>
+            </div>
+          `;
 
-        // 3. Live Courier Marker (Pulsing Radar Beacon)
-        const courierEl = document.createElement("div");
-        courierEl.className = "flex items-center justify-center cursor-pointer relative";
-        courierEl.innerHTML = `
-          <div style="position: absolute; width: 44px; height: 44px; border-radius: 9999px; background: rgba(59,130,246,0.25); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div style="position: relative; background: #2563eb; border: 2px solid #ffffff; border-radius: 9999px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(37,99,235,0.6); z-index: 10;">
-            <span style="font-size: 15px;">🚚</span>
-          </div>
-        `;
+          const courierMarker = new maplibregl.Marker({ element: courierEl })
+            .setLngLat(riderCoords)
+            .setPopup(
+              new maplibregl.Popup({ offset: 25 }).setHTML(`
+                <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
+                  <b style="color: #2563eb;">Courier: ${assignedRider?.name || "Driver"}</b><br/>
+                  <span style="color: #64748b;">Status: ${order.status}</span>
+                </div>
+              `)
+            )
+            .addTo(map);
 
-        const courierMarker = new maplibregl.Marker({ element: courierEl })
-          .setLngLat(riderCoords)
-          .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(`
-              <div style="padding: 6px; font-family: sans-serif; font-size: 12px;">
-                <b style="color: #2563eb;">Courier: ${assignedRider?.name || "Driver"}</b><br/>
-                <span style="color: #64748b;">Status: ${order.status}</span>
-              </div>
-            `)
-          )
-          .addTo(map);
+          courierMarkerRef.current = courierMarker;
 
-        courierMarkerRef.current = courierMarker;
+          // Auto-fit camera bounds to encompass Depot, Courier, Destination, and Route
+          try {
+            const bounds = new maplibregl.LngLatBounds();
+            bounds.extend(DEPOT_COORDS);
+            bounds.extend(destCoords);
+            bounds.extend(riderCoords);
+            if (routeGeometryRef.current && routeGeometryRef.current.length > 0) {
+              routeGeometryRef.current.forEach((pt) => bounds.extend(pt));
+            }
+            map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+          } catch {}
+        }
 
-        // Auto-fit bounds around Depot, Courier, and Destination
-        try {
-          const bounds = new maplibregl.LngLatBounds();
-          bounds.extend(DEPOT_COORDS);
-          bounds.extend(destCoords);
-          bounds.extend(riderCoords);
-          map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
-        } catch {}
+        applyRouteToMap(map, routeGeometryRef.current);
       };
 
-      map.on("load", setupElements);
+      map.on("load", () => {
+        setupElements();
+      });
+
+      map.on("idle", () => {
+        if (!mapLoaded) setMapLoaded(true);
+        applyRouteToMap(map, routeGeometryRef.current);
+      });
+
       if (map.loaded()) {
         setupElements();
       }
 
-      // Fallback timer: ensure overlay is dismissed and UI elements exist within 600ms
+      // Fallback timer: ensure overlay is dismissed and UI elements exist within 800ms
       const safetyTimer = setTimeout(() => {
         if (!isDisposed) {
           setupElements();
         }
-      }, 600);
+      }, 800);
 
       map.on("error", (e: any) => {
-        console.warn("MapLibre tile notice:", e);
+        console.warn("MapLibre notice:", e);
       });
     });
 
@@ -302,71 +381,24 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
     }
   }, [riderCoords]);
 
-  // Add/Update Road Route Polyline Layer on map
+  // Update Route Polyline when geometry arrives
   useEffect(() => {
-    if (!mapLoaded || !mapRef.current || !routeGeometry) return;
+    routeGeometryRef.current = routeGeometry;
+    if (mapRef.current && routeGeometry) {
+      applyRouteToMap(mapRef.current, routeGeometry);
 
-    const map = mapRef.current;
-
-    const applyRoute = () => {
-      if (!map.isStyleLoaded()) return;
-
-      const geojsonData: any = {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: routeGeometry,
-        },
-      };
-
-      if (map.getSource("osm-route")) {
-        map.getSource("osm-route").setData(geojsonData);
-      } else {
-        map.addSource("osm-route", {
-          type: "geojson",
-          data: geojsonData,
-        });
-
-        // Outer glow line
-        map.addLayer({
-          id: "osm-route-glow",
-          type: "line",
-          source: "osm-route",
-          layout: { "line-join": "round", "line-cap": "round" },
-          paint: {
-            "line-color": "#38bdf8",
-            "line-width": 8,
-            "line-opacity": 0.4,
-          },
-        });
-
-        // Core crisp delivery line
-        map.addLayer({
-          id: "osm-route-core",
-          type: "line",
-          source: "osm-route",
-          layout: { "line-join": "round", "line-cap": "round" },
-          paint: {
-            "line-color": "#0284c7",
-            "line-width": 4,
-            "line-opacity": 0.9,
-          },
-        });
+      if (maplibreglRef.current) {
+        try {
+          const bounds = new maplibreglRef.current.LngLatBounds();
+          bounds.extend(DEPOT_COORDS);
+          bounds.extend(destCoords);
+          bounds.extend(riderCoords);
+          routeGeometry.forEach((pt: [number, number]) => bounds.extend(pt));
+          mapRef.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+        } catch {}
       }
-    };
-
-    if (map.isStyleLoaded()) {
-      applyRoute();
-    } else {
-      map.once("style.load", applyRoute);
-      map.on("styledata", () => {
-        if (map.isStyleLoaded() && !map.getSource("osm-route")) {
-          applyRoute();
-        }
-      });
     }
-  }, [mapLoaded, routeGeometry]);
+  }, [routeGeometry, destCoords, riderCoords, applyRouteToMap]);
 
   // Distance remaining and dynamic ETA
   const distanceRemainingKm = useMemo(() => {
@@ -482,10 +514,31 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
             </div>
           </div>
 
-          {/* Cassandra Ingest Metric Badge */}
-          <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
-            <Radio className="w-3 h-3 text-purple-400 animate-pulse" />
-            <span>Port 9042 • Cassandra LSM Live</span>
+          <div className="flex items-center space-x-2">
+            {/* Basemap Style Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextTheme = mapTheme === "dark" ? "liberty" : "dark";
+                setMapTheme(nextTheme);
+                if (mapRef.current) {
+                  mapRef.current.setStyle(THEMES[nextTheme]);
+                  mapRef.current.once("idle", () => {
+                    applyRouteToMap(mapRef.current, routeGeometryRef.current);
+                  });
+                }
+              }}
+              className="pointer-events-auto bg-slate-900/90 hover:bg-slate-800 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[11px] text-slate-300 font-medium transition-all flex items-center space-x-1.5 cursor-pointer shadow-lg hover:text-white"
+              title="Toggle between Dark Matter and Streets basemap"
+            >
+              <span>{mapTheme === "dark" ? "🌙 Dark" : "🗺️ Streets"}</span>
+            </button>
+
+            {/* Cassandra Ingest Metric Badge */}
+            <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
+              <Radio className="w-3 h-3 text-purple-400 animate-pulse" />
+              <span>Port 9042 • Cassandra LSM Live</span>
+            </div>
           </div>
         </div>
       </div>
