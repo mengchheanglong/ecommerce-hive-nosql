@@ -156,12 +156,13 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
 
     let mapInstance: any = null;
 
-    import("maplibre-gl").then((maplibregl) => {
+    import("maplibre-gl").then((mapModule) => {
       if (!mapContainerRef.current) return;
+      const maplibregl = (mapModule as any).Map ? mapModule : (mapModule as any).default || mapModule;
 
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: "https://tiles.openfreemap.org/styles/liberty",
+        style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
         center: [
           (DEPOT_COORDS[0] + destCoords[0]) / 2,
           (DEPOT_COORDS[1] + destCoords[1]) / 2,
@@ -176,6 +177,7 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
         mapInstance = map;
         mapRef.current = map;
         setMapLoaded(true);
+        map.resize();
 
         // 1. Central Depot Pin
         const depotEl = document.createElement("div");
@@ -248,6 +250,14 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
         bounds.extend(riderCoords);
         map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
       });
+
+      map.on("error", (e: any) => {
+        console.warn("MapLibre tile/style notice:", e);
+      });
+
+      const resizeTimer = setTimeout(() => {
+        if (map) map.resize();
+      }, 300);
     });
 
     return () => {
@@ -400,8 +410,15 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
       </div>
 
       {/* Map Canvas with Overlays */}
-      <div className="relative w-full h-[360px] sm:h-[420px] bg-slate-900">
+      <div className="relative w-full h-[360px] sm:h-[420px] bg-slate-900 overflow-hidden">
         <div ref={mapContainerRef} className="w-full h-full" />
+
+        {!mapLoaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm z-10 text-slate-400 font-mono text-xs gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+            <span>Connecting to Digital-Twin Telemetry Map...</span>
+          </div>
+        )}
 
         {/* Floating Live Telemetry HUD Strip */}
         <div className="absolute top-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
