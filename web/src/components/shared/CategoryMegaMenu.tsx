@@ -9,6 +9,7 @@ import {
   Store,
   Gift,
   Percent,
+  Package,
   ChevronRight,
   ArrowRight,
   Sparkles,
@@ -126,6 +127,17 @@ export function CategoryMegaMenu() {
           >
             <Percent className="w-3.5 h-3.5" />
             <span>Discount</span>
+          </Link>
+          <Link
+            href="/orders"
+            className={`inline-flex items-center gap-1.5 h-6.5 px-3 rounded-full text-[12px] font-bold transition-all whitespace-nowrap shadow-xs ${
+              pathname?.startsWith("/orders")
+                ? "text-white bg-slate-900 ring-2 ring-emerald-500/50"
+                : "text-white bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5 hover:shadow-md"
+            }`}
+          >
+            <Package className="w-3.5 h-3.5" />
+            <span>Orders</span>
           </Link>
         </div>
       </nav>

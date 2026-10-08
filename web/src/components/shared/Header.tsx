@@ -375,6 +375,22 @@ export function Header() {
               )}
             </div>
 
+            {/* Orders Tab */}
+            {!isMerchant && (
+              <Link
+                href="/orders"
+                className={`relative px-2.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  pathname?.startsWith("/orders")
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-700 hover:text-slate-950 hover:bg-slate-100 bg-slate-100/80 border border-slate-200/60"
+                }`}
+                title="Track My Orders"
+              >
+                <Package className={`w-4 h-4 ${pathname?.startsWith("/orders") ? "text-white" : "text-blue-600"}`} />
+                <span className="hidden sm:inline">Orders</span>
+              </Link>
+            )}
+
             {/* Wishlist Button */}
             {!isMerchant && (
               <Link
