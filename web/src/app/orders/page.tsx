@@ -26,10 +26,11 @@ export default function CustomerOrdersPage() {
 
   const statuses = ["All", "Pending", "Preparing", "Out for Delivery", "Delivered"];
 
-  const filteredOrders =
-    statusFilter === "All"
-      ? orders
-      : orders.filter((o) => o.status.toLowerCase() === statusFilter.toLowerCase());
+  const filteredOrders = (orders || []).filter((o) => {
+    if (!o) return false;
+    if (statusFilter === "All") return true;
+    return (o.status || "").toLowerCase() === statusFilter.toLowerCase();
+  });
 
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
@@ -148,16 +149,19 @@ export default function CustomerOrdersPage() {
                   Items Ordered
                 </span>
                 <div className="divide-y divide-slate-200/60">
-                  {(ord.items || []).map((item, idx) => (
-                    <div key={idx} className="py-1.5 flex justify-between items-center">
-                      <span className="font-semibold text-slate-800">
-                        {item.name} <span className="text-slate-400 font-normal">x{item.quantity}</span>
-                      </span>
-                      <span className="font-mono font-bold text-slate-900">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
-                    </div>
-                  ))}
+                  {(ord.items || []).map((item, idx) => {
+                    if (!item) return null;
+                    return (
+                      <div key={idx} className="py-1.5 flex justify-between items-center">
+                        <span className="font-semibold text-slate-800">
+                          {item.name || "Item"} <span className="text-slate-400 font-normal">x{item.quantity || 1}</span>
+                        </span>
+                        <span className="font-mono font-bold text-slate-900">
+                          {formatPrice((item.price || 0) * (item.quantity || 1))}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
