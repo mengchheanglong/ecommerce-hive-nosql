@@ -55,14 +55,14 @@ export function MerchantHeader({ onToggleSidebar, title, subtitle }: MerchantHea
             <Store className="w-3.5 h-3.5 text-white" />
             <span>Merchant</span>
           </span>
-          <Link
-            href="/admin"
+          <a
+            href="http://localhost:3300"
             className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-purple-700 hover:text-purple-900 hover:bg-purple-50 transition-colors"
-            title="Switch to Platform Administration HQ"
+            title="Switch to Standalone Platform Admin Control Plane (:3300)"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden sm:inline">Admin</span>
-          </Link>
+            <span className="hidden sm:inline">Platform Admin (:3300)</span>
+          </a>
         </div>
 
         {/* View Live Storefront */}

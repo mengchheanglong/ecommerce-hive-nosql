@@ -106,16 +106,17 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
             Switch Perspective
           </div>
 
-          <Link
-            href="/admin"
+          <a
+            href="http://localhost:3300"
             className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-200 text-xs font-semibold transition-colors border border-purple-800/60"
+            title="Switch to Standalone Platform Admin Control Plane (:3300)"
           >
             <div className="flex items-center space-x-2">
               <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
               <span>Platform Admin HQ</span>
             </div>
-            <span className="text-[10px] text-purple-400">HQ Control</span>
-          </Link>
+            <span className="text-[10px] font-mono text-purple-400">:3300</span>
+          </a>
 
           <Link
             href="/"
