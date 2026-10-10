@@ -51,6 +51,10 @@ export interface Product {
   category_aliases?: string[];
   subcategory?: string;
   subcategory_name?: string;
+  warehouse_facility?: string;
+  synced_from_supply_chain?: boolean;
+  needs_image?: boolean;
+  warehouse_unit?: string;
   created_at?: string | Date;
   updated_at?: string | Date;
 }

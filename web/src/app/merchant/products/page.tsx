@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { fetchProducts, deleteProduct, updateProduct } from "@/lib/api";
+import { fetchProducts, deleteProduct, updateProduct, syncCatalogWithSupplyChain } from "@/lib/api";
+import { SUPPLY_CHAIN_WAREHOUSE_SKUS } from "@/lib/supply-chain-sync";
 import { Product } from "@/types";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useToast } from "@/context/ToastContext";
@@ -23,25 +24,48 @@ import {
   RefreshCw,
   ShieldCheck,
   Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
 
 export default function MerchantProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [filterMode, setFilterMode] = useState<"all" | "needs_image" | "published">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isReconciling, setIsReconciling] = useState(false);
   const [lastReconciled, setLastReconciled] = useState("Just now");
   const { formatPrice } = useCurrency();
   const { showToast } = useToast();
 
+  const loadData = async () => {
+    setLoading(true);
+    const data = await fetchProducts();
+    setProducts(data);
+    setLoading(false);
+  };
+
   const handleReconcileWithSupplyChain = async () => {
     setIsReconciling(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setLastReconciled(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    const syncRes = await syncCatalogWithSupplyChain();
+    await loadData();
+    setLastReconciled(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     setIsReconciling(false);
-    showToast("Synchronized inventory ledger from Supply Chain Platform (:3100)", "success");
+
+    if (syncRes.newCount > 0) {
+      showToast(`Imported ${syncRes.newCount} new warehouse items from Supply Chain Platform (:3100)! Awaiting storefront imagery.`, "success");
+    } else {
+      showToast(`Synchronized ${syncRes.syncedCount} warehouse SKUs from Supply Chain Platform (:3100) ledger.`, "success");
+    }
   };
+
+  useEffect(() => {
+    const init = async () => {
+      await syncCatalogWithSupplyChain();
+      await loadData();
+    };
+    init();
+  }, []);
 
   // Edit Modal State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -64,17 +88,6 @@ export default function MerchantProductsPage() {
   const [editOriginProvince, setEditOriginProvince] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
-    const data = await fetchProducts();
-    setProducts(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const openEditModal = (prod: Product) => {
     setEditingProduct(prod);
     setEditName(prod.name);
@@ -96,6 +109,11 @@ export default function MerchantProductsPage() {
     setEditOriginProvince(prod.origin_province || "");
   };
 
+  const matchingWhSku = useMemo(() => {
+    if (!editingProduct) return null;
+    return SUPPLY_CHAIN_WAREHOUSE_SKUS.find((s) => s.product_id === editingProduct.product_id) || null;
+  }, [editingProduct]);
+
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
@@ -114,11 +132,15 @@ export default function MerchantProductsPage() {
 
     setSavingEdit(true);
 
+    const hasNewImage = !!editImage.trim();
+
     const updates: Partial<Product> = {
       name: editName.trim(),
       price: priceNum,
       stock: stockNum,
       image: editImage.trim() || undefined,
+      status: hasNewImage ? "active" : editingProduct.status,
+      needs_image: !hasNewImage,
       description: editDescription.trim() || undefined,
     };
 
@@ -154,25 +176,41 @@ export default function MerchantProductsPage() {
         )
       );
       setEditingProduct(null);
-      showToast(`Product "${editName}" updated successfully in MongoDB!`, "success");
+
+      if (!editingProduct.image && hasNewImage) {
+        showToast(`Product "${editName}" is now PUBLISHED live on the storefront with image!`, "success");
+      } else {
+        showToast(`Product "${editName}" updated successfully!`, "success");
+      }
     } else {
       showToast(res.error || "Failed to update product", "error");
     }
   };
 
   const handleDelete = async (productId: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}" from MongoDB catalog?`)) return;
+    if (!confirm(`Are you sure you want to delete "${name}" from catalog?`)) return;
     const res = await deleteProduct(productId);
     if (res.success) {
       setProducts((prev) => prev.filter((p) => p.product_id !== productId));
-      showToast(`Product "${name}" deleted from MongoDB`, "info");
+      showToast(`Product "${name}" removed from catalog`, "info");
     } else {
       showToast("Error deleting product", "error");
     }
   };
 
+  // Metrics
+  const totalCount = products.length;
+  const needsImageCount = useMemo(() => products.filter((p) => !p.image || p.image.trim() === "").length, [products]);
+  const publishedCount = useMemo(() => products.filter((p) => !!p.image && p.image.trim() !== "").length, [products]);
+  const totalLedgerStock = useMemo(() => products.reduce((acc, p) => acc + (p.stock || 0), 0), [products]);
+
   const filtered = useMemo(() => {
     return products
+      .filter((p) => {
+        if (filterMode === "needs_image") return !p.image || p.image.trim() === "";
+        if (filterMode === "published") return !!p.image && p.image.trim() !== "";
+        return true;
+      })
       .filter((p) => {
         if (selectedCategory === "All") return true;
         if (p.category === selectedCategory) return true;
@@ -188,16 +226,16 @@ export default function MerchantProductsPage() {
           : p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.product_id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-  }, [products, selectedCategory, searchQuery]);
+  }, [products, filterMode, selectedCategory, searchQuery]);
 
   return (
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Product Catalog & Inventory</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Product Catalog & Merchandising</h1>
           <p className="text-xs text-slate-500">
-            MongoDB polymorphic document storage with custom attributes per category
+            Physical items and ledger inventory synced with Supply Chain Platform (:3100)
           </p>
         </div>
 
@@ -206,7 +244,7 @@ export default function MerchantProductsPage() {
           className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4 text-white" />
-          <span>Add New Product</span>
+          <span>Add Custom Product</span>
         </Link>
       </div>
 
@@ -221,11 +259,11 @@ export default function MerchantProductsPage() {
               <span className="font-extrabold text-sm text-white">Supply Chain Platform Ledger Sync</span>
               <span className="flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>CONNECTED (:3100)</span>
+                <span>CONNECTED :3100</span>
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              Physical inventory is governed by the PostGIS warehouse ledger at <strong className="text-emerald-400">WH-PP-01 (Daun Penh Hub)</strong>. Stock is auto-computed as Available-to-Promise (ATP). Last sync: {lastReconciled}
+              Physical inventory is governed by the PostGIS warehouse ledger at <strong className="text-emerald-400">WH-PP-01 (Daun Penh Hub)</strong>. Warehouse items import automatically; add storefront photos and retail prices to publish. Last sync: {lastReconciled}
             </p>
           </div>
         </div>
@@ -234,17 +272,17 @@ export default function MerchantProductsPage() {
           <button
             onClick={handleReconcileWithSupplyChain}
             disabled={isReconciling}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 border border-slate-700 transition cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isReconciling ? "animate-spin" : ""}`} />
-            <span>Reconcile Ledger</span>
+            <span>Sync Warehouse Items (:3100)</span>
           </button>
 
           <a
             href="http://localhost:3101"
             target="_blank"
             rel="noreferrer"
-            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition"
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition"
           >
             <span>Supply Chain Ops (:3101)</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -252,9 +290,105 @@ export default function MerchantProductsPage() {
         </div>
       </div>
 
+      {/* KPI Stat Cards & Quick Filter Selectors */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button
+          onClick={() => setFilterMode("all")}
+          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
+            filterMode === "all"
+              ? "bg-white border-blue-500 shadow-xs ring-1 ring-blue-500"
+              : "bg-white border-slate-200/80 hover:border-slate-300"
+          }`}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Catalog</span>
+          <div className="flex items-baseline space-x-1.5 mt-1">
+            <span className="text-xl font-black text-slate-900">{totalCount}</span>
+            <span className="text-xs text-slate-500">items</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setFilterMode("needs_image")}
+          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
+            filterMode === "needs_image"
+              ? "bg-amber-50/80 border-amber-500 shadow-xs ring-1 ring-amber-500"
+              : "bg-white border-slate-200/80 hover:border-amber-300"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Needs Storefront Photo</span>
+            {needsImageCount > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            )}
+          </div>
+          <div className="flex items-baseline space-x-1.5 mt-1">
+            <span className="text-xl font-black text-amber-900">{needsImageCount}</span>
+            <span className="text-xs text-amber-700 font-semibold">awaiting image</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setFilterMode("published")}
+          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
+            filterMode === "published"
+              ? "bg-emerald-50/80 border-emerald-500 shadow-xs ring-1 ring-emerald-500"
+              : "bg-white border-slate-200/80 hover:border-emerald-300"
+          }`}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Live on Storefront</span>
+          <div className="flex items-baseline space-x-1.5 mt-1">
+            <span className="text-xl font-black text-emerald-900">{publishedCount}</span>
+            <span className="text-xs text-emerald-700 font-semibold">ready & imaged</span>
+          </div>
+        </button>
+
+        <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Warehouse ATP Stock</span>
+          <div className="flex items-baseline space-x-1.5 mt-1">
+            <span className="text-xl font-black text-slate-900 font-mono">{totalLedgerStock.toLocaleString()}</span>
+            <span className="text-xs text-slate-500 font-medium">ledger units</span>
+          </div>
+        </div>
+      </div>
+
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
+          <div className="flex items-center space-x-1 pr-2 border-r border-slate-200">
+            <button
+              onClick={() => setFilterMode("all")}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                filterMode === "all"
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              All ({totalCount})
+            </button>
+            <button
+              onClick={() => setFilterMode("needs_image")}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center space-x-1 ${
+                filterMode === "needs_image"
+                  ? "bg-amber-600 text-white"
+                  : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/60"
+              }`}
+            >
+              <AlertCircle className="w-3 h-3" />
+              <span>Needs Photo ({needsImageCount})</span>
+            </button>
+            <button
+              onClick={() => setFilterMode("published")}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center space-x-1 ${
+                filterMode === "published"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/60"
+              }`}
+            >
+              <Check className="w-3 h-3" />
+              <span>Live ({publishedCount})</span>
+            </button>
+          </div>
+
           {[
             "All",
             "Electronics",
@@ -278,7 +412,7 @@ export default function MerchantProductsPage() {
           ))}
         </div>
 
-        <div className="relative sm:w-64">
+        <div className="relative md:w-64">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -298,8 +432,8 @@ export default function MerchantProductsPage() {
               <tr>
                 <th className="p-3.5">Product</th>
                 <th className="p-3.5">Category</th>
-                <th className="p-3.5">Price</th>
-                <th className="p-3.5">Polymorphic Attributes</th>
+                <th className="p-3.5">Retail Price</th>
+                <th className="p-3.5">Merchandising Status</th>
                 <th className="p-3.5">
                   <div className="flex items-center space-x-1">
                     <span>Warehouse Stock</span>
@@ -326,29 +460,47 @@ export default function MerchantProductsPage() {
                 </tr>
               ) : (
                 filtered.map((prod) => (
-                  <tr key={prod.product_id} className="hover:bg-slate-50/70 transition-colors group">
+                  <tr
+                    key={prod.product_id}
+                    className={`hover:bg-slate-50/70 transition-colors group ${
+                      !prod.image ? "bg-amber-50/20" : ""
+                    }`}
+                  >
                     <td className="p-3.5">
                       <div className="flex items-center space-x-3">
-                        <div className="w-11 h-11 rounded-lg overflow-hidden bg-slate-100 border border-slate-200/80 shrink-0 relative">
-                          {prod.image ? (
+                        {prod.image ? (
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 shrink-0 relative">
                             <img
                               src={prod.image}
                               alt={prod.name}
                               className="w-full h-full object-cover"
                             />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400">
-                              <Package className="w-5 h-5" />
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(prod)}
+                            className="w-12 h-12 rounded-xl border border-dashed border-amber-300 bg-amber-50 hover:bg-amber-100 flex flex-col items-center justify-center text-amber-700 transition cursor-pointer group/img shrink-0"
+                            title="Click to add storefront photo"
+                          >
+                            <ImageIcon className="w-4 h-4 text-amber-600 group-hover/img:scale-110 transition" />
+                            <span className="text-[8px] font-bold text-amber-800 mt-0.5">+ Photo</span>
+                          </button>
+                        )}
                         <div>
                           <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                             {prod.name}
                           </p>
-                          <p className="text-[10px] font-mono text-slate-400 mt-0.5">
-                            SKU: {prod.product_id}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] font-mono text-slate-400">
+                              SKU: {prod.product_id}
+                            </span>
+                            {prod.synced_from_supply_chain && (
+                              <span className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                📦 Synced from {prod.warehouse_facility || "WH-PP-01"}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -358,41 +510,20 @@ export default function MerchantProductsPage() {
                       </span>
                     </td>
                     <td className="p-3.5 font-mono font-bold text-slate-900">{formatPrice(prod.price)}</td>
-                    <td className="p-3.5 text-[11px] text-slate-500 max-w-xs">
-                      {prod.category === "Electronics" && (
-                        <span>
-                          {prod.screen_size ? `Display: ${prod.screen_size}` : ""}{" "}
-                          {prod.warranty ? `• Warranty: ${prod.warranty}` : ""}
-                        </span>
-                      )}
-                      {(prod.category === "Clothing" || prod.category === "Fashion & Accessories") && (
-                        <span>
-                          {prod.size ? `Size: ${prod.size}` : ""}{" "}
-                          {prod.colours ? `• Colors: ${prod.colours.join(", ")}` : ""}
-                        </span>
-                      )}
-                      {(prod.category === "Groceries" || prod.category === "Food & Groceries") && (
-                        <span>
-                          {prod.weight ? `Net: ${prod.weight}` : ""}{" "}
-                          {prod.expiry_date ? `• Exp: ${prod.expiry_date}` : ""}
-                        </span>
-                      )}
-                      {prod.category === "Home & Living" && (
-                        <span>
-                          {prod.dimensions ? `Dim: ${prod.dimensions}` : ""}{" "}
-                          {prod.material ? `• Mat: ${prod.material}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
-                        </span>
-                      )}
-                      {prod.category === "Beauty & Wellness" && (
-                        <span>
-                          {prod.volume ? `Vol: ${prod.volume}` : ""}{" "}
-                          {prod.skin_type ? `• Type: ${prod.skin_type}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
-                        </span>
-                      )}
-                      {prod.category === "Arts & Culture" && (
-                        <span>
-                          {prod.artisan ? `Artisan: ${prod.artisan}` : ""}{" "}
-                          {prod.origin_province ? `• Prov: ${prod.origin_province}` : (prod.subcategory_name ? `• ${prod.subcategory_name}` : "")}
+                    <td className="p-3.5">
+                      {!prod.image ? (
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(prod)}
+                          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-[10px] border border-amber-300 transition cursor-pointer"
+                        >
+                          <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                          <span>Needs Photo</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200">
+                          <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                          <span>Published</span>
                         </span>
                       )}
                     </td>
@@ -403,33 +534,46 @@ export default function MerchantProductsPage() {
                           <span>{prod.stock ?? 25} in stock</span>
                         </span>
                         <span className="block text-[10px] font-mono text-slate-400">
-                          WH-PP-01 • Zone A
+                          {prod.warehouse_facility || "WH-PP-01 • Zone A"}
                         </span>
                       </div>
                     </td>
-                    <td className="p-3.5 text-right space-x-1">
-                      <button
-                        onClick={() => openEditModal(prod)}
-                        className="inline-block p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
-                        title="Edit Product"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <Link
-                        href={`/shop/${prod.product_id}`}
-                        target="_blank"
-                        className="inline-block p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                        title="View on Storefront"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(prod.product_id, prod.name)}
-                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
-                        title="Delete from MongoDB"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                      {!prod.image ? (
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(prod)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs inline-flex items-center space-x-1.5 shadow-xs cursor-pointer transition"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5 text-white" />
+                          <span>Add Image</span>
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => openEditModal(prod)}
+                            className="inline-block p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                            title="Edit Product"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <Link
+                            href={`/shop/${prod.product_id}`}
+                            target="_blank"
+                            className="inline-block p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                            title="View on Storefront"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(prod.product_id, prod.name)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+                            title="Delete from Catalog"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -439,18 +583,31 @@ export default function MerchantProductsPage() {
         </div>
       </div>
 
-      {/* Edit Product Modal */}
+      {/* Edit Product & Add Image Modal */}
       {editingProduct && (
         <Modal
           isOpen={!!editingProduct}
           onClose={() => setEditingProduct(null)}
-          title={`Edit Product: ${editingProduct.product_id}`}
+          title={!editingProduct.image ? `Add Storefront Image: ${editingProduct.product_id}` : `Edit Product: ${editingProduct.product_id}`}
           maxWidth="max-w-2xl"
         >
           <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+            {/* Informational Callout for Warehouse-Synced SKU */}
+            {!editingProduct.image && (
+              <div className="p-3.5 bg-amber-50/90 rounded-2xl border border-amber-200/90 flex items-start space-x-2.5 text-xs text-amber-950">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-extrabold text-amber-900">Warehouse SKU Synced from Supply Chain Platform (:3100)</span>
+                  <p className="text-[11px] text-amber-800 mt-0.5">
+                    Physical inventory ({editingProduct.stock} units at {editingProduct.warehouse_facility || "WH-PP-01"}) is governed by the PostGIS ledger. Add a marketing photo URL and adjust retail price below to publish this item live to your storefront.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-900 mb-1">Product Name</label>
+                <label className="block font-bold text-slate-900 mb-1">Product Title</label>
                 <input
                   type="text"
                   value={editName}
@@ -473,7 +630,7 @@ export default function MerchantProductsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-900 mb-1">Price (USD)</label>
+                <label className="block font-bold text-slate-900 mb-1">Retail Selling Price (USD)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -492,30 +649,66 @@ export default function MerchantProductsPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 font-mono text-xs">
-                  <span>WH-PP-01 Available:</span>
+                  <span>Available:</span>
                   <span className="font-bold text-slate-900">{editStock} units</span>
                 </div>
                 <p className="text-[10px] text-slate-500 mt-1">
-                  Auto-synced with Supply Chain Platform (:3100).
+                  Governed by {editingProduct.warehouse_facility || "WH-PP-01"}.
                 </p>
               </div>
             </div>
 
-            {/* Supply Chain Inbound Receiving Link in Modal */}
-            <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-emerald-950">
-              <div className="flex items-center space-x-2">
-                <Boxes className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Physical stock is governed by the warehouse ledger.</span>
+            {/* Storefront Marketing Image Asset */}
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-slate-900">Storefront Product Image URL</label>
+                <span className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-bold border border-blue-200/80">
+                  Merchant Asset
+                </span>
               </div>
-              <a
-                href="http://localhost:3101"
-                target="_blank"
-                rel="noreferrer"
-                className="font-bold text-emerald-700 hover:text-emerald-800 inline-flex items-center space-x-1 shrink-0"
-              >
-                <span>Supply Chain Ops (:3101)</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 rounded-xl bg-white border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
+                  {editImage.trim() ? (
+                    <img
+                      src={editImage.trim()}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <ImageIcon className="w-7 h-7 text-slate-300" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <input
+                    type="url"
+                    placeholder="https://images.unsplash.com/... or CDN image URL"
+                    value={editImage}
+                    onChange={(e) => setEditImage(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200/80 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    High-res marketing photo for customer storefront. Physical SKU dimensions & weight are tracked in warehouse inventory.
+                  </p>
+                </div>
+              </div>
+
+              {/* Sample Photo Suggestion */}
+              {matchingWhSku && !editImage.trim() && (
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 text-[11px]">Recommended photo for this SKU:</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditImage(matchingWhSku.sample_image)}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Use Sample Photo ({matchingWhSku.sample_image_label})</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Polymorphic Specs based on category */}
@@ -669,46 +862,8 @@ export default function MerchantProductsPage() {
               )}
             </div>
 
-            {/* Storefront Marketing Image Asset */}
-            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block font-bold text-slate-900">Storefront Product Image URL</label>
-                <span className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-bold border border-blue-200/80">
-                  Merchant Asset
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-white border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
-                  {editImage.trim() ? (
-                    <img
-                      src={editImage.trim()}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <ImageIcon className="w-6 h-6 text-slate-300" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/... or CDN image URL"
-                    value={editImage}
-                    onChange={(e) => setEditImage(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <p className="text-[10px] text-slate-500">
-                    High-res marketing photo for customer storefront. Physical SKU dimensions & weight are tracked in warehouse inventory.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <div>
-              <label className="block font-bold text-slate-900 mb-1">Description</label>
+              <label className="block font-bold text-slate-900 mb-1">Storefront Description</label>
               <textarea
                 rows={3}
                 value={editDescription}
@@ -728,10 +883,23 @@ export default function MerchantProductsPage() {
               <button
                 type="submit"
                 disabled={savingEdit}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+                className={`px-5 py-2 rounded-xl text-white font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer disabled:opacity-50 transition ${
+                  !editingProduct.image && editImage.trim()
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                <Save className="w-4 h-4 text-white" />
-                <span>{savingEdit ? "Updating MongoDB..." : "Save Product Changes"}</span>
+                {!editingProduct.image && editImage.trim() ? (
+                  <>
+                    <Check className="w-4 h-4 text-white" />
+                    <span>{savingEdit ? "Publishing to Storefront..." : "Publish to Storefront"}</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 text-white" />
+                    <span>{savingEdit ? "Saving..." : "Save Product Changes"}</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
