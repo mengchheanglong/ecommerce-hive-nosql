@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { fetchProducts, deleteProduct, updateProduct, syncCatalogWithSupplyChain } from "@/lib/api";
-import { SUPPLY_CHAIN_WAREHOUSE_SKUS } from "@/lib/supply-chain-sync";
+import { fetchProducts, deleteProduct, updateProduct } from "@/lib/api";
+import { SUPPLY_CHAIN_WAREHOUSE_SKUS, syncWarehouseCatalog as syncCatalogWithSupplyChain } from "@/lib/supply-chain-sync";
 import { Product } from "@/types";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useToast } from "@/context/ToastContext";
