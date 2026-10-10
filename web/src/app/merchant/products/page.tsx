@@ -22,6 +22,7 @@ import {
   Boxes,
   RefreshCw,
   ShieldCheck,
+  Image as ImageIcon,
 } from "lucide-react";
 
 export default function MerchantProductsPage() {
@@ -47,6 +48,7 @@ export default function MerchantProductsPage() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editStock, setEditStock] = useState("");
+  const [editImage, setEditImage] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editScreenSize, setEditScreenSize] = useState("");
   const [editWarranty, setEditWarranty] = useState("");
@@ -78,6 +80,7 @@ export default function MerchantProductsPage() {
     setEditName(prod.name);
     setEditPrice(prod.price.toString());
     setEditStock((prod.stock ?? 25).toString());
+    setEditImage(prod.image || "");
     setEditDescription(prod.description || "");
     setEditScreenSize(prod.screen_size || "");
     setEditWarranty(prod.warranty || "");
@@ -115,6 +118,7 @@ export default function MerchantProductsPage() {
       name: editName.trim(),
       price: priceNum,
       stock: stockNum,
+      image: editImage.trim() || undefined,
       description: editDescription.trim() || undefined,
     };
 
@@ -663,6 +667,44 @@ export default function MerchantProductsPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Storefront Marketing Image Asset */}
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-slate-900">Storefront Product Image URL</label>
+                <span className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-bold border border-blue-200/80">
+                  Merchant Asset
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-xl bg-white border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
+                  {editImage.trim() ? (
+                    <img
+                      src={editImage.trim()}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <ImageIcon className="w-6 h-6 text-slate-300" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <input
+                    type="url"
+                    placeholder="https://images.unsplash.com/... or CDN image URL"
+                    value={editImage}
+                    onChange={(e) => setEditImage(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    High-res marketing photo for customer storefront. Physical SKU dimensions & weight are tracked in warehouse inventory.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div>

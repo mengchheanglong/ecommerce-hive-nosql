@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createProduct } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
-import { ArrowLeft, Plus, Package, Layers, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Package, Layers, Sparkles, Image as ImageIcon } from "lucide-react";
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function CreateProductPage() {
   const [category, setCategory] = useState("Electronics");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("50");
+  const [image, setImage] = useState("");
   const [description, setDescription] = useState("");
 
   // Category polymorphic specs
@@ -60,6 +61,7 @@ export default function CreateProductPage() {
       category,
       price: priceNum,
       stock: stockNum,
+      image: image.trim() || undefined,
       description: description.trim() || undefined,
       status: "active",
     };
@@ -362,6 +364,44 @@ export default function CreateProductPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Storefront Image Asset */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">Storefront Product Image URL</label>
+              <span className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-bold border border-blue-200/80">
+                Merchant Digital Asset
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
+                {image.trim() ? (
+                  <img
+                    src={image.trim()}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <ImageIcon className="w-6 h-6 text-slate-300" />
+                )}
+              </div>
+              <div className="flex-1 space-y-1">
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/... or CDN image URL"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+                <p className="text-[10px] text-slate-500">
+                  Storefront marketing photo. Physical SKU specs (weight, dimensions) are tracked separately in Supply Chain.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div>
