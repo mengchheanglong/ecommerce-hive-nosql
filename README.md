@@ -6,7 +6,7 @@ This project is the active commercial storefront, polyglot customer portal, and 
 - **Storefront & Checkout:** Next.js 15 dual-portal application (Customer Storefront & Merchant Operations) backed by NestJS 10.
 - **Supply Chain Bridge:** Customer orders placed on the storefront automatically route into `supply-chain-platform` (`http://127.0.0.1:3100`) via `SupplyChainBridgeService`, creating fulfillment orders and allocating double-entry inventory ledger stock across PostGIS regional facilities (`DC-PNH-01`, `DC-REP-01`, `DC-KOS-01`, `DC-BAT-01`).
 - **Fleet Simulation Notification:** Successful orders notify `logistics-sandbox` (`http://localhost:3001`) for real-time delivery dispatch.
-- **Unified Governance:** Administrative oversight, merchant store directories, settlements, and cross-platform health are monitored in `platform-admin` (port 3300).
+- **Unified Governance:** Administrative oversight, merchant store directories, settlements, and cross-platform health are monitored in `supply-chain-control-tower` (port 3300).
 
 > A high-scale **polyglot persistence e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 backend API**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
 
