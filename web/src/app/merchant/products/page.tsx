@@ -31,7 +31,6 @@ export default function MerchantProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [filterMode, setFilterMode] = useState<"all" | "needs_image" | "published">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isReconciling, setIsReconciling] = useState(false);
   const [lastReconciled, setLastReconciled] = useState("Just now");
@@ -207,11 +206,6 @@ export default function MerchantProductsPage() {
   const filtered = useMemo(() => {
     return products
       .filter((p) => {
-        if (filterMode === "needs_image") return !p.image || p.image.trim() === "";
-        if (filterMode === "published") return !!p.image && p.image.trim() !== "";
-        return true;
-      })
-      .filter((p) => {
         if (selectedCategory === "All") return true;
         if (p.category === selectedCategory) return true;
         if (p.category_slug && p.category_slug.toLowerCase() === selectedCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-")) return true;
@@ -226,7 +220,7 @@ export default function MerchantProductsPage() {
           : p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.product_id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-  }, [products, filterMode, selectedCategory, searchQuery]);
+  }, [products, selectedCategory, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -248,23 +242,21 @@ export default function MerchantProductsPage() {
         </Link>
       </div>
 
-      {/* Supply Chain Integration Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-start sm:items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0">
-            <Boxes className="w-5 h-5" />
+      {/* Compact Supply Chain Integration Bar */}
+      <div className="px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-500/30 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs shadow-xs">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0">
+            <Boxes className="w-3.5 h-3.5" />
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-sm text-white">Supply Chain Platform Ledger Sync</span>
-              <span className="flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>CONNECTED :3100</span>
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Physical inventory is governed by the PostGIS warehouse ledger at <strong className="text-emerald-400">WH-PP-01 (Daun Penh Hub)</strong>. Warehouse items import automatically; add storefront photos and retail prices to publish. Last sync: {lastReconciled}
-            </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+            <span className="font-bold text-white">Supply Chain Ledger Sync</span>
+            <span className="flex items-center space-x-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>CONNECTED :3100</span>
+            </span>
+            <span className="text-[11px] text-slate-400 hidden md:inline">
+              • WH-PP-01 Hub (PostGIS Ledger) • Last sync: {lastReconciled}
+            </span>
           </div>
         </div>
 
@@ -272,75 +264,49 @@ export default function MerchantProductsPage() {
           <button
             onClick={handleReconcileWithSupplyChain}
             disabled={isReconciling}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 border border-slate-700 transition cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center space-x-1.5 border border-slate-700 transition cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isReconciling ? "animate-spin" : ""}`} />
-            <span>Sync Warehouse Items (:3100)</span>
+            <RefreshCw className={`w-3 h-3 text-emerald-400 ${isReconciling ? "animate-spin" : ""}`} />
+            <span>Sync Ledger</span>
           </button>
 
           <a
             href="http://localhost:3101"
             target="_blank"
             rel="noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition"
+            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center space-x-1 shadow-xs transition"
           >
-            <span>Supply Chain Ops (:3101)</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Ops (:3101)</span>
+            <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>
 
-      {/* KPI Stat Cards & Quick Filter Selectors */}
+      {/* KPI Stat Cards (Static Summary) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <button
-          onClick={() => setFilterMode("all")}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterMode === "all"
-              ? "bg-white border-blue-500 shadow-xs ring-1 ring-blue-500"
-              : "bg-white border-slate-200/80 hover:border-slate-300"
-          }`}
-        >
+        <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Catalog</span>
           <div className="flex items-baseline space-x-1.5 mt-1">
             <span className="text-xl font-black text-slate-900">{totalCount}</span>
             <span className="text-xs text-slate-500">items</span>
           </div>
-        </button>
+        </div>
 
-        <button
-          onClick={() => setFilterMode("needs_image")}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterMode === "needs_image"
-              ? "bg-amber-50/80 border-amber-500 shadow-xs ring-1 ring-amber-500"
-              : "bg-white border-slate-200/80 hover:border-amber-300"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Needs Storefront Photo</span>
-            {needsImageCount > 0 && (
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            )}
-          </div>
+        <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Needs Storefront Photo</span>
           <div className="flex items-baseline space-x-1.5 mt-1">
             <span className="text-xl font-black text-amber-900">{needsImageCount}</span>
             <span className="text-xs text-amber-700 font-semibold">awaiting image</span>
           </div>
-        </button>
+        </div>
 
-        <button
-          onClick={() => setFilterMode("published")}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterMode === "published"
-              ? "bg-emerald-50/80 border-emerald-500 shadow-xs ring-1 ring-emerald-500"
-              : "bg-white border-slate-200/80 hover:border-emerald-300"
-          }`}
-        >
+        <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Live on Storefront</span>
           <div className="flex items-baseline space-x-1.5 mt-1">
             <span className="text-xl font-black text-emerald-900">{publishedCount}</span>
             <span className="text-xs text-emerald-700 font-semibold">ready & imaged</span>
           </div>
-        </button>
+        </div>
 
         <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Warehouse ATP Stock</span>
@@ -351,44 +317,9 @@ export default function MerchantProductsPage() {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
-          <div className="flex items-center space-x-1 pr-2 border-r border-slate-200">
-            <button
-              onClick={() => setFilterMode("all")}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                filterMode === "all"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              All ({totalCount})
-            </button>
-            <button
-              onClick={() => setFilterMode("needs_image")}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center space-x-1 ${
-                filterMode === "needs_image"
-                  ? "bg-amber-600 text-white"
-                  : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/60"
-              }`}
-            >
-              <AlertCircle className="w-3 h-3" />
-              <span>Needs Photo ({needsImageCount})</span>
-            </button>
-            <button
-              onClick={() => setFilterMode("published")}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center space-x-1 ${
-                filterMode === "published"
-                  ? "bg-emerald-600 text-white"
-                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/60"
-              }`}
-            >
-              <Check className="w-3 h-3" />
-              <span>Live ({publishedCount})</span>
-            </button>
-          </div>
-
+      {/* Category Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
           {[
             "All",
             "Electronics",
@@ -412,7 +343,7 @@ export default function MerchantProductsPage() {
           ))}
         </div>
 
-        <div className="relative md:w-64">
+        <div className="relative sm:w-64">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
