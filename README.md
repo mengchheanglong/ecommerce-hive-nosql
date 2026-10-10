@@ -63,7 +63,7 @@ Each operational domain communicates with the optimal distributed datastore for 
                                                      ▼
                               ┌──────────────────────────────────────────────┐
                               │        NestJS Enterprise Backend API         │
-                              │   Swagger OpenAPI Explorer (/api/docs:4000)   │
+                              │   Swagger OpenAPI Explorer (/api/docs:8400)   │
                               └──────┬─────────────┬─────────────┬───────────┘
                                      │             │             │
         ┌────────────────────────────┼─────────────┴─────────────┼────────────────────────────┐
