@@ -70,6 +70,17 @@ export function AdminHeader({ onToggleSidebar, title, subtitle }: AdminHeaderPro
           </span>
         </div>
 
+        {/* Standalone Control Plane Link */}
+        <a
+          href="http://localhost:3300"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+          title="Open Master Ecosystem Control Plane"
+        >
+          <Layers className="w-3.5 h-3.5 text-white" />
+          <span>Platform HQ (:3300)</span>
+          <ExternalLink className="w-3 h-3 text-blue-200" />
+        </a>
+
         {/* Swagger OpenAPI Link */}
         <a
           href="http://localhost:4000/api/docs"
