@@ -1,8 +1,6 @@
 # AI Agent Instructions: ecommerce-hive-nosql
 
-This is a retired e-commerce reference. Preserve its e-commerce scope. Do not implement
-warehouse/distribution platform features here; those belong to supply-chain-platform.
-Further changes require a specific user request.
+This is the active commercial storefront, polyglot customer portal, and demand gateway for the supply chain workspace. It owns consumer shopping, multi-step checkout, and merchant catalog operations. Customer orders automatically bridge into `supply-chain-platform` fulfillment and double-entry inventory ledger allocation via `SupplyChainBridgeService`, while notifying `logistics-sandbox` for fleet dispatch. High-level ecosystem administration is consolidated in `platform-admin` (port 3300).
 
 ## Project Overview
 - **Project Name:** ecommerce-hive-nosql

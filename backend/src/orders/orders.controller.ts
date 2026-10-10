@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param } from "@nestjs/common";
+import { Controller, Get, Post, Put, Body, Param, HttpException, HttpStatus } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from "@nestjs/swagger";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
@@ -46,5 +46,19 @@ export class OrdersController {
   })
   updateStatusById(@Param("id") id: string, @Body() body: { status: string; courier_id?: string }) {
     return this.ordersService.updateStatus({ order_id: id, status: body.status, courier_id: body.courier_id });
+  }
+
+  @Post(":id/bridge")
+  @ApiOperation({ summary: "Bridge customer order into supply-chain-platform fulfillment & inventory ledger" })
+  @ApiParam({ name: "id", example: "ORD-100001" })
+  async bridgeOrder(@Param("id") id: string) {
+    const res = await this.ordersService.bridgeOrder(id);
+    if (!res.success) {
+      throw new HttpException(
+        { statusCode: res.statusCode || HttpStatus.CONFLICT, message: res.error || "Order bridge failed" },
+        res.statusCode || HttpStatus.CONFLICT
+      );
+    }
+    return res;
   }
 }

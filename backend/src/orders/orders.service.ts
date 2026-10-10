@@ -2,10 +2,15 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from "@nes
 import { Db } from "mongodb";
 import { InventoryService } from "../inventory/inventory.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/create-order.dto";
+import { SupplyChainBridgeService } from "./supply-chain-bridge.service";
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db, private readonly inventory: InventoryService) {}
+  constructor(
+    @Inject("MONGODB_CONNECTION") private readonly db: Db,
+    private readonly inventory: InventoryService,
+    private readonly supplyChainBridge: SupplyChainBridgeService,
+  ) {}
 
   private couriers: Record<string, { name: string; phone: string }> = {
     "R-101": { name: "Chan Vuthy", phone: "+855 12 999 888" },
@@ -218,8 +223,86 @@ export class OrdersService {
 
   async create(dto: CreateOrderDto) {
     const result = await this.inventory.reserve(dto, this.courierFields(dto.assigned_courier_id));
-    if (!result.replayed) this.notifyLogisticsSandbox(result.order).catch(() => {});
+    if (!result.replayed) {
+      this.bridgeToSupplyChain(result.order)
+        .then((bridgeResult) => {
+          if (bridgeResult && bridgeResult.success) {
+            this.notifyLogisticsSandbox(result.order).catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
     return result;
+  }
+
+  private async bridgeToSupplyChain(order: any): Promise<any> {
+    try {
+      const bridgeResult = await this.supplyChainBridge.bridgeOrder(order);
+      if (this.db) {
+        if (bridgeResult.success) {
+          await this.db.collection("orders").updateOne(
+            { order_id: order.order_id },
+            {
+              $set: {
+                platform_order_id: bridgeResult.platformOrderId,
+                fulfillment_facility_id: bridgeResult.facilityId,
+                fulfillment_facility_code: bridgeResult.facilityCode,
+                platform_allocations: bridgeResult.allocations,
+                bridge_status: "allocated",
+              },
+            }
+          ).catch(() => {});
+        } else {
+          await this.db.collection("orders").updateOne(
+            { order_id: order.order_id },
+            {
+              $set: {
+                bridge_status: "failed",
+                bridge_error: bridgeResult.error,
+              },
+            }
+          ).catch(() => {});
+        }
+      }
+      return bridgeResult;
+    } catch {
+      return { success: false, error: "Supply chain bridge error" };
+    }
+  }
+
+  async bridgeOrder(orderId: string): Promise<any> {
+    const existing = await this.findOne(orderId);
+    if (!existing.order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    const bridgeResult = await this.supplyChainBridge.bridgeOrder(existing.order);
+    if (this.db) {
+      if (bridgeResult.success) {
+        await this.db.collection("orders").updateOne(
+          { order_id: orderId },
+          {
+            $set: {
+              platform_order_id: bridgeResult.platformOrderId,
+              fulfillment_facility_id: bridgeResult.facilityId,
+              fulfillment_facility_code: bridgeResult.facilityCode,
+              platform_allocations: bridgeResult.allocations,
+              bridge_status: "allocated",
+            },
+          }
+        ).catch(() => {});
+      } else {
+        await this.db.collection("orders").updateOne(
+          { order_id: orderId },
+          {
+            $set: {
+              bridge_status: "failed",
+              bridge_error: bridgeResult.error,
+            },
+          }
+        ).catch(() => {});
+      }
+    }
+    return bridgeResult;
   }
 
   private async notifyLogisticsSandbox(order: any): Promise<void> {

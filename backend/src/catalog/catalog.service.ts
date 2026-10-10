@@ -9,6 +9,63 @@ export class CatalogService implements OnModuleInit {
   constructor(@Inject("MONGODB_CONNECTION") private readonly db: Db, private readonly inventory: InventoryService) {}
 
   private fallbackProducts: any[] = [
+    // ENTERPRISE UNIFIED MASTER CATALOG SKUS
+    {
+      product_id: "SKU-FOOD-01",
+      name: "Organic Jasmine Rice 25kg Bag",
+      category: "Groceries",
+      price: 28.0,
+      status: "active",
+      stock: 1000,
+      rating: 4.9,
+      reviews_count: 310,
+      image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
+      weight: "25.0 kg Bag",
+      expiry_date: "2027-10-01",
+      description: "Award-winning Malys Angkor aromatic long-grain organic jasmine rice from Battambang.",
+    },
+    {
+      product_id: "SKU-ELEC-01",
+      name: "Solar Inverter Battery 5kWh",
+      category: "Electronics",
+      price: 450.0,
+      status: "active",
+      stock: 200,
+      rating: 4.9,
+      reviews_count: 88,
+      image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=800&q=80",
+      screen_size: "5kWh LiFePO4 Smart Inverter",
+      warranty: "5 Years Manufacturer",
+      description: "High-capacity lithium iron phosphate solar storage battery system for off-grid operations.",
+    },
+    {
+      product_id: "SKU-COLD-01",
+      name: "Temperature-Controlled Vaccine Vial",
+      category: "Groceries",
+      price: 35.0,
+      status: "active",
+      stock: 300,
+      rating: 5.0,
+      reviews_count: 52,
+      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80",
+      weight: "0.5 kg Cold Vial",
+      expiry_date: "2027-12-31",
+      description: "Cold-chain temperature-controlled pharmaceutical vaccine vial with strict cold monitoring.",
+    },
+    {
+      product_id: "SKU-MED-01",
+      name: "Emergency First Aid Kit (Type A)",
+      category: "Groceries",
+      price: 22.0,
+      status: "active",
+      stock: 500,
+      rating: 4.8,
+      reviews_count: 140,
+      image: "https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=800&q=80",
+      weight: "2.0 kg First Aid Case",
+      description: "Comprehensive trauma and medical first-responder emergency kit.",
+    },
+
     // ELECTRONICS
     {
       product_id: "P2210",
