@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Menu, Store, ExternalLink, ShieldCheck, ShoppingBag, CheckCircle2, ChevronDown } from "lucide-react";
+import { Menu, Store, ExternalLink, ShieldCheck, ShoppingBag, CheckCircle2, ChevronDown, Boxes } from "lucide-react";
 
 interface MerchantHeaderProps {
   onToggleSidebar?: () => void;
@@ -55,6 +55,16 @@ export function MerchantHeader({ onToggleSidebar, title, subtitle }: MerchantHea
             <Store className="w-3.5 h-3.5 text-white" />
             <span>Merchant</span>
           </span>
+          <a
+            href="http://localhost:3101"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors"
+            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:3101)"
+          >
+            <Boxes className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="hidden sm:inline">Supply Chain (:3101)</span>
+          </a>
           <a
             href="http://localhost:3300"
             className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-purple-700 hover:text-purple-900 hover:bg-purple-50 transition-colors"

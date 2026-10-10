@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ShieldCheck,
   ShoppingBag,
+  Boxes,
 } from "lucide-react";
 
 interface MerchantSidebarProps {
@@ -105,6 +106,20 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1 mb-1">
             Switch Perspective
           </div>
+
+          <a
+            href="http://localhost:3101"
+            target="_blank"
+            rel="noreferrer"
+            className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-200 text-xs font-semibold transition-colors border border-emerald-800/60"
+            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:3101)"
+          >
+            <div className="flex items-center space-x-2">
+              <Boxes className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Supply Chain Ops</span>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400">:3101</span>
+          </a>
 
           <a
             href="http://localhost:3300"
