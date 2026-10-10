@@ -1,4 +1,4 @@
-# 🛍️ ecommerce-hive-nosql
+# 🛍️ ecommerce-storefront
 
 ## Project status: Active Commercial Storefront & Demand Bridge
 

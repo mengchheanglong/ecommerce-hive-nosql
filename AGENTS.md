@@ -1,9 +1,9 @@
-# AI Agent Instructions: ecommerce-hive-nosql
+# AI Agent Instructions: ecommerce-storefront
 
 This is the active commercial storefront, polyglot customer portal, and demand gateway for the supply chain workspace. It owns consumer shopping, multi-step checkout, and merchant catalog operations. Customer orders automatically bridge into `supply-chain-platform` fulfillment and double-entry inventory ledger allocation via `SupplyChainBridgeService`, while notifying `logistics-sandbox` for fleet dispatch. High-level ecosystem operations and administration are consolidated in `supply-chain-control-tower` (port 3300).
 
 ## Project Overview
-- **Project Name:** ecommerce-hive-nosql
+- **Project Name:** ecommerce-storefront
 - **Description:** A polyglot persistence data platform and interactive Next.js full-stack marketplace for high-scale e-commerce workloads, combining MongoDB, Apache Cassandra, Redis, Neo4j, and Apache Hive on HDFS, featuring fully separated Customer Storefront and Merchant Operations portals.
 
 ## Project Structure
