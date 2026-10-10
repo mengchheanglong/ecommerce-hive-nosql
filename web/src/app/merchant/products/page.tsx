@@ -52,9 +52,9 @@ export default function MerchantProductsPage() {
     setIsReconciling(false);
 
     if (syncRes.newCount > 0) {
-      showToast(`Imported ${syncRes.newCount} new warehouse items from Supply Chain Platform (:3100)! Awaiting storefront imagery.`, "success");
+      showToast(`Imported ${syncRes.newCount} new warehouse items from Supply Chain Platform (:8100)! Awaiting storefront imagery.`, "success");
     } else {
-      showToast(`Synchronized ${syncRes.syncedCount} warehouse SKUs from Supply Chain Platform (:3100) ledger.`, "success");
+      showToast(`Synchronized ${syncRes.syncedCount} warehouse SKUs from Supply Chain Platform (:8100) ledger.`, "success");
     }
   };
 
@@ -229,7 +229,7 @@ export default function MerchantProductsPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Product Catalog & Merchandising</h1>
           <p className="text-xs text-slate-500">
-            Physical items and ledger inventory synced with Supply Chain Platform (:3100)
+            Physical items and ledger inventory synced with Supply Chain Platform (:8100)
           </p>
         </div>
 
@@ -252,7 +252,7 @@ export default function MerchantProductsPage() {
             <span className="font-bold text-white">Supply Chain Ledger Sync</span>
             <span className="flex items-center space-x-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>CONNECTED :3100</span>
+              <span>CONNECTED :8100</span>
             </span>
             <span className="text-[11px] text-slate-400 hidden md:inline">
               • WH-PP-01 Hub (PostGIS Ledger) • Last sync: {lastReconciled}
@@ -528,7 +528,7 @@ export default function MerchantProductsPage() {
               <div className="p-3.5 bg-amber-50/90 rounded-2xl border border-amber-200/90 flex items-start space-x-2.5 text-xs text-amber-950">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold text-amber-900">Warehouse SKU Synced from Supply Chain Platform (:3100)</span>
+                  <span className="font-extrabold text-amber-900">Warehouse SKU Synced from Supply Chain Platform (:8100)</span>
                   <p className="text-[11px] text-amber-800 mt-0.5">
                     Physical inventory ({editingProduct.stock} units at {editingProduct.warehouse_facility || "WH-PP-01"}) is governed by the PostGIS ledger. Add a marketing photo URL and adjust retail price below to publish this item live to your storefront.
                   </p>

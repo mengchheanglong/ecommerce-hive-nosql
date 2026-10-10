@@ -56,22 +56,22 @@ export function MerchantHeader({ onToggleSidebar, title, subtitle }: MerchantHea
             <span>Merchant</span>
           </span>
           <a
-            href="http://localhost:3101"
+            href="http://localhost:8101"
             target="_blank"
             rel="noreferrer"
             className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors"
-            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:3101)"
+            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:8101)"
           >
             <Boxes className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">Supply Chain (:3101)</span>
+            <span className="hidden sm:inline">Supply Chain (:8101)</span>
           </a>
           <a
-            href="http://localhost:3300"
+            href="http://localhost:8300"
             className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-purple-700 hover:text-purple-900 hover:bg-purple-50 transition-colors"
-            title="Switch to Standalone Platform Admin Control Plane (:3300)"
+            title="Switch to Standalone Platform Admin Control Plane (:8300)"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden sm:inline">Platform Admin (:3300)</span>
+            <span className="hidden sm:inline">Platform Admin (:8300)</span>
           </a>
         </div>
 

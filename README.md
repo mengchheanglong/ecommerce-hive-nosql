@@ -4,9 +4,9 @@
 
 This project is the active commercial storefront, polyglot customer portal, and demand gateway for the supply chain workspace.
 - **Storefront & Checkout:** Next.js 15 dual-portal application (Customer Storefront & Merchant Operations) backed by NestJS 10.
-- **Supply Chain Bridge:** Customer orders placed on the storefront automatically route into `supply-chain-platform` (`http://127.0.0.1:3100`) via `SupplyChainBridgeService`, creating fulfillment orders and allocating double-entry inventory ledger stock across PostGIS regional facilities (`DC-PNH-01`, `DC-REP-01`, `DC-KOS-01`, `DC-BAT-01`).
-- **Fleet Simulation Notification:** Successful orders notify `logistics-sandbox` (`http://localhost:3001`) for real-time delivery dispatch.
-- **Unified Governance:** Administrative oversight, merchant store directories, settlements, and cross-platform health are monitored in `supply-chain-control-tower` (port 3300).
+- **Supply Chain Bridge:** Customer orders placed on the storefront automatically route into `supply-chain-platform` (`http://127.0.0.1:8100`) via `SupplyChainBridgeService`, creating fulfillment orders and allocating double-entry inventory ledger stock across PostGIS regional facilities (`DC-PNH-01`, `DC-REP-01`, `DC-KOS-01`, `DC-BAT-01`).
+- **Fleet Simulation Notification:** Successful orders notify `logistics-sandbox` (`http://localhost:8500`) for real-time delivery dispatch.
+- **Unified Governance:** Administrative oversight, merchant store directories, settlements, and cross-platform health are monitored in `supply-chain-control-tower` (port 8300).
 
 > A high-scale **polyglot persistence e-commerce platform** and interactive **Next.js 15 dual-portal application** powered by a dedicated **NestJS 10 backend API**, pairing specialized NoSQL engines (MongoDB, Redis, Cassandra, Neo4j) with an **Apache Hive on HDFS** data warehouse.
 
@@ -151,7 +151,7 @@ The platform provides a dedicated portal switch in the top navigation, completel
 │   │   └── main.ts                  # NestFactory bootstrap + Swagger OpenAPI setup (/api/docs)
 │   ├── package.json
 │   └── tsconfig.json
-├── web/                             # Next.js 15 Full-Stack Application (Port 3001)
+├── web/                             # Next.js 15 Full-Stack Application (Port 8401)
 │   ├── src/
 │   │   ├── types/                   # Unified TypeScript models
 │   │   ├── context/                 # CartContext, CurrencyContext, ToastContext
@@ -206,8 +206,8 @@ pnpm install
 pnpm build
 pnpm start
 ```
-- API Base: **[http://localhost:4000](http://localhost:4000)**
-- Interactive Swagger OpenAPI Docs: **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)**
+- API Base: **[http://localhost:8400](http://localhost:8400)**
+- Interactive Swagger OpenAPI Docs: **[http://localhost:8400/api/docs](http://localhost:8400/api/docs)**
 
 ### 2. Run the Next.js Storefront & Merchant Web App
 ```powershell
@@ -215,16 +215,16 @@ cd web
 pnpm install
 pnpm dev
 ```
-Open **[http://localhost:3001](http://localhost:3001)** in your browser. (All `/nest-api/*` paths automatically proxy to the NestJS backend).
+Open **[http://localhost:8401](http://localhost:8401)** in your browser. (All `/nest-api/*` paths automatically proxy to the NestJS backend).
 
 ### 3. One-Command Full-Stack Docker Deployment (Recommended)
 ```bash
 docker compose up -d
 ```
 Spins up the **entire production stack in containers** with automated MongoDB seeding:
-- **Customer Storefront & Merchant Portal:** [http://localhost:3001](http://localhost:3001)
-- **NestJS Backend API:** [http://localhost:4000](http://localhost:4000)
-- **Swagger OpenAPI Documentation:** [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
+- **Customer Storefront & Merchant Portal:** [http://localhost:8401](http://localhost:8401)
+- **NestJS Backend API:** [http://localhost:8400](http://localhost:8400)
+- **Swagger OpenAPI Documentation:** [http://localhost:8400/api/docs](http://localhost:8400/api/docs)
 - **MongoDB 8.0:** `localhost:27017` (auto-seeded with 51 authentic Cambodian products, customers, and orders)
 - **Redis 7:** `localhost:6379`
 - **Apache Cassandra 4.1:** `localhost:9042`

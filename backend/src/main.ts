@@ -41,7 +41,7 @@ async function bootstrap() {
     customSiteTitle: "Marketplace API Swagger Docs",
   });
 
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT || 8400;
   await app.listen(PORT);
   console.log(`\n========================================================`);
   console.log(`🚀 NestJS Backend running at: http://localhost:${PORT}`);

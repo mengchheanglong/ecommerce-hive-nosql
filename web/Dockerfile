@@ -21,10 +21,10 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=8401
 ENV HOSTNAME="0.0.0.0"
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV INTERNAL_API_URL=http://backend:4000
+ENV INTERNAL_API_URL=http://backend:8400
 
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
@@ -34,6 +34,6 @@ RUN pnpm install --prod --frozen-lockfile --config.minimum-release-age=0
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 
-EXPOSE 3001
+EXPOSE 8401
 
-CMD ["npx", "next", "start", "-p", "3001"]
+CMD ["npx", "next", "start", "-p", "8401"]

@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!autoRedirect) return;
     if (countdown <= 0) {
-      window.location.href = "http://localhost:3300";
+      window.location.href = "http://localhost:8300";
       return;
     }
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               E-Commerce Admin Dashboard has been Retired
             </h1>
             <p className="text-sm text-slate-400 leading-relaxed">
-              All administrative operations, stores governance, analytics, live fleet tracking, and system telemetry have been permanently consolidated into the standalone <strong className="text-slate-200">Platform Admin Control Plane</strong> on Port 3300.
+              All administrative operations, stores governance, analytics, live fleet tracking, and system telemetry have been permanently consolidated into the standalone <strong className="text-slate-200">Platform Admin Control Plane</strong> on Port 8300.
             </p>
           </div>
 
@@ -107,10 +107,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <a
-              href="http://localhost:3300"
+              href="http://localhost:8300"
               className="flex-1 py-3 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
             >
-              <span>Launch Platform Admin HQ (:3300)</span>
+              <span>Launch Platform Admin HQ (:8300)</span>
               <ExternalLink className="w-4 h-4" />
             </a>
 
@@ -134,7 +134,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Destination Map */}
           <div className="pt-6 border-t border-slate-800 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Where to find each feature in Platform Admin (:3300)
+              Where to find each feature in Platform Admin (:8300)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center space-x-2.5">
@@ -187,7 +187,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Footer */}
       <footer className="py-4 px-6 border-t border-slate-800/80 text-center text-xs text-slate-500 font-mono">
-        Platform Admin Service: http://localhost:3300 • E-Commerce Storefront: http://localhost:3001
+        Platform Admin Service: http://localhost:8300 • E-Commerce Storefront: http://localhost:8401
       </footer>
     </div>
   );

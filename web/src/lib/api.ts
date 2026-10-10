@@ -27,7 +27,7 @@ import {
   getStoreProducts,
 } from "./data";
 
-// Direct proxy to NestJS Microservices Backend (port 4000 via Next.js /nest-api rewrite)
+// Direct proxy to NestJS Microservices Backend (port 8400 via Next.js /nest-api rewrite)
 const BACKEND_BASE = "/nest-api";
 const LOCAL_API_BASE = "/api";
 
@@ -534,9 +534,9 @@ export async function fetchStoreProducts(storeIdOrSlug: string): Promise<Product
 // LOGISTICS SANDBOX & SIMULATION API CLIENT
 // ==========================================
 const SANDBOX_BASE = "/sandbox-api";
-const SANDBOX_DIRECT = "http://localhost:3001/api";
+const SANDBOX_DIRECT = "http://localhost:8500/api";
 const PATHFINDER_BASE = "/pathfinder-api";
-const PATHFINDER_DIRECT = "http://localhost:3000/api";
+const PATHFINDER_DIRECT = "http://localhost:8000/api";
 
 export async function fetchSandboxState(): Promise<SandboxSimState | null> {
   const urls = [`${SANDBOX_BASE}/simulation/state`, `${SANDBOX_DIRECT}/simulation/state`];
@@ -661,7 +661,7 @@ export interface EcosystemHealthNode {
 export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[]> {
   const nodes: EcosystemHealthNode[] = [];
 
-  // 1. Ecommerce Backend (4000)
+  // 1. Ecommerce Backend (8400)
   try {
     const t0 = performance.now();
     const res = await fetch(`${BACKEND_BASE}/orders`, { cache: "no-store" });
@@ -669,7 +669,7 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "Ecommerce Core API",
       role: "NestJS Orchestrator & Services",
-      port: 4000,
+      port: 8400,
       status: res.ok ? "Healthy" : "Degraded",
       latencyMs: lat,
       details: res.ok ? "Connected, orders & auth online" : "HTTP error response",
@@ -678,14 +678,14 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "Ecommerce Core API",
       role: "NestJS Orchestrator & Services",
-      port: 4000,
+      port: 8400,
       status: "Offline",
       latencyMs: 0,
-      details: "Connection refused on port 4000",
+      details: "Connection refused on port 8400",
     });
   }
 
-  // 2. Logistics Sandbox Sim Server (3001)
+  // 2. Logistics Sandbox Sim Server (8500)
   try {
     const t0 = performance.now();
     const res = await fetch(`${SANDBOX_BASE}/health`, { cache: "no-store" });
@@ -693,7 +693,7 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "Logistics Sandbox",
       role: "Digital-Twin Sim Engine & Dispatch",
-      port: 3001,
+      port: 8500,
       status: res.ok ? "Healthy" : "Degraded",
       latencyMs: lat,
       details: res.ok ? "Tick loop active, clock ticking" : "Response error",
@@ -702,14 +702,14 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "Logistics Sandbox",
       role: "Digital-Twin Sim Engine & Dispatch",
-      port: 3001,
+      port: 8500,
       status: "Offline",
       latencyMs: 0,
-      details: "Sim server unreachable on port 3001",
+      details: "Sim server unreachable on port 8500",
     });
   }
 
-  // 3. OSM Pathfinder Rust Engine (3000)
+  // 3. OSM Pathfinder Rust Engine (8000)
   try {
     const t0 = performance.now();
     const res = await fetch(`${PATHFINDER_BASE}/health`, { cache: "no-store" });
@@ -717,7 +717,7 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "OSM Pathfinder",
       role: "Rust Physical Road Graph (Axum)",
-      port: 3000,
+      port: 8000,
       status: res.ok ? "Healthy" : "Degraded",
       latencyMs: lat,
       details: res.ok ? "Contraction Hierarchies & R-Tree Snapping" : "Error",
@@ -726,7 +726,7 @@ export async function fetchEcosystemHealthMatrix(): Promise<EcosystemHealthNode[
     nodes.push({
       name: "OSM Pathfinder",
       role: "Rust Physical Road Graph (Axum)",
-      port: 3000,
+      port: 8000,
       status: "Offline",
       latencyMs: 0,
       details: "Rust routing daemon offline",

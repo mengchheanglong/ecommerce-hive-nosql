@@ -136,14 +136,14 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Sandbox Sim</span>
               </span>
-              <span className="text-emerald-400 font-bold">Port 3001</span>
+              <span className="text-emerald-400 font-bold">Port 8500</span>
             </div>
             <div className="flex items-center justify-between text-slate-400">
               <span className="flex items-center space-x-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>OSM Pathfinder</span>
               </span>
-              <span className="text-emerald-400 font-bold">Port 3000</span>
+              <span className="text-emerald-400 font-bold">Port 8000</span>
             </div>
           </div>
 
@@ -174,7 +174,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </Link>
 
           <a
-            href="http://localhost:4000/api/docs"
+            href="http://localhost:8400/api/docs"
             target="_blank"
             rel="noreferrer"
             className="w-full flex items-center justify-center space-x-1.5 py-1 text-[11px] text-slate-400 hover:text-blue-400 transition-colors"

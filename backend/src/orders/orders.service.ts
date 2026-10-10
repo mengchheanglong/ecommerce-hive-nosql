@@ -307,7 +307,8 @@ export class OrdersService {
 
   private async notifyLogisticsSandbox(order: any): Promise<void> {
     try {
-      await fetch('http://localhost:3001/api/integrations/ecommerce/order', {
+      const sandboxBase = (process.env.SANDBOX_API_URL || 'http://localhost:8500').replace(/\/+$/, '');
+      await fetch(`${sandboxBase}/api/integrations/ecommerce/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order),

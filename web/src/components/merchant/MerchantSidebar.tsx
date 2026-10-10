@@ -108,29 +108,29 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           </div>
 
           <a
-            href="http://localhost:3101"
+            href="http://localhost:8101"
             target="_blank"
             rel="noreferrer"
             className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-200 text-xs font-semibold transition-colors border border-emerald-800/60"
-            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:3101)"
+            title="Open Warehouse Inventory Ledger in Supply Chain Platform (:8101)"
           >
             <div className="flex items-center space-x-2">
               <Boxes className="w-3.5 h-3.5 text-emerald-400" />
               <span>Supply Chain Ops</span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400">:3101</span>
+            <span className="text-[10px] font-mono text-emerald-400">:8101</span>
           </a>
 
           <a
-            href="http://localhost:3300"
+            href="http://localhost:8300"
             className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-200 text-xs font-semibold transition-colors border border-purple-800/60"
-            title="Switch to Standalone Platform Admin Control Plane (:3300)"
+            title="Switch to Standalone Platform Admin Control Plane (:8300)"
           >
             <div className="flex items-center space-x-2">
               <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
               <span>Platform Admin HQ</span>
             </div>
-            <span className="text-[10px] font-mono text-purple-400">:3300</span>
+            <span className="text-[10px] font-mono text-purple-400">:8300</span>
           </a>
 
           <Link
@@ -145,7 +145,7 @@ export function MerchantSidebar({ isOpen, onClose }: MerchantSidebarProps) {
           </Link>
 
           <a
-            href="http://localhost:4000/api/docs"
+            href="http://localhost:8400/api/docs"
             target="_blank"
             rel="noreferrer"
             className="w-full flex items-center justify-center space-x-1.5 py-1.5 text-[11px] text-slate-400 hover:text-blue-400 transition-colors"

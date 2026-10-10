@@ -79,7 +79,7 @@ services:
       - neo4j_data:/data
 
   # ---------------------------------------------------------------------------
-  # 5. NestJS Microservices Backend (Port 4000, Swagger Docs at /api/docs)
+  # 5. NestJS Microservices Backend (Port 8400, Swagger Docs at /api/docs)
   # ---------------------------------------------------------------------------
   backend:
     build:
@@ -88,10 +88,10 @@ services:
     container_name: marketplace-backend
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "8400:8400"
     environment:
       - NODE_ENV=production
-      - PORT=4000
+      - PORT=8400
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DB=ecommerce
       - REDIS_URL=redis://redis:6379
@@ -104,7 +104,7 @@ services:
         condition: service_healthy
 
   # ---------------------------------------------------------------------------
-  # 6. Marketplace Full-Stack Application (Next.js 15 App Router - Port 3001)
+  # 6. Marketplace Full-Stack Application (Next.js 15 App Router - Port 8401)
   # ---------------------------------------------------------------------------
   web:
     build:
@@ -113,12 +113,12 @@ services:
     container_name: marketplace-web
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "8401:8401"
     environment:
       - NODE_ENV=production
-      - PORT=3001
-      - INTERNAL_API_URL=http://backend:4000
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
+      - PORT=8401
+      - INTERNAL_API_URL=http://backend:8400
+      - NEXT_PUBLIC_API_URL=http://localhost:8400
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DB=ecommerce
       - REDIS_URL=redis://redis:6379

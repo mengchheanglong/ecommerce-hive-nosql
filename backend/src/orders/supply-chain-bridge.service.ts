@@ -112,7 +112,7 @@ export class SupplyChainBridgeService implements OnModuleInit {
   };
 
   constructor() {
-    this.baseUrl = (process.env.SUPPLY_CHAIN_API_URL || "http://127.0.0.1:3100").replace(/\/+$/, "");
+    this.baseUrl = (process.env.SUPPLY_CHAIN_API_URL || "http://127.0.0.1:8100").replace(/\/+$/, "");
     this.token = process.env.SUPPLY_CHAIN_TOKEN || "";
     this.tenantId = process.env.SUPPLY_CHAIN_TENANT_ID || "0948f598-13c6-46ec-a0f5-0ec1b4984476";
 

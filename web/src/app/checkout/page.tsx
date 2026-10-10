@@ -173,11 +173,17 @@ export default function CheckoutPage() {
 
     if (res.success) {
       // Instant digital-twin synchronization webhook to logistics-sandbox
-      fetch("http://localhost:3001/api/integrations/ecommerce/order", {
+      fetch("/sandbox-api/integrations/ecommerce/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderPayload),
-      }).catch(() => {});
+      }).catch(() =>
+        fetch("http://localhost:8500/api/integrations/ecommerce/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        }).catch(() => {})
+      );
 
       setOrderSuccessId(orderId);
       clearCart();

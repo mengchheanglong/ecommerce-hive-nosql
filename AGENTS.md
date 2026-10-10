@@ -1,6 +1,6 @@
 # AI Agent Instructions: ecommerce-storefront
 
-This is the active commercial storefront, polyglot customer portal, and demand gateway for the supply chain workspace. It owns consumer shopping, multi-step checkout, and merchant catalog operations. Customer orders automatically bridge into `supply-chain-platform` fulfillment and double-entry inventory ledger allocation via `SupplyChainBridgeService`, while notifying `logistics-sandbox` for fleet dispatch. High-level ecosystem operations and administration are consolidated in `supply-chain-control-tower` (port 3300).
+This is the active commercial storefront, polyglot customer portal, and demand gateway for the supply chain workspace. It owns consumer shopping, multi-step checkout, and merchant catalog operations. Customer orders automatically bridge into `supply-chain-platform` fulfillment and double-entry inventory ledger allocation via `SupplyChainBridgeService`, while notifying `logistics-sandbox` for fleet dispatch. High-level ecosystem operations and administration are consolidated in `supply-chain-control-tower` (port 8300).
 
 ## Project Overview
 - **Project Name:** ecommerce-storefront
@@ -40,7 +40,7 @@ This is the active commercial storefront, polyglot customer portal, and demand g
 │   └── scripts/
 │       ├── seed-products.js         # Insert sample products
 │       └── crud-operations.js       # Full CRUD demo script
-├── backend/                         # Enterprise NestJS Backend API (Port 4000)
+├── backend/                         # Enterprise NestJS Backend API (Port 8400)
 │   ├── src/
 │   │   ├── catalog/                 # MongoDB Catalog module (GET, POST, PUT, DELETE)
 │   │   ├── orders/                  # MongoDB Orders & state machine (GET, GET :id, POST, PUT)
@@ -55,7 +55,7 @@ This is the active commercial storefront, polyglot customer portal, and demand g
 │   └── schema.cql
 ├── neo4j/                           # Neo4j Graph Cypher Schema & Traversal Queries
 │   └── queries.cypher
-└── web/                             # Next.js 15 Full-Stack Web Application (Port 3001)
+└── web/                             # Next.js 15 Full-Stack Web Application (Port 8401)
     ├── src/
     │   ├── types/                   # Unified TypeScript models
     │   ├── context/                 # CartContext, CurrencyContext, ToastContext
@@ -94,12 +94,12 @@ This is the active commercial storefront, polyglot customer portal, and demand g
 - **MongoDB:** MongoDB scripts use the `.js` extension, meant to be run via `mongosh`.
 - **Schemas:** Defined in JSON Schema (draft-07) format.
 - **DDL ordering:** Hive DDL files are prefixed with numbers (`01-`, `02-`, ...) to indicate execution order.
-- **Backend:** NestJS 10 with Swagger OpenAPI documentation on `http://localhost:4000/api/docs`.
-- **Web App:** Next.js 15 App Router with separated Customer and Merchant experiences, TypeScript, and Tailwind CSS on port 3001.
+- **Backend:** NestJS 10 with Swagger OpenAPI documentation on `http://localhost:8400/api/docs`.
+- **Web App:** Next.js 15 App Router with separated Customer and Merchant experiences, TypeScript, and Tailwind CSS on port 8401.
 
 ## Testing & Running
 - **Full Stack via Docker (One Command):** `docker compose up -d` (starts MongoDB, Redis, Cassandra, Neo4j, NestJS backend, and Next.js frontend with auto-seeding)
-- **NestJS Backend (Standalone):** `cd backend && pnpm start` (accessible on `http://localhost:4000`, Swagger docs at `/api/docs`)
-- **Web App (Standalone):** `cd web && pnpm dev` (accessible on `http://localhost:3001`)
+- **NestJS Backend (Standalone):** `cd backend && pnpm start` (accessible on `http://localhost:8400`, Swagger docs at `/api/docs`)
+- **Web App (Standalone):** `cd web && pnpm dev` (accessible on `http://localhost:8401`)
 - **MongoDB Scripts:** `mongosh ecommerce mongodb/scripts/seed-products.js`
 - **Hive Pipeline:** Run sequentially or via `./run_lab.ps1`

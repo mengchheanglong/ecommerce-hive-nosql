@@ -108,14 +108,14 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
   const [sandboxVehicle, setSandboxVehicle] = useState<any | null>(null);
   const [isSandboxConnected, setIsSandboxConnected] = useState(false);
 
-  // Poll Logistics Sandbox backend (port 3001) for direct real-time digital-twin synchronization
+  // Poll Logistics Sandbox backend (port 8500) for direct real-time digital-twin synchronization
   useEffect(() => {
     let active = true;
     async function pollSandboxTelemetry() {
       try {
-        const res = await fetch("http://localhost:3001/api/vehicles", {
+        const res = await fetch("/sandbox-api/vehicles", {
           signal: AbortSignal.timeout(1500),
-        });
+        }).catch(() => fetch("http://localhost:8500/api/vehicles", { signal: AbortSignal.timeout(1500) }));
         if (res.ok) {
           const vehicles = await res.json();
           if (active && Array.isArray(vehicles) && vehicles.length > 0) {
@@ -596,7 +596,7 @@ export function LiveOrderTrackingMap({ order, riders }: LiveOrderTrackingMapProp
             {isSandboxConnected ? (
               <div className="pointer-events-auto flex items-center space-x-1.5 bg-emerald-950/80 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-emerald-500/50 text-[10px] text-emerald-300 font-mono shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Port 3001 • Sandbox Synced</span>
+                <span>Port 8500 • Sandbox Synced</span>
               </div>
             ) : (
               <div className="pointer-events-auto hidden sm:flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700/80 text-[10px] text-slate-400 font-mono">
